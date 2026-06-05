@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Holistic Wellness Fitness LLC | Celine Bonilla</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- AOS (Animate On Scroll) -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --brand-green: #4a7c59;
+            --brand-green-dark: #2d4a30;
+            --brand-cream: #fdfbf7;
+            --brand-gold: #c9a96e;
+            --brand-sage: #a3b18a;
+            --text-dark: #2c2c2c;
+            --text-muted: #6b6b6b;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            color: var(--text-dark);
+            background-color: var(--brand-cream);
+            overflow-x: hidden;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+            z-index: 1000;
+        }
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--brand-green-dark) !important;
+            letter-spacing: -0.5px;
+        }
+        .nav-link {
+            font-weight: 500;
+            color: var(--text-dark) !important;
+            margin: 0 0.2rem;
+            transition: color 0.3s;
+        }
+        .nav-link:hover {
+            color: var(--brand-green) !important;
+        }
+        .btn-brand {
+            background-color: var(--brand-green);
+            border: none;
+            color: white;
+            padding: 0.65rem 1.8rem;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-brand:hover {
+            background-color: var(--brand-green-dark);
+            transform: translateY(-1px);
+            color: white;
+        }
+        .btn-outline-brand {
+            border: 2px solid var(--brand-green);
+            color: var(--brand-green);
+            border-radius: 30px;
+            padding: 0.6rem 1.8rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            background: transparent;
+        }
+        .btn-outline-brand:hover {
+            background-color: var(--brand-green);
+            color: white;
+        }
+
+        /* Hero canvas container */
+        .hero-section {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: linear-gradient(135deg, #dce5d8 0%, #eaf0e4 100%);
+        }
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .hero-overlay {
+            position: relative;
+            z-index: 2;
+            background: rgba(255,255,255,0.25);
+            backdrop-filter: blur(4px);
+            border-radius: 24px;
+            padding: 3rem 2rem;
+            max-width: 700px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        }
+        .hero-overlay h1 {
+            color: var(--brand-green-dark);
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 800;
+        }
+        .hero-overlay p {
+            color: var(--text-dark);
+            font-size: 1.2rem;
+        }
+
+        /* Section styles */
+        section {
+            padding: 5rem 0;
+        }
+        .section-title {
+            color: var(--brand-green-dark);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 0;
+            width: 60%;
+            height: 3px;
+            background: var(--brand-gold);
+        }
+
+        /* About */
+        .about-img {
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 400px;
+            object-fit: cover;
+        }
+
+        /* Services cards */
+        .service-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+        }
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(0,0,0,0.08);
+        }
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(74,124,89,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem;
+            font-size: 2rem;
+            color: var(--brand-green);
+        }
+
+        /* Sea moss product card */
+        .product-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        .product-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        .product-img {
+            height: 280px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        /* Testimonials */
+        .testimonial-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+            position: relative;
+        }
+        .testimonial-card::before {
+            content: "\201C";
+            font-size: 5rem;
+            color: var(--brand-green);
+            opacity: 0.2;
+            position: absolute;
+            top: -20px;
+            left: 10px;
+            font-family: serif;
+        }
+
+        /* Contact form */
+        .contact-form {
+            background: white;
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        }
+        .form-control:focus {
+            border-color: var(--brand-green);
+            box-shadow: 0 0 0 0.2rem rgba(74,124,89,0.25);
+        }
+
+        footer {
+            background: var(--brand-green-dark);
+            color: rgba(255,255,255,0.85);
+            padding: 2rem 0;
+        }
+        footer a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fa-solid fa-leaf me-2"></i> Holistic Wellness Fitness
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#seamoss">Sea Moss</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#testimonials">Testimonials</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO with Three.js background -->
+    <section id="home" class="hero-section">
+        <canvas id="hero-canvas"></canvas>
+        <div class="hero-overlay" data-aos="fade-up">
+            <h1>Holistic Wellness<br>Fitness LLC</h1>
+            <p class="lead">Transform your body, heal your gut, and embrace balance with <strong>Celine Bonilla</strong>.</p>
+            <a href="#contact" class="btn btn-brand btn-lg mt-3">Book Now</a>
+        </div>
+    </section>
+
+    <!-- ABOUT CELINE -->
+    <section id="about">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-md-5" data-aos="fade-right">
+                    <img src="./HWF/12A27580-C376-4EC4-8A14-66942716E7D2.jpeg" alt="Celine Bonilla" class="about-img" />
+                </div>
+                <div class="col-md-7" data-aos="fade-left">
+                    <h2 class="section-title">Meet Celine Bonilla</h2>
+                    <p class="fs-5">Founder & Holistic Wellness Coach</p>
+                    <p class="fs-5">Registered Nurse, Bachelor's of Science in Nursing | Certified Holistic Nutritionist</p>
+                    <p>I’m Celine, the heart behind Holistic Wellness Fitness LLC. Based in Meriden CT, I’ve dedicated my practice to helping people restore balance through holistic nutrition, sustainable weight loss, and gut healing.</p>
+                    <p>My approach is deeply personal—I believe true wellness comes when we nourish the whole self: body, mind, and soul. Whether you’re struggling with digestion, low energy, or weight that won’t budge, I’m here to guide you with compassion, science, and real‑world strategies.</p>
+                    <a href="#contact" class="btn btn-outline-brand">Work With Me</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SERVICES -->
+    <section id="services" class="bg-light">
+        <div class="container text-center">
+            <h2 class="section-title" data-aos="fade-up">How We Can Work Together</h2>
+            <div class="row g-4 mt-4">
+                <div class="col-md-4" data-aos="zoom-in">
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fa-solid fa-spa"></i></div>
+                        <h3>Holistic Coaching</h3>
+                        <p>One‑on‑one sessions integrating nutrition, movement, and mindfulness to create a vibrant, balanced life.</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="zoom-in" data-aos-delay="150">
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fa-solid fa-weight-scale"></i></div>
+                        <h3>Weight Loss Plans</h3>
+                        <p>Personalised, sustainable plans that focus on real food, habit change, and accountability—no crash diets.</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="zoom-in" data-aos-delay="300">
+                    <div class="service-card">
+                        <div class="service-icon"><i class="fa-solid fa-seedling"></i></div>
+                        <h3>Gut Health Nutrition</h3>
+                        <p>Heal your digestion with targeted protocols, elimination guidance, and gut‑brain axis support.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SEA MOSS – Benefits & Shop -->
+    <section id="seamoss" class="py-5">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h2 class="section-title">Wildcrafted Sea Moss Gel</h2>
+                    <p class="fs-5">Nature’s multivitamin – straight from the ocean to your spoon.</p>
+                    <p>Our sea moss is sustainably harvested, rich in 92 essential minerals, and prepared in small batches to retain maximum potency. It supports thyroid function, gut health, skin radiance, and natural energy.</p>
+                    <ul class="list-unstyled mb-4">
+                        <li><i class="fa-solid fa-check-circle text-success me-2"></i> 92+ minerals & vitamins</li>
+                        <li><i class="fa-solid fa-check-circle text-success me-2"></i> Supports digestion & metabolism</li>
+                        <li><i class="fa-solid fa-check-circle text-success me-2"></i> Strengthens immunity & skin</li>
+                        <li><i class="fa-solid fa-check-circle text-success me-2"></i> Organic, wildcrafted, no additives</li>
+                    </ul>
+                    <a href="#seamoss-order" class="btn btn-brand btn-lg">Order Your Jar</a>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <img src="./HWF/IMG_0266.jpeg" alt="Sea Moss Gel" class="product-img rounded-4 shadow" />
+                </div>
+            </div>
+
+            <!-- Product transaction card -->
+            <div id="seamoss-order" class="row justify-content-center mt-5 pt-4" data-aos="fade-up">
+                <div class="col-md-6 col-lg-5">
+                    <div class="product-card p-4 text-center">
+                        <h4 class="fw-bold">Organic Sea Moss Gel</h4>
+                        <p class="text-muted">16 oz | Wildcrafted | $34.99</p>
+                        <p class="small">Fresh, refrigerated, ready to enjoy. Free shipping on orders over $50.</p>
+                        <!-- PayPal / payment link – replace with your own link -->
+                        <a href="https://www.paypal.com/ncp/payment/XXXXXXXXX" target="_blank" class="btn btn-brand w-100 mb-2">
+                            <i class="fa-brands fa-paypal me-1"></i> Buy Now with PayPal
+                        </a>
+                        <p class="small text-muted m-0">Secure payment • Shipped within 48h</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section id="testimonials" class="bg-light">
+        <div class="container text-center">
+            <h2 class="section-title" data-aos="fade-up">Client Love</h2>
+            <div class="row g-4 mt-4">
+                <div class="col-md-4" data-aos="flip-left">
+                    <div class="testimonial-card">
+                        <p class="fst-italic">"Celine helped me heal my gut after years of discomfort. Her holistic approach changed my life—I have more energy and finally feel like myself again."</p>
+                        <p class="fw-bold mb-0">– Maria S.</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="flip-left" data-aos-delay="100">
+                    <div class="testimonial-card">
+                        <p class="fst-italic">"The sea moss gel is incredible! My skin is glowing, and I've never felt better. Plus Celine’s coaching kept me on track."</p>
+                        <p class="fw-bold mb-0">– James K.</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="flip-left" data-aos-delay="200">
+                    <div class="testimonial-card">
+                        <p class="fst-italic">"Finally a weight loss plan that doesn’t feel like punishment. Celine’s wisdom and kindness are unmatched."</p>
+                        <p class="fw-bold mb-0">– Priya M.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="py-5">
+        <div class="container">
+            <div class="row g-5 align-items-start">
+                <div class="col-lg-5" data-aos="fade-right">
+                    <h2 class="section-title">Let’s Connect</h2>
+                    <p>Ready to transform your wellness? Send a message or reach out on Instagram. I personally answer every inquiry.</p>
+                    <p class="mb-1"><i class="fa-solid fa-envelope me-2"></i> info@holisticwellnessandfitness.com</p>
+                    <p>
+                        <i class="fa-brands fa-instagram me-2"></i>
+                        <a href="https://www.instagram.com/holisticwellnessfitnessllc" target="_blank" rel="noopener">@holisticwellnessfitnessllc</a>
+                    </p>
+                </div>
+                <div class="col-lg-7" data-aos="fade-left">
+                    <div class="contact-form">
+                        <!-- FORMSPREE FORM – replace the endpoint -->
+                        <form action="https://formspree.io/f/YOUR_FORMSPREE_ENDPOINT_HERE" method="POST">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required placeholder="Jane Doe" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required placeholder="jane@example.com" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone (optional)</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="(555) 123-4567" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="message" class="form-label">Your Message *</label>
+                                <textarea class="form-control" id="message" name="message" rows="5" required placeholder="Tell me how I can help..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-brand w-100">Send Message</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="text-center">
+        <div class="container">
+            <p class="mb-1">&copy; 2026 Holistic Wellness Fitness LLC. All rights reserved.</p>
+            <p class="mb-0">Address: 177 State Street, Meriden, CT 06450 | Phone: 203-800-1118.</p>
+            <p class="mb-0">
+                Follow <a href="https://www.instagram.com/holisticwellnessfitnessllc" target="_blank" rel="noopener">@holisticwellnessfitnessllc</a> for daily wellness tips.
+            </p>
+        </div>
+    </footer>
+
+    <!-- SCRIPTS -->
+    <!-- Bootstrap 5 JS bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 1000, once: true });
+    </script>
+
+    <!-- Three.js and OrbitControls for the hero background -->
+    <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script>
+        (function() {
+            // Canvas setup
+            const canvas = document.getElementById('hero-canvas');
+            const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+
+            // Scene
+            const scene = new THREE.Scene();
+            scene.background = null; // transparent
+
+            // Camera
+            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(0, 1.5, 6);
+            camera.lookAt(0, 0, 0);
+
+            // Controls (gentle auto-rotate)
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.5;
+            controls.enableZoom = false;
+            controls.enablePan = false;
+            controls.target.set(0, 0.2, 0);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xfdfbf7, 0.8);
+            directionalLight.position.set(1, 2, 2);
+            scene.add(directionalLight);
+            const backLight = new THREE.PointLight(0xc9a96e, 0.5);
+            backLight.position.set(-1, -1, -1);
+            scene.add(backLight);
+
+            // Elegant organic shape – a torus knot with soft green/gold tones
+            const geometry = new THREE.TorusKnotGeometry(1.2, 0.4, 128, 32);
+            const material = new THREE.MeshStandardMaterial({
+                color: 0x4a7c59,
+                roughness: 0.3,
+                metalness: 0.1,
+                emissive: 0x1b3b2b,
+                emissiveIntensity: 0.1,
+            });
+            const torusKnot = new THREE.Mesh(geometry, material);
+            torusKnot.castShadow = true;
+            torusKnot.receiveShadow = true;
+            scene.add(torusKnot);
+
+            // Floating small spheres (representing sea moss bubbles / vitality)
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particlesCount = 200;
+            const posArray = new Float32Array(particlesCount * 3);
+            for (let i = 0; i < particlesCount * 3; i += 3) {
+                posArray[i] = (Math.random() - 0.5) * 6;
+                posArray[i+1] = (Math.random() - 0.5) * 6;
+                posArray[i+2] = (Math.random() - 0.5) * 4;
+            }
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.04,
+                color: 0xc9a96e,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+            });
+            const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particles);
+
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                torusKnot.rotation.x += 0.002;
+                torusKnot.rotation.y += 0.003;
+                particles.rotation.y += 0.0005;
+                controls.update();
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Resize handler
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<% content_for :title, "New check-in" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Wellness</span>
+    <h1 class="h3 mb-0">New check-in</h1>
+  </div>
+  <%= link_to "Back", checkins_path, class: "btn btn-outline-brand btn-sm" %>
+</div>
+
+<div class="hwf-card" style="max-width: 820px;">
+  <%= render "form", checkin: @checkin, submit_label: "Save check-in" %>
+</div>

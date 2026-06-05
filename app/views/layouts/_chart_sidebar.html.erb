@@ -1,0 +1,20 @@
+<aside class="chart-sidebar">
+  <div class="chart-nav-label d-none d-lg-block">Chart</div>
+  <% chart_nav_items.each do |item| %>
+    <%= link_to item[:href], class: "chart-nav-link #{'active' if nav_active?(item[:href])}" do %>
+      <i class="fa-solid <%= item[:icon] %>"></i>
+      <span class="label"><%= item[:label] %></span>
+    <% end %>
+  <% end %>
+
+  <div class="d-none d-lg-block mt-3 px-2">
+    <div class="hwf-card p-3" style="background: var(--brand-green-soft); border: none;">
+      <div class="small fw-bold text-brand mb-1"><i class="fa-solid fa-plus me-1"></i>Quick log</div>
+      <div class="d-grid gap-2">
+        <%= link_to "Check-in", new_checkin_path, class: "btn btn-soft btn-sm" %>
+        <%= link_to "Meal", new_meal_entry_path, class: "btn btn-soft btn-sm" %>
+        <%= link_to "Workout", new_workout_log_path, class: "btn btn-soft btn-sm" %>
+      </div>
+    </div>
+  </div>
+</aside>

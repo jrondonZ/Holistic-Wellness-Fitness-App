@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%= render "layouts/head" %>
+  <body class="d-flex flex-column min-vh-100">
+    <%= render "layouts/app_navbar" %>
+    <main class="flex-fill">
+      <% if flash.any? { |_, m| m.present? } %>
+        <div class="container pt-3"><%= render "layouts/flash" %></div>
+      <% end %>
+      <%= yield %>
+    </main>
+    <%= render "layouts/footer" %>
+  </body>
+</html>

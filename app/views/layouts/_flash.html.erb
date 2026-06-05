@@ -1,0 +1,8 @@
+<% flash.each do |key, message| %>
+  <% next if message.blank? %>
+  <div class="alert alert-<%= flash_variant(key) %> alert-dismissible fade show d-flex align-items-center" role="alert">
+    <i class="fa-solid <%= flash_icon(key) %> me-2"></i>
+    <div><%= message %></div>
+    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% end %>

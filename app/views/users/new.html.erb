@@ -1,0 +1,62 @@
+<% content_for :title, "Create your chart" %>
+
+<div class="container">
+  <div class="auth-card" style="max-width: 560px;">
+    <div class="hwf-card p-4 p-md-5" data-aos="fade-up">
+      <div class="text-center mb-4">
+        <span class="leaf d-inline-grid mb-3" style="width:48px;height:48px;background:var(--brand-green);color:#fff;border-radius:14px;place-items:center;font-size:1.3rem;">
+          <i class="fa-solid fa-leaf"></i>
+        </span>
+        <h1 class="h3">Create your holistic chart</h1>
+        <p class="text-muted mb-0">Body, mind &amp; gut — all in one place</p>
+      </div>
+
+      <%= form_with model: @user, url: signup_path, method: :post, local: true do |f| %>
+        <% if @user.errors.any? %>
+          <div class="alert alert-danger">
+            <strong><i class="fa-solid fa-circle-exclamation me-1"></i> <%= pluralize(@user.errors.count, "issue") %> to fix:</strong>
+            <ul class="mb-0 mt-1">
+              <% @user.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+            </ul>
+          </div>
+        <% end %>
+
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <%= f.label :first_name, class: "form-label" %>
+            <%= f.text_field :first_name, class: "form-control", autofocus: true %>
+          </div>
+          <div class="col-sm-6">
+            <%= f.label :last_name, class: "form-label" %>
+            <%= f.text_field :last_name, class: "form-control" %>
+          </div>
+          <div class="col-sm-6">
+            <%= f.label :username, class: "form-label" %>
+            <%= f.text_field :username, class: "form-control", autocomplete: "username" %>
+          </div>
+          <div class="col-sm-6">
+            <%= f.label :email, class: "form-label" %>
+            <%= f.email_field :email, class: "form-control", autocomplete: "email" %>
+          </div>
+          <div class="col-sm-6">
+            <%= f.label :password, class: "form-label" %>
+            <%= f.password_field :password, class: "form-control", autocomplete: "new-password" %>
+            <div class="field-hint mt-1">At least 6 characters.</div>
+          </div>
+          <div class="col-sm-6">
+            <%= f.label :password_confirmation, "Confirm password", class: "form-label" %>
+            <%= f.password_field :password_confirmation, class: "form-control", autocomplete: "new-password" %>
+          </div>
+        </div>
+
+        <div class="d-grid mt-4">
+          <%= f.submit "Create my chart", class: "btn btn-brand btn-lg" %>
+        </div>
+      <% end %>
+
+      <p class="text-center text-muted mt-4 mb-0">
+        Already have a chart? <%= link_to "Log in", login_path, class: "fw-semibold" %>
+      </p>
+    </div>
+  </div>
+</div>

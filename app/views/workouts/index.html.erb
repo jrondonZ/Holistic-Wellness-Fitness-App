@@ -1,0 +1,48 @@
+<% content_for :title, "Video library" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Fitness</span>
+    <h1 class="h3 mb-0">Workout &amp; video library</h1>
+  </div>
+  <%= link_to routines_path, class: "btn btn-soft" do %><i class="fa-solid fa-calendar-check me-1"></i> Routines<% end %>
+</div>
+
+<div class="filter-chips mb-4">
+  <%= link_to "All", workouts_path, class: "filter-chip #{'active' unless @category}" %>
+  <% @categories.each do |c| %>
+    <%= link_to c, workouts_path(category: c), class: "filter-chip #{'active' if @category == c}" %>
+  <% end %>
+</div>
+
+<% if @workouts.any? %>
+  <div class="row g-4">
+    <% @workouts.each do |w| %>
+      <div class="col-sm-6 col-lg-4">
+        <%= link_to workout_path(w), class: "text-decoration-none" do %>
+          <div class="media-card">
+            <div class="media-thumb">
+              <% if w.thumbnail_url %><%= image_tag w.thumbnail_url, alt: w.title, loading: "lazy" %><% end %>
+              <div class="play"><i class="fa-solid fa-circle-play"></i></div>
+              <span class="media-badge"><%= w.category %></span>
+              <% if w.duration_min %><span class="media-time"><%= w.duration_min %> min</span><% end %>
+            </div>
+            <div class="media-body">
+              <h3 class="h6 mb-1 text-dark"><%= w.title %></h3>
+              <div class="small text-muted mb-2"><%= [ w.level, w.focus_area ].compact_blank.join(" · ") %></div>
+              <div class="mt-auto d-flex justify-content-between align-items-center">
+                <span class="pill"><i class="fa-solid fa-user-nurse me-1"></i><%= w.instructor_name %></span>
+                <% if w.calories_est %><span class="small text-muted"><%= w.calories_est %> kcal</span><% end %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="hwf-card empty-state">
+    <div class="icon"><i class="fa-solid fa-circle-play"></i></div>
+    <p class="mb-0">No workouts in this category yet.</p>
+  </div>
+<% end %>

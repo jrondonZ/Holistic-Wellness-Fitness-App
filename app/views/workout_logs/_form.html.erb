@@ -1,0 +1,47 @@
+<%= form_with model: workout_log, local: true do |f| %>
+  <% if workout_log.errors.any? %>
+    <div class="alert alert-danger">
+      <strong><i class="fa-solid fa-circle-exclamation me-1"></i> Please fix:</strong>
+      <ul class="mb-0 mt-1"><% workout_log.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <%= f.hidden_field :workout_id %>
+  <% if workout_log.workout %>
+    <div class="alert alert-info d-flex align-items-center gap-2">
+      <i class="fa-solid fa-circle-play"></i> Logging from library: <strong><%= workout_log.workout.title %></strong>
+    </div>
+  <% end %>
+
+  <div class="row g-3">
+    <div class="col-md-6">
+      <%= f.label :activity, "Activity", class: "form-label" %>
+      <%= f.text_field :activity, class: "form-control", placeholder: "Morning strength circuit", autofocus: true %>
+    </div>
+    <div class="col-md-3 col-6">
+      <%= f.label :performed_on, "Date", class: "form-label" %>
+      <%= f.date_field :performed_on, class: "form-control" %>
+    </div>
+    <div class="col-md-3 col-6">
+      <%= f.label :intensity, "Intensity", class: "form-label" %>
+      <%= f.select :intensity, WorkoutLog::INTENSITIES, { include_blank: "—" }, class: "form-select" %>
+    </div>
+    <div class="col-md-3 col-6">
+      <%= f.label :duration_min, "Duration (min)", class: "form-label" %>
+      <%= f.number_field :duration_min, min: 0, class: "form-control", placeholder: "30" %>
+    </div>
+    <div class="col-md-3 col-6">
+      <%= f.label :calories_burned, "Calories (kcal)", class: "form-label" %>
+      <%= f.number_field :calories_burned, min: 0, class: "form-control", placeholder: "240" %>
+    </div>
+    <div class="col-12">
+      <%= f.label :notes, "Notes", class: "form-label" %>
+      <%= f.text_area :notes, rows: 2, class: "form-control", placeholder: "How it felt, weights used, distance, etc." %>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mt-4">
+    <%= f.submit submit_label, class: "btn btn-brand" %>
+    <%= link_to "Cancel", workout_logs_path, class: "btn btn-outline-brand" %>
+  </div>
+<% end %>

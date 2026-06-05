@@ -1,0 +1,82 @@
+<%= form_with model: @profile, url: health_profile_path, method: :patch, local: true do |f| %>
+  <% if @profile.errors.any? %>
+    <div class="alert alert-danger">
+      <strong><i class="fa-solid fa-circle-exclamation me-1"></i> Please fix:</strong>
+      <ul class="mb-0 mt-1"><% @profile.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <h2 class="card-title-sm mb-3"><i class="fa-solid fa-id-card me-1"></i> Demographics</h2>
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <%= f.label :date_of_birth, "Date of birth", class: "form-label" %>
+      <%= f.date_field :date_of_birth, class: "form-control" %>
+    </div>
+    <div class="col-md-4">
+      <%= f.label :sex, class: "form-label" %>
+      <%= f.select :sex, HealthProfile::SEXES, { include_blank: "Select" }, class: "form-select" %>
+    </div>
+    <div class="col-md-4">
+      <%= f.label :blood_type, "Blood type", class: "form-label" %>
+      <%= f.select :blood_type, HealthProfile::BLOOD_TYPES, { include_blank: "Select" }, class: "form-select" %>
+    </div>
+  </div>
+
+  <h2 class="card-title-sm mb-3"><i class="fa-solid fa-ruler me-1"></i> Body metrics</h2>
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <%= f.label :height_in, "Height (inches)", class: "form-label" %>
+      <%= f.number_field :height_in, step: 0.5, min: 0, class: "form-control", placeholder: "67" %>
+      <div class="field-hint">e.g. 5'7\" = 67 in</div>
+    </div>
+    <div class="col-md-4">
+      <%= f.label :starting_weight, "Starting weight (lb)", class: "form-label" %>
+      <%= f.number_field :starting_weight, step: 0.1, min: 0, class: "form-control", placeholder: "185" %>
+    </div>
+    <div class="col-md-4">
+      <%= f.label :goal_weight, "Goal weight (lb)", class: "form-label" %>
+      <%= f.number_field :goal_weight, step: 0.1, min: 0, class: "form-control", placeholder: "160" %>
+    </div>
+  </div>
+
+  <h2 class="card-title-sm mb-3"><i class="fa-solid fa-bullseye me-1"></i> Goals &amp; lifestyle</h2>
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <%= f.label :primary_goal, "Primary goal", class: "form-label" %>
+      <%= f.select :primary_goal, HealthProfile::GOALS, { include_blank: "Select" }, class: "form-select" %>
+    </div>
+    <div class="col-md-4">
+      <%= f.label :activity_level, "Activity level", class: "form-label" %>
+      <%= f.select :activity_level, HealthProfile::ACTIVITY_LEVELS, { include_blank: "Select" }, class: "form-select" %>
+    </div>
+    <div class="col-md-4">
+      <%= f.label :dietary_preference, "Dietary preference", class: "form-label" %>
+      <%= f.select :dietary_preference, HealthProfile::DIETARY_PREFERENCES, { include_blank: "Select" }, class: "form-select" %>
+    </div>
+  </div>
+
+  <h2 class="card-title-sm mb-3"><i class="fa-solid fa-notes-medical me-1"></i> Care &amp; history</h2>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <%= f.label :coach_name, "Coach", class: "form-label" %>
+      <%= f.text_field :coach_name, class: "form-control", placeholder: "Celine Bonilla, RN" %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :emergency_contact, "Emergency contact", class: "form-label" %>
+      <%= f.text_field :emergency_contact, class: "form-control", placeholder: "Name · phone" %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :allergies, "Allergies / sensitivities", class: "form-label" %>
+      <%= f.text_area :allergies, rows: 2, class: "form-control", placeholder: "Gluten, dairy, …" %>
+    </div>
+    <div class="col-md-6">
+      <%= f.label :conditions, "Conditions / notes", class: "form-label" %>
+      <%= f.text_area :conditions, rows: 2, class: "form-control", placeholder: "Anything your coach should know." %>
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 mt-4">
+    <%= f.submit "Save details", class: "btn btn-brand" %>
+    <%= link_to "Cancel", health_profile_path, class: "btn btn-outline-brand" %>
+  </div>
+<% end %>

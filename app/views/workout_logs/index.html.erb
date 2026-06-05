@@ -1,0 +1,68 @@
+<% content_for :title, "Fitness log" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Fitness</span>
+    <h1 class="h3 mb-0">Activity log</h1>
+  </div>
+  <div class="d-flex gap-2">
+    <%= link_to workouts_path, class: "btn btn-soft" do %><i class="fa-solid fa-circle-play me-1"></i> Library<% end %>
+    <%= link_to new_workout_log_path, class: "btn btn-brand" do %><i class="fa-solid fa-plus me-1"></i> Log workout<% end %>
+  </div>
+</div>
+
+<!-- Weekly summary -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-4">
+    <div class="hwf-card stat-card"><div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+      <div><div class="stat-value"><%= @week_minutes %><span class="metric-unit"> min</span></div><div class="stat-label">This week</div></div></div>
+  </div>
+  <div class="col-sm-4">
+    <div class="hwf-card stat-card"><div class="stat-icon"><i class="fa-solid fa-repeat"></i></div>
+      <div><div class="stat-value"><%= @week_sessions %></div><div class="stat-label">Sessions</div></div></div>
+  </div>
+  <div class="col-sm-4">
+    <div class="hwf-card stat-card"><div class="stat-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+      <div><div class="stat-value"><%= number_with_delimiter @week_burn %></div><div class="stat-label">kcal burned</div></div></div>
+  </div>
+</div>
+
+<div class="hwf-card">
+  <% if @workout_logs.any? %>
+    <div class="table-scroll">
+      <table class="flowsheet">
+        <thead><tr><th>Date</th><th>Activity</th><th>Intensity</th><th>Duration</th><th>Calories</th><th></th></tr></thead>
+        <tbody>
+          <% @workout_logs.each do |w| %>
+            <tr>
+              <td class="fw-semibold"><%= w.performed_on.strftime("%b %-d") %></td>
+              <td>
+                <%= w.activity %>
+                <% if w.workout %><%= link_to '<i class="fa-solid fa-circle-play"></i>'.html_safe, workout_path(w.workout), class: "text-brand ms-1", title: "View video" %><% end %>
+                <% if w.notes.present? %><div class="small text-muted"><%= truncate(w.notes, length: 80) %></div><% end %>
+              </td>
+              <td><% if w.intensity.present? %><span class="pill <%= %w[muted ok low][w.intensity_rank] || 'muted' %>"><%= w.intensity %></span><% else %>—<% end %></td>
+              <td><%= w.duration_min ? "#{w.duration_min} min" : "—" %></td>
+              <td><%= w.calories_burned ? "#{w.calories_burned} kcal" : "—" %></td>
+              <td class="text-end">
+                <%= link_to '<i class="fa-solid fa-pen"></i>'.html_safe, edit_workout_log_path(w), class: "text-muted me-2", title: "Edit" %>
+                <%= button_to '<i class="fa-solid fa-trash"></i>'.html_safe, workout_log_path(w), method: :delete,
+                      class: "btn btn-link text-danger p-0 align-baseline", form: { data: { turbo_confirm: "Remove this workout?" } } %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <div class="icon"><i class="fa-solid fa-dumbbell"></i></div>
+      <h2 class="h5">No workouts yet</h2>
+      <p>Log a session, or start one from the video library.</p>
+      <div class="d-flex gap-2 justify-content-center">
+        <%= link_to "Log a workout", new_workout_log_path, class: "btn btn-brand" %>
+        <%= link_to "Browse library", workouts_path, class: "btn btn-outline-brand" %>
+      </div>
+    </div>
+  <% end %>
+</div>

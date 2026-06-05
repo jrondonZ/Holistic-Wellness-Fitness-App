@@ -1,0 +1,51 @@
+<nav class="navbar navbar-expand-lg app-navbar sticky-top">
+  <div class="container-fluid px-3 px-lg-4">
+    <%= link_to (logged_in? ? dashboard_path : root_path), class: "navbar-brand" do %>
+      <span class="leaf"><i class="fa-solid fa-leaf"></i></span>
+      <span>Holistic Wellness Fitness</span>
+      <span class="brand-chip d-none d-sm-inline">Chart</span>
+    <% end %>
+
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#topNav" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="topNav">
+      <% if logged_in? %>
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+          <li class="nav-item"><%= link_to "Open Chart", dashboard_path, class: "nav-link" %></li>
+          <li class="nav-item"><%= link_to "Library", workouts_path, class: "nav-link" %></li>
+          <li class="nav-item"><%= link_to "Learn", articles_path, class: "nav-link" %></li>
+          <li class="nav-item dropdown ms-lg-2">
+            <a class="nav-link d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <%= initials_badge(current_user) %>
+              <span class="d-none d-lg-inline fw-semibold"><%= current_user.first_name %></span>
+              <i class="fa-solid fa-chevron-down small"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+              <li class="px-3 py-2">
+                <div class="fw-bold"><%= current_user.full_name %></div>
+                <div class="small text-muted"><%= current_user.member_id %></div>
+              </li>
+              <li><hr class="dropdown-divider"></li>
+              <li><%= link_to '<i class="fa-solid fa-id-card me-2"></i>My details'.html_safe, health_profile_path, class: "dropdown-item" %></li>
+              <li><%= link_to '<i class="fa-solid fa-right-from-bracket me-2"></i>Sign out'.html_safe, logout_path, class: "dropdown-item" %></li>
+              <li><hr class="dropdown-divider"></li>
+              <li>
+                <%= button_to user_path(current_user), method: :delete, class: "dropdown-item text-danger",
+                      form: { data: { turbo_confirm: "Permanently delete your account and chart? This cannot be undone." } } do %>
+                  <i class="fa-solid fa-trash me-2"></i>Delete account
+                <% end %>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      <% else %>
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-2">
+          <li class="nav-item"><%= link_to "Log in", login_path, class: "nav-link" %></li>
+          <li class="nav-item"><%= link_to "Create your chart", signup_path, class: "btn btn-brand btn-sm px-3" %></li>
+        </ul>
+      <% end %>
+    </div>
+  </div>
+</nav>

@@ -1,0 +1,13 @@
+<% content_for :title, "Edit meal" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Diet</span>
+    <h1 class="h3 mb-0">Edit meal</h1>
+  </div>
+  <%= link_to "Back", meal_entries_path(date: @meal_entry.consumed_on), class: "btn btn-outline-brand btn-sm" %>
+</div>
+
+<div class="hwf-card" style="max-width: 760px;">
+  <%= render "form", meal_entry: @meal_entry, submit_label: "Update meal" %>
+</div>

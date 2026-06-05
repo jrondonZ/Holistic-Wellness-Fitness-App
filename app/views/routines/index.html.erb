@@ -1,0 +1,38 @@
+<% content_for :title, "Routines" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Fitness</span>
+    <h1 class="h3 mb-0">Guided routines</h1>
+  </div>
+  <%= link_to workouts_path, class: "btn btn-soft" do %><i class="fa-solid fa-circle-play me-1"></i> Video library<% end %>
+</div>
+
+<% if @routines.any? %>
+  <div class="row g-4">
+    <% @routines.each do |r| %>
+      <div class="col-md-6">
+        <%= link_to routine_path(r), class: "text-decoration-none" do %>
+          <div class="hwf-card is-hover h-100">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="pill solid"><%= r.level %></span>
+              <span class="pill gold"><%= r.goal %></span>
+            </div>
+            <h2 class="h5 text-dark"><%= r.title %></h2>
+            <p class="text-muted"><%= r.summary %></p>
+            <div class="d-flex flex-wrap gap-3 text-muted small mt-3">
+              <span><i class="fa-solid fa-calendar-week text-brand me-1"></i><%= r.duration_weeks %> weeks</span>
+              <span><i class="fa-solid fa-repeat text-brand me-1"></i><%= r.days_per_week %>×/week</span>
+              <span><i class="fa-solid fa-dumbbell text-brand me-1"></i><%= r.session_count %> sessions</span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="hwf-card empty-state">
+    <div class="icon"><i class="fa-solid fa-calendar-check"></i></div>
+    <p class="mb-0">Routines are being curated.</p>
+  </div>
+<% end %>

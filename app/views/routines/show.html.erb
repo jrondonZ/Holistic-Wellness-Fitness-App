@@ -1,0 +1,44 @@
+<% content_for :title, @routine.title %>
+
+<div class="mb-3">
+  <%= link_to routines_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All routines<% end %>
+</div>
+
+<div class="patient-banner mb-4">
+  <span class="pill gold mb-2 d-inline-block"><%= @routine.goal %></span>
+  <h1 style="color:#fff;"><%= @routine.title %></h1>
+  <p class="mb-3" style="color: rgba(255,255,255,0.85);"><%= @routine.summary %></p>
+  <div class="banner-chips">
+    <div class="banner-chip"><div class="k">Level</div><div class="v"><%= @routine.level %></div></div>
+    <div class="banner-chip"><div class="k">Length</div><div class="v"><%= @routine.duration_weeks %> wk</div></div>
+    <div class="banner-chip"><div class="k">Frequency</div><div class="v"><%= @routine.days_per_week %>×</div></div>
+    <div class="banner-chip"><div class="k">Sessions</div><div class="v"><%= @routine.session_count %></div></div>
+    <div class="banner-chip"><div class="k">Total time</div><div class="v"><%= @routine.total_minutes %><span class="small">m</span></div></div>
+  </div>
+</div>
+
+<% if @routine.description.present? %>
+  <div class="hwf-card mb-4"><p class="mb-0"><%= simple_format @routine.description %></p></div>
+<% end %>
+
+<h2 class="h5 mb-3">The plan</h2>
+<div class="row g-3">
+  <% @items.each_with_index do |item, i| %>
+    <div class="col-12">
+      <div class="hwf-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon" style="background: var(--brand-green); color:#fff;"><%= i + 1 %></div>
+          <div class="flex-fill">
+            <div class="small text-muted"><%= item.day_label.presence || "Session #{i + 1}" %></div>
+            <%= link_to item.workout.title, workout_path(item.workout), class: "fw-bold text-decoration-none" %>
+            <div class="small text-muted">
+              <%= [ item.workout.category, item.workout.level, ("#{item.workout.duration_min} min" if item.workout.duration_min) ].compact.join(" · ") %>
+              <%= " · #{item.notes}" if item.notes.present? %>
+            </div>
+          </div>
+          <%= link_to "Start", workout_path(item.workout), class: "btn btn-soft btn-sm" %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

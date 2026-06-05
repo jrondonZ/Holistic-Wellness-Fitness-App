@@ -1,0 +1,92 @@
+<% content_for :title, "Your holistic health chart" %>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6" data-aos="fade-right">
+        <span class="eyebrow"><i class="fa-solid fa-leaf me-1"></i> Holistic Wellness Fitness LLC</span>
+        <h1 class="mt-3">Your whole self, in one living chart.</h1>
+        <p class="lead mt-3">
+          Track wellness check-ins, nutrition, and fitness, follow guided routines, and learn —
+          a holistic health record inspired by the charts your clinicians use, reimagined for
+          balance, gut healing, and sustainable strength.
+        </p>
+        <div class="d-flex flex-wrap gap-2 mt-4">
+          <%= link_to "Create your chart", signup_path, class: "btn btn-brand btn-lg" %>
+          <%= link_to "I already have one", login_path, class: "btn btn-outline-brand btn-lg" %>
+        </div>
+        <p class="field-hint mt-3">
+          <i class="fa-solid fa-shield-heart text-brand me-1"></i>
+          Built with care by Celine Bonilla, RN &amp; Certified Holistic Nutritionist · Meriden, CT
+        </p>
+      </div>
+      <div class="col-lg-6" data-aos="fade-left">
+        <%= image_tag "brand/celine.jpeg", class: "hero-visual", alt: "Celine Bonilla, Holistic Wellness Fitness" %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULES -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <span class="eyebrow">One chart, four pillars</span>
+      <h2 class="section-title mt-2">Everything your wellness journey touches</h2>
+    </div>
+    <div class="row g-4">
+      <% [
+        { icon: "fa-spa", title: "Wellness", text: "Daily check-ins for mood, energy, sleep, stress, weight and blood pressure — a vitals flowsheet for the whole you." },
+        { icon: "fa-bowl-food", title: "Diet", text: "Log meals and let your nutrition totals, macros and calorie targets come together automatically." },
+        { icon: "fa-dumbbell", title: "Fitness", text: "A library of guided videos and multi-week routines, plus a simple log to track every session." },
+        { icon: "fa-book-open", title: "Education", text: "Grounded articles on gut health, movement, mindfulness and holistic nutrition — learn as you go." }
+      ].each_with_index do |m, i| %>
+        <div class="col-md-6 col-lg-3" data-aos="zoom-in" data-aos-delay="<%= i * 100 %>">
+          <div class="module-preview text-center">
+            <div class="feature-icon mx-auto"><i class="fa-solid <%= m[:icon] %>"></i></div>
+            <h3 class="h5"><%= m[:title] %></h3>
+            <p class="text-muted mb-0"><%= m[:text] %></p>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT / STORY -->
+<section class="py-5" style="background: var(--surface);">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-md-5" data-aos="fade-right">
+        <%= image_tag "brand/wellness-1.jpeg", class: "hero-visual", style: "max-height: 420px;", alt: "Holistic wellness" %>
+      </div>
+      <div class="col-md-7" data-aos="fade-left">
+        <span class="eyebrow">Why a chart?</span>
+        <h2 class="section-title mt-2">Care that sees the whole picture</h2>
+        <p class="mt-3">
+          True wellness shows up when body, mind and gut are nourished together. Holistic Chart brings
+          your habits into one place — the way a great clinician keeps everything in one record — so
+          patterns become visible and progress feels real.
+        </p>
+        <ul class="list-unstyled mt-3">
+          <li class="mb-2"><i class="fa-solid fa-circle-check text-brand me-2"></i> A patient-style banner with your goals, BMI and trends at a glance</li>
+          <li class="mb-2"><i class="fa-solid fa-circle-check text-brand me-2"></i> Flowsheets &amp; charts that turn daily logs into momentum</li>
+          <li class="mb-2"><i class="fa-solid fa-circle-check text-brand me-2"></i> Guided fitness &amp; education curated for holistic health</li>
+        </ul>
+        <%= link_to "Start your chart", signup_path, class: "btn btn-brand mt-2" %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-5">
+  <div class="container">
+    <div class="patient-banner text-center" data-aos="fade-up">
+      <h2 class="mb-2" style="color:#fff;">Ready to nourish the whole self?</h2>
+      <p class="mb-4" style="color: rgba(255,255,255,0.85);">Create your free holistic chart in under a minute.</p>
+      <%= link_to "Create your chart", signup_path, class: "btn btn-lg px-4", style: "background:#fff;color:var(--brand-green-dark);font-weight:700;border-radius:30px;" %>
+    </div>
+  </div>
+</section>

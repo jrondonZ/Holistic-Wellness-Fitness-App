@@ -1,0 +1,51 @@
+<% content_for :title, "Education" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Education</span>
+    <h1 class="h3 mb-0">Holistic wellness &amp; fitness library</h1>
+  </div>
+</div>
+
+<% if @featured %>
+  <%= link_to article_path(@featured), class: "text-decoration-none" do %>
+    <div class="hwf-card is-hover mb-4" style="border-left: 5px solid <%= @featured.accent %>;">
+      <span class="pill gold mb-2 d-inline-block">Featured · <%= @featured.category %></span>
+      <h2 class="h4 text-dark"><%= @featured.title %></h2>
+      <p class="text-muted mb-2"><%= @featured.summary %></p>
+      <span class="small text-muted"><i class="fa-solid fa-user-nurse me-1"></i><%= @featured.author_name %> · <%= @featured.read_time %></span>
+    </div>
+  <% end %>
+<% end %>
+
+<div class="filter-chips mb-4">
+  <%= link_to "All", articles_path, class: "filter-chip #{'active' unless @category}" %>
+  <% @categories.each do |c| %>
+    <%= link_to c, articles_path(category: c), class: "filter-chip #{'active' if @category == c}" %>
+  <% end %>
+</div>
+
+<% articles = @category ? @articles : @articles.where.not(id: @featured&.id) %>
+<% if articles.any? %>
+  <div class="row g-4">
+    <% articles.each do |a| %>
+      <div class="col-md-6 col-lg-4">
+        <%= link_to article_path(a), class: "text-decoration-none" do %>
+          <div class="media-card">
+            <div class="media-thumb" style="aspect-ratio: 16/7; background: linear-gradient(135deg, <%= a.accent %>, var(--brand-green-dark)); display:grid; place-items:center;">
+              <i class="fa-solid fa-book-open" style="color:#fff; font-size:1.8rem; opacity:.85;"></i>
+              <span class="media-badge"><%= a.category %></span>
+            </div>
+            <div class="media-body">
+              <h3 class="h6 text-dark"><%= a.title %></h3>
+              <p class="small text-muted flex-fill"><%= truncate(a.summary, length: 96) %></p>
+              <span class="small text-muted mt-auto"><i class="fa-regular fa-clock me-1"></i><%= a.read_time %></span>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="hwf-card empty-state"><div class="icon"><i class="fa-solid fa-book-open"></i></div><p class="mb-0">No articles in this category yet.</p></div>
+<% end %>

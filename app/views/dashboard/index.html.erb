@@ -1,0 +1,244 @@
+<% content_for :title, "Chart Summary" %>
+<% weight = current_user.current_weight %>
+
+<!-- PATIENT BANNER -->
+<div class="patient-banner mb-4">
+  <div class="row align-items-center g-3">
+    <div class="col-lg-7">
+      <div class="d-flex align-items-center gap-3">
+        <%= initials_badge(current_user, extra_class: "lg") %>
+        <div>
+          <h1><%= current_user.full_name %></h1>
+          <div class="patient-meta mt-1">
+            <span><i class="fa-solid fa-hashtag me-1 opacity-75"></i><%= current_user.member_id %></span>
+            <% if @profile.age %><span class="sep">·</span><span><%= @profile.age %> yrs</span><% end %>
+            <% if @profile.sex.present? %><span class="sep">·</span><span><%= @profile.sex %></span><% end %>
+            <span class="sep">·</span><span><i class="fa-solid fa-user-nurse me-1 opacity-75"></i><%= @profile.coach %></span>
+          </div>
+          <div class="mt-2">
+            <span class="pill gold"><i class="fa-solid fa-bullseye me-1"></i><%= @profile.primary_goal.presence || "Set your wellness goal" %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="banner-chips justify-content-lg-end">
+        <div class="banner-chip">
+          <div class="k">Weight</div>
+          <div class="v"><%= weight ? "#{weight.to_f.round} lb" : "—" %></div>
+        </div>
+        <div class="banner-chip">
+          <div class="k">BMI</div>
+          <div class="v"><%= @profile.bmi || "—" %></div>
+          <% if @profile.bmi_category %><div class="small opacity-75"><%= @profile.bmi_category %></div><% end %>
+        </div>
+        <div class="banner-chip">
+          <div class="k">Blood pressure</div>
+          <div class="v"><%= @latest_checkin&.blood_pressure || "—" %></div>
+        </div>
+        <div class="banner-chip">
+          <div class="k">Streak</div>
+          <div class="v"><%= @checkin_streak %><span class="small opacity-75"> day<%= 's' unless @checkin_streak == 1 %></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK ACTIONS -->
+<div class="d-flex flex-wrap gap-2 mb-4">
+  <%= link_to new_checkin_path, class: "btn btn-brand btn-sm" do %><i class="fa-solid fa-spa me-1"></i> Log check-in<% end %>
+  <%= link_to new_meal_entry_path, class: "btn btn-soft btn-sm" do %><i class="fa-solid fa-bowl-food me-1"></i> Log meal<% end %>
+  <%= link_to new_workout_log_path, class: "btn btn-soft btn-sm" do %><i class="fa-solid fa-dumbbell me-1"></i> Log workout<% end %>
+  <%= link_to workouts_path, class: "btn btn-soft btn-sm" do %><i class="fa-solid fa-circle-play me-1"></i> Video library<% end %>
+</div>
+
+<!-- STAT CARDS -->
+<div class="row g-3 mb-4">
+  <% nutrition_pct = @calorie_target.to_i.positive? ? [ (@nutrition[:calories] * 100.0 / @calorie_target).round, 100 ].min : 0 %>
+  <div class="col-sm-6 col-xl-3">
+    <div class="hwf-card is-hover h-100">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+        <div class="flex-fill">
+          <div class="stat-value"><%= number_with_delimiter @nutrition[:calories] %></div>
+          <div class="stat-label">of <%= number_with_delimiter @calorie_target %> kcal today</div>
+          <div class="hwf-progress mt-2"><span style="width: <%= nutrition_pct %>%"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="hwf-card is-hover h-100">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-dumbbell"></i></div>
+        <div>
+          <div class="stat-value"><%= @week_minutes %><span class="metric-unit"> min</span></div>
+          <div class="stat-label">Active this week</div>
+          <div class="stat-foot"><%= @week_sessions %> session<%= 's' unless @week_sessions == 1 %> · <%= number_with_delimiter @week_burn %> kcal</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="hwf-card is-hover h-100">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+        <div>
+          <% score = @latest_checkin&.wellness_score %>
+          <div class="stat-value tone-<%= score_tone(score) %>"><%= score || "—" %><% if score %><span class="metric-unit"> / 100</span><% end %></div>
+          <div class="stat-label">Wellness score</div>
+          <div class="stat-foot"><%= @latest_checkin ? "as of #{@latest_checkin.checkin_date.strftime('%b %-d')}" : "No check-ins yet" %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="hwf-card is-hover h-100">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fa-solid fa-moon"></i></div>
+        <div>
+          <div class="stat-value"><%= @latest_checkin&.sleep_hours ? @latest_checkin.sleep_hours.to_f : "—" %><% if @latest_checkin&.sleep_hours %><span class="metric-unit"> hrs</span><% end %></div>
+          <div class="stat-label">Last sleep</div>
+          <div class="stat-foot"><%= @latest_checkin&.water_oz ? "#{@latest_checkin.water_oz} oz water" : "Hydration not logged" %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRENDS -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Weight trend · 30 days</h2><span class="pill">lb</span></div>
+      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@weight_series, label: 'Weight (lb)', color: '#4a7c59') %>">
+        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+        <div class="chart-empty-note"><i class="fa-solid fa-weight-scale"></i><span>Record weight in a check-in to chart it.</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Wellness score · 30 days</h2><span class="pill good">/ 100</span></div>
+      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@wellness_series, label: 'Wellness', color: '#c9a96e') %>">
+        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+        <div class="chart-empty-note"><i class="fa-solid fa-heart-pulse"></i><span>Your wellness trend appears after a few check-ins.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- LEFT: flowsheet + activity -->
+  <div class="col-lg-7">
+    <div class="hwf-card mb-3">
+      <div class="section-head">
+        <h2 class="h6 card-title-sm mb-0">Recent check-ins · vitals flowsheet</h2>
+        <%= link_to "View all", checkins_path, class: "btn btn-soft btn-sm" %>
+      </div>
+      <% if @recent_checkins.any? %>
+        <div class="table-scroll">
+          <table class="flowsheet">
+            <thead>
+              <tr><th>Date</th><th>Mood</th><th>Energy</th><th>Sleep</th><th>Weight</th><th>BP</th><th>Score</th></tr>
+            </thead>
+            <tbody>
+              <% @recent_checkins.each do |c| %>
+                <tr>
+                  <td class="fw-semibold"><%= c.checkin_date.strftime("%b %-d") %></td>
+                  <td><%= scale_dots(c.mood) %></td>
+                  <td><%= scale_dots(c.energy) %></td>
+                  <td><%= c.sleep_hours ? "#{c.sleep_hours.to_f}h" : "—" %></td>
+                  <td><%= c.weight ? "#{c.weight.to_f.round} lb" : "—" %></td>
+                  <td><%= c.blood_pressure || "—" %></td>
+                  <td><span class="pill <%= score_tone(c.wellness_score) %>"><%= c.wellness_score || "—" %></span></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="empty-state">
+          <div class="icon"><i class="fa-solid fa-spa"></i></div>
+          <p class="mb-3">No check-ins yet. Your daily wellness vitals will build a flowsheet here.</p>
+          <%= link_to "Log your first check-in", new_checkin_path, class: "btn btn-brand btn-sm" %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="hwf-card">
+      <div class="section-head">
+        <h2 class="h6 card-title-sm mb-0">Recent activity</h2>
+        <%= link_to "Fitness log", workout_logs_path, class: "btn btn-soft btn-sm" %>
+      </div>
+      <% if @recent_workouts.any? %>
+        <ul class="timeline mt-2">
+          <% @recent_workouts.each do |w| %>
+            <li>
+              <div class="d-flex justify-content-between">
+                <div>
+                  <div class="fw-semibold"><%= w.activity %></div>
+                  <div class="small text-muted"><%= w.performed_on.strftime("%a, %b %-d") %><%= " · #{w.intensity}" if w.intensity.present? %></div>
+                </div>
+                <div class="text-end small">
+                  <% if w.duration_min %><div class="fw-semibold"><%= w.duration_min %> min</div><% end %>
+                  <% if w.calories_burned %><div class="text-muted"><%= w.calories_burned %> kcal</div><% end %>
+                </div>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      <% else %>
+        <div class="empty-state">
+          <div class="icon"><i class="fa-solid fa-dumbbell"></i></div>
+          <p class="mb-3">No workouts logged yet.</p>
+          <%= link_to "Log a workout", new_workout_log_path, class: "btn btn-brand btn-sm" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- RIGHT: care plan -->
+  <div class="col-lg-5">
+    <div class="hwf-card mb-3">
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Today's plate</h2><%= link_to "Nutrition", meal_entries_path, class: "btn btn-soft btn-sm" %></div>
+      <div class="d-flex justify-content-between text-center mt-2">
+        <div><div class="stat-value" style="font-size:1.3rem;"><%= @nutrition[:protein] %><span class="metric-unit">g</span></div><div class="stat-label">Protein</div></div>
+        <div><div class="stat-value" style="font-size:1.3rem;"><%= @nutrition[:carbs] %><span class="metric-unit">g</span></div><div class="stat-label">Carbs</div></div>
+        <div><div class="stat-value" style="font-size:1.3rem;"><%= @nutrition[:fat] %><span class="metric-unit">g</span></div><div class="stat-label">Fat</div></div>
+        <div><div class="stat-value" style="font-size:1.3rem;"><%= @today_meals.size %></div><div class="stat-label">Meals</div></div>
+      </div>
+    </div>
+
+    <div class="hwf-card mb-3">
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Recommended for you</h2><%= link_to "Library", workouts_path, class: "btn btn-soft btn-sm" %></div>
+      <% @recommended_workouts.each do |w| %>
+        <%= link_to workout_path(w), class: "d-flex align-items-center gap-3 py-2 text-decoration-none border-bottom" do %>
+          <div class="stat-icon" style="width:40px;height:40px;"><i class="fa-solid fa-circle-play"></i></div>
+          <div class="flex-fill">
+            <div class="fw-semibold text-dark"><%= w.title %></div>
+            <div class="small text-muted"><%= [ w.category, w.level, ("#{w.duration_min} min" if w.duration_min) ].compact.join(" · ") %></div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-muted small"></i>
+        <% end %>
+      <% end %>
+      <% if @recommended_workouts.empty? %><p class="text-muted small mb-0 mt-2">Library is being curated.</p><% end %>
+    </div>
+
+    <div class="hwf-card">
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Learn</h2><%= link_to "All articles", articles_path, class: "btn btn-soft btn-sm" %></div>
+      <% @recommended_articles.each do |a| %>
+        <%= link_to article_path(a), class: "d-flex align-items-center gap-3 py-2 text-decoration-none border-bottom" do %>
+          <div class="stat-icon" style="width:40px;height:40px;background:rgba(201,169,110,.15);color:var(--brand-gold);"><i class="fa-solid fa-book-open"></i></div>
+          <div class="flex-fill">
+            <div class="fw-semibold text-dark"><%= a.title %></div>
+            <div class="small text-muted"><%= a.category %> · <%= a.read_time %></div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-muted small"></i>
+        <% end %>
+      <% end %>
+      <% if @recommended_articles.empty? %><p class="text-muted small mb-0 mt-2">Articles coming soon.</p><% end %>
+    </div>
+  </div>
+</div>

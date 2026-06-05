@@ -1,0 +1,17 @@
+<% content_for :title, "Edit check-in" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Wellness</span>
+    <h1 class="h3 mb-0">Edit check-in · <%= @checkin.checkin_date.strftime("%b %-d, %Y") %></h1>
+  </div>
+  <%= link_to "Back", checkins_path, class: "btn btn-outline-brand btn-sm" %>
+</div>
+
+<div class="hwf-card" style="max-width: 820px;">
+  <%= render "form", checkin: @checkin, submit_label: "Update check-in" %>
+  <hr class="my-4">
+  <%= button_to "Delete this check-in", checkin_path(@checkin), method: :delete,
+        class: "btn btn-link text-danger p-0",
+        form: { data: { turbo_confirm: "Delete this check-in?" } } %>
+</div>

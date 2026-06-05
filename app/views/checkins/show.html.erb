@@ -1,0 +1,46 @@
+<% content_for :title, "Check-in #{@checkin.checkin_date.strftime('%b %-d')}" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Wellness check-in</span>
+    <h1 class="h3 mb-0"><%= @checkin.checkin_date.strftime("%A, %B %-d, %Y") %></h1>
+  </div>
+  <div class="d-flex gap-2">
+    <%= link_to "Edit", edit_checkin_path(@checkin), class: "btn btn-outline-brand btn-sm" %>
+    <%= link_to "All check-ins", checkins_path, class: "btn btn-soft btn-sm" %>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-md-4">
+    <div class="hwf-card text-center h-100">
+      <div class="card-title-sm">Wellness score</div>
+      <div class="stat-value tone-<%= score_tone(@checkin.wellness_score) %>" style="font-size:3rem;"><%= @checkin.wellness_score || "—" %></div>
+      <div class="text-muted">out of 100</div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="hwf-card h-100">
+      <div class="row g-3">
+        <% {
+          "Mood" => @checkin.mood_label, "Energy" => @checkin.energy_label, "Stress" => @checkin.stress_label,
+          "Sleep" => (@checkin.sleep_hours ? "#{@checkin.sleep_hours.to_f} hrs" : nil),
+          "Water" => (@checkin.water_oz ? "#{@checkin.water_oz} oz" : nil),
+          "Weight" => (@checkin.weight ? "#{@checkin.weight.to_f.round} lb" : nil),
+          "Resting HR" => (@checkin.resting_hr ? "#{@checkin.resting_hr} bpm" : nil),
+          "Blood pressure" => @checkin.blood_pressure
+        }.each do |label, value| %>
+          <div class="col-6 col-lg-3">
+            <div class="card-title-sm"><%= label %></div>
+            <div class="fw-bold fs-5"><%= value.presence || "—" %></div>
+          </div>
+        <% end %>
+      </div>
+      <% if @checkin.notes.present? %>
+        <hr class="my-3">
+        <div class="card-title-sm mb-1">Notes</div>
+        <p class="mb-0"><%= simple_format @checkin.notes %></p>
+      <% end %>
+    </div>
+  </div>
+</div>

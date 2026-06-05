@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%= render "layouts/head" %>
+  <body>
+    <%= render "layouts/app_navbar" %>
+    <div class="chart-shell">
+      <%= render "layouts/chart_sidebar" %>
+      <main class="chart-main">
+        <div class="flash-stack"><%= render "layouts/flash" %></div>
+        <%= yield %>
+      </main>
+    </div>
+  </body>
+</html>

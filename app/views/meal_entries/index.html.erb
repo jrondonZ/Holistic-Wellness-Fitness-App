@@ -1,0 +1,108 @@
+<% content_for :title, "Nutrition" %>
+<% pct = @target.to_i.positive? ? [ (@totals[:calories] * 100.0 / @target).round, 100 ].min : 0 %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Diet</span>
+    <h1 class="h3 mb-0">Nutrition log</h1>
+  </div>
+  <%= link_to new_meal_entry_path(date: @date), class: "btn btn-brand" do %><i class="fa-solid fa-plus me-1"></i> Log meal<% end %>
+</div>
+
+<!-- Day navigation -->
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <%= link_to meal_entries_path(date: @date - 1), class: "btn btn-soft btn-sm" do %><i class="fa-solid fa-chevron-left"></i><% end %>
+  <div class="text-center">
+    <div class="fw-bold fs-5"><%= @date == Date.current ? "Today" : @date.strftime("%A") %></div>
+    <div class="text-muted small"><%= @date.strftime("%B %-d, %Y") %></div>
+  </div>
+  <% if @date < Date.current %>
+    <%= link_to meal_entries_path(date: @date + 1), class: "btn btn-soft btn-sm" do %><i class="fa-solid fa-chevron-right"></i><% end %>
+  <% else %>
+    <span class="btn btn-soft btn-sm disabled opacity-25"><i class="fa-solid fa-chevron-right"></i></span>
+  <% end %>
+</div>
+
+<!-- Daily summary -->
+<div class="hwf-card mb-3">
+  <div class="row align-items-center g-3">
+    <div class="col-md-5">
+      <div class="d-flex align-items-baseline gap-2">
+        <span class="stat-value"><%= number_with_delimiter @totals[:calories] %></span>
+        <span class="text-muted">/ <%= number_with_delimiter @target %> kcal</span>
+      </div>
+      <div class="hwf-progress mt-2"><span style="width: <%= pct %>%"></span></div>
+      <div class="field-hint mt-1">
+        <% remaining = @target.to_i - @totals[:calories] %>
+        <%= remaining >= 0 ? "#{number_with_delimiter remaining} kcal remaining" : "#{number_with_delimiter remaining.abs} kcal over target" %>
+      </div>
+    </div>
+    <div class="col-md-7">
+      <div class="row text-center">
+        <div class="col"><div class="stat-value" style="font-size:1.4rem;"><%= @totals[:protein] %><span class="metric-unit">g</span></div><div class="stat-label">Protein</div></div>
+        <div class="col"><div class="stat-value" style="font-size:1.4rem;"><%= @totals[:carbs] %><span class="metric-unit">g</span></div><div class="stat-label">Carbs</div></div>
+        <div class="col"><div class="stat-value" style="font-size:1.4rem;"><%= @totals[:fat] %><span class="metric-unit">g</span></div><div class="stat-label">Fat</div></div>
+        <div class="col"><div class="stat-value" style="font-size:1.4rem;"><%= @meals.size %></div><div class="stat-label">Meals</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Meals grouped by type -->
+<% if @meals.any? %>
+  <% @meals.group_by(&:meal_type).each do |type, meals| %>
+    <div class="hwf-card mb-3">
+      <div class="section-head mb-2">
+        <h2 class="h6 card-title-sm mb-0"><%= type %></h2>
+        <span class="pill"><%= meals.sum { |m| m.calories.to_i } %> kcal</span>
+      </div>
+      <% meals.each do |m| %>
+        <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+          <div class="flex-fill">
+            <div class="fw-semibold"><%= m.name %></div>
+            <% if m.description.present? %><div class="small text-muted"><%= truncate(m.description, length: 90) %></div><% end %>
+            <div class="small text-muted">
+              <% macros = [ ("#{m.protein_g}g P" if m.protein_g), ("#{m.carbs_g}g C" if m.carbs_g), ("#{m.fat_g}g F" if m.fat_g) ].compact %>
+              <%= macros.join(" · ") %>
+            </div>
+          </div>
+          <div class="text-end">
+            <div class="fw-bold"><%= m.calories || "—" %> <span class="metric-unit">kcal</span></div>
+            <div class="mt-1">
+              <%= link_to '<i class="fa-solid fa-pen"></i>'.html_safe, edit_meal_entry_path(m), class: "text-muted me-2", title: "Edit" %>
+              <%= button_to '<i class="fa-solid fa-trash"></i>'.html_safe, meal_entry_path(m), method: :delete,
+                    class: "btn btn-link text-danger p-0 align-baseline", form: { data: { turbo_confirm: "Remove this meal?" } } %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% else %>
+  <div class="hwf-card">
+    <div class="empty-state">
+      <div class="icon"><i class="fa-solid fa-bowl-food"></i></div>
+      <h2 class="h5">Nothing logged for <%= @date == Date.current ? "today" : "this day" %></h2>
+      <p>Track what you eat to see calories and macros add up automatically.</p>
+      <%= link_to "Log a meal", new_meal_entry_path(date: @date), class: "btn btn-brand" %>
+    </div>
+  </div>
+<% end %>
+
+<!-- 7-day sparkbars -->
+<div class="hwf-card">
+  <div class="card-title-sm mb-3">Last 7 days · calories</div>
+  <div class="d-flex align-items-end justify-content-between gap-2" style="height: 90px;">
+    <% days = (0..6).map { |n| @date - (6 - n) } %>
+    <% max = [ @recent_days.values.max.to_i, @target.to_i, 1 ].max %>
+    <% days.each do |d| %>
+      <% cals = @recent_days[d].to_i %>
+      <div class="text-center flex-fill">
+        <div style="height:60px; display:flex; align-items:flex-end;">
+          <div title="<%= cals %> kcal" style="width:100%; border-radius:6px 6px 0 0; background: <%= d == @date ? 'var(--brand-green)' : 'var(--brand-sage)' %>; height: <%= [ (cals * 100.0 / max).round, 4 ].max %>%;"></div>
+        </div>
+        <div class="small text-muted mt-1"><%= d.strftime("%a") %></div>
+      </div>
+    <% end %>
+  </div>
+</div>

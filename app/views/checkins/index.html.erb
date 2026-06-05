@@ -1,0 +1,72 @@
+<% content_for :title, "Wellness" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Wellness</span>
+    <h1 class="h3 mb-0">Check-ins &amp; vitals flowsheet</h1>
+  </div>
+  <%= link_to new_checkin_path, class: "btn btn-brand" do %><i class="fa-solid fa-plus me-1"></i> Log check-in<% end %>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="card-title-sm mb-2">Weight trend · 30 days</div>
+      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@weight_series, label: 'Weight (lb)', color: '#4a7c59') %>">
+        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+        <div class="chart-empty-note"><i class="fa-solid fa-weight-scale"></i><span>Record weight in a check-in to chart it.</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="card-title-sm mb-2">Wellness score · 30 days</div>
+      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@wellness_series, label: 'Wellness', color: '#c9a96e') %>">
+        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+        <div class="chart-empty-note"><i class="fa-solid fa-heart-pulse"></i><span>Your wellness trend appears after a few check-ins.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hwf-card">
+  <% if @checkins.any? %>
+    <div class="table-scroll">
+      <table class="flowsheet">
+        <thead>
+          <tr>
+            <th>Date</th><th>Mood</th><th>Energy</th><th>Stress</th><th>Sleep</th>
+            <th>Water</th><th>Weight</th><th>BP</th><th>RHR</th><th>Score</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @checkins.each do |c| %>
+            <tr>
+              <td class="fw-semibold"><%= link_to c.checkin_date.strftime("%b %-d, %Y"), checkin_path(c), class: "text-decoration-none" %></td>
+              <td><%= scale_dots(c.mood) %></td>
+              <td><%= scale_dots(c.energy) %></td>
+              <td><%= scale_dots(c.stress) %></td>
+              <td><%= c.sleep_hours ? "#{c.sleep_hours.to_f}h" : "—" %></td>
+              <td><%= c.water_oz ? "#{c.water_oz}oz" : "—" %></td>
+              <td><%= c.weight ? "#{c.weight.to_f.round}" : "—" %></td>
+              <td>
+                <%= c.blood_pressure || "—" %>
+                <% if c.bp_category %><span class="pill <%= bp_tone(c.bp_category) %> ms-1"><%= c.bp_category %></span><% end %>
+              </td>
+              <td><%= c.resting_hr || "—" %></td>
+              <td><span class="pill <%= score_tone(c.wellness_score) %>"><%= c.wellness_score || "—" %></span></td>
+              <td class="text-end"><%= link_to '<i class="fa-solid fa-pen"></i>'.html_safe, edit_checkin_path(c), class: "text-muted", title: "Edit" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <div class="icon"><i class="fa-solid fa-spa"></i></div>
+      <h2 class="h5">Start your wellness flowsheet</h2>
+      <p>Daily check-ins capture mood, energy, sleep and vitals — the foundation of your holistic chart.</p>
+      <%= link_to "Log your first check-in", new_checkin_path, class: "btn btn-brand" %>
+    </div>
+  <% end %>
+</div>
