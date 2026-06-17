@@ -447,7 +447,7 @@ a:hover { color: var(--brand-green-dark); }
   box-shadow: var(--shadow-lg);
   width: 100%;
   object-fit: cover;
-  max-height: 460px;
+  max-height: auto;
 }
 .feature-icon {
   width: 64px; height: 64px; border-radius: 18px;
