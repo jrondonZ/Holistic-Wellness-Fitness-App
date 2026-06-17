@@ -1,0 +1,111 @@
+<% content_for :title, "Admin · Overview" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Admin portal</span>
+    <h1 class="h3 mb-0">Practice overview</h1>
+  </div>
+  <%= link_to admin_analytics_path, class: "btn btn-soft" do %><i class="fa-solid fa-chart-line me-1"></i> Full analytics<% end %>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+  <% [
+    { v: @member_count, l: "Members", i: "fa-users", link: admin_users_path },
+    { v: @active_count, l: "Active (14d)", i: "fa-bolt", link: admin_users_path },
+    { v: @pending_appts, l: "Pending requests", i: "fa-bell", link: admin_appointments_path(status: "requested") },
+    { v: @upcoming_appts, l: "Upcoming sessions", i: "fa-calendar-check", link: admin_appointments_path(status: "upcoming") },
+    { v: @unread_threads, l: "Unread threads", i: "fa-comments", link: admin_conversations_path },
+    { v: @open_assessments, l: "Open assessments", i: "fa-notes-medical", link: admin_users_path }
+  ].each do |k| %>
+    <div class="col-6 col-lg-2">
+      <%= link_to k[:link], class: "hwf-card is-hover h-100 text-decoration-none d-block" do %>
+        <div class="stat-icon mb-2"><i class="fa-solid <%= k[:i] %>"></i></div>
+        <div class="stat-value" style="font-size:1.7rem;"><%= k[:v] %></div>
+        <div class="stat-label"><%= k[:l] %></div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="card-title-sm mb-2">Check-ins · 14 days</div>
+      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@checkin_series, label: 'Check-ins', color: '#4a7c59', type: 'bar') %>">
+        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+        <div class="chart-empty-note"><i class="fa-solid fa-chart-column"></i><span>No check-ins yet.</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="card-title-sm mb-2">New members · 14 days</div>
+      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@signup_series, label: 'Signups', color: '#c9a96e', type: 'bar') %>">
+        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+        <div class="chart-empty-note"><i class="fa-solid fa-user-plus"></i><span>No signups in range.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Needs attention -->
+  <div class="col-lg-7">
+    <div class="hwf-card mb-3">
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Needs attention</h2><%= link_to "All members", admin_users_path, class: "btn btn-soft btn-sm" %></div>
+      <% if @attention.any? %>
+        <% @attention.each do |row| %>
+          <%= link_to admin_user_path(row[:member]), class: "flag-row text-decoration-none" do %>
+            <%= initials_badge(row[:member]) %>
+            <div class="flex-fill">
+              <div class="fw-semibold text-dark"><%= row[:member].full_name %></div>
+              <div class="small">
+                <% row[:flags].first(2).each do |f| %>
+                  <span class="pill <%= flag_tone(f.level) %> me-1"><i class="fa-solid <%= f.icon %> me-1"></i><%= f.title %></span>
+                <% end %>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-muted"></i>
+          <% end %>
+        <% end %>
+      <% else %>
+        <div class="empty-state"><div class="icon"><i class="fa-solid fa-circle-check"></i></div><p class="mb-0">All clear — no flags right now.</p></div>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Recent activity -->
+  <div class="col-lg-5">
+    <div class="hwf-card mb-3">
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Recent bookings</h2><%= link_to "All", admin_appointments_path, class: "btn btn-soft btn-sm" %></div>
+      <% if @recent_appointments.any? %>
+        <% @recent_appointments.each do |appt| %>
+          <%= link_to admin_appointment_path(appt), class: "d-flex align-items-center gap-2 py-2 border-bottom text-decoration-none" do %>
+            <i class="fa-solid <%= appt.service.icon_name %> text-brand"></i>
+            <div class="flex-fill">
+              <div class="small fw-semibold text-dark"><%= appt.user.full_name %> · <%= appt.service.name %></div>
+              <div class="small text-muted"><%= appt.scheduled_at.strftime("%b %-d, %-l:%M %p") %></div>
+            </div>
+            <%= status_pill(appt.status) %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <p class="text-muted small mb-0 mt-2">No bookings yet.</p>
+      <% end %>
+    </div>
+
+    <div class="hwf-card">
+      <div class="card-title-sm mb-2">Newest members</div>
+      <% @new_members.each do |m| %>
+        <%= link_to admin_user_path(m), class: "d-flex align-items-center gap-2 py-2 text-decoration-none" do %>
+          <%= initials_badge(m) %>
+          <div class="flex-fill">
+            <div class="small fw-semibold text-dark"><%= m.full_name %></div>
+            <div class="small text-muted"><%= m.member_id %> · joined <%= m.created_at.strftime("%b %-d") %></div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

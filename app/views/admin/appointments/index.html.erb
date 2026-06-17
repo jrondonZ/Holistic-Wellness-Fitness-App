@@ -1,0 +1,41 @@
+<% content_for :title, "Admin · Appointments" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Admin portal</span>
+    <h1 class="h3 mb-0">Appointments</h1>
+  </div>
+  <% if @pending.positive? %><span class="pill ok"><i class="fa-solid fa-bell me-1"></i><%= @pending %> awaiting confirmation</span><% end %>
+</div>
+
+<div class="filter-chips mb-4">
+  <%= link_to "All", admin_appointments_path, class: "filter-chip #{'active' unless @status}" %>
+  <%= link_to "Upcoming", admin_appointments_path(status: "upcoming"), class: "filter-chip #{'active' if @status == 'upcoming'}" %>
+  <% Appointment::STATUSES.each do |s| %>
+    <%= link_to "#{s.titleize} (#{@counts[s].to_i})", admin_appointments_path(status: s), class: "filter-chip #{'active' if @status == s}" %>
+  <% end %>
+</div>
+
+<div class="hwf-card">
+  <% if @appointments.any? %>
+    <div class="table-scroll">
+      <table class="flowsheet">
+        <thead><tr><th>When</th><th>Member</th><th>Service</th><th>Format</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <% @appointments.each do |appt| %>
+            <tr>
+              <td class="fw-semibold"><%= appt_when(appt) %></td>
+              <td><%= link_to appt.user.full_name, admin_user_path(appt.user), class: "text-decoration-none" %></td>
+              <td><i class="fa-solid <%= appt.service.icon_name %> text-brand me-1"></i><%= appt.service.name %></td>
+              <td><%= appt.mode_label %></td>
+              <td><%= status_pill(appt.status) %></td>
+              <td class="text-end"><%= link_to "Manage", admin_appointment_path(appt), class: "btn btn-soft btn-sm" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state"><div class="icon"><i class="fa-solid fa-calendar-check"></i></div><p class="mb-0">No appointments in this view.</p></div>
+  <% end %>
+</div>

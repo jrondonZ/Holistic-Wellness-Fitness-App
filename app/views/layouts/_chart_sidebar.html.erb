@@ -4,6 +4,16 @@
     <%= link_to item[:href], class: "chart-nav-link #{'active' if nav_active?(item[:href])}" do %>
       <i class="fa-solid <%= item[:icon] %>"></i>
       <span class="label"><%= item[:label] %></span>
+      <% if item[:badge] == :messages && (unread = member_unread_count(current_user)) > 0 %>
+        <span class="nav-badge"><%= unread %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <% if current_user.admin? %>
+    <div class="chart-nav-label d-none d-lg-block mt-3">Staff</div>
+    <%= link_to admin_root_path, class: "chart-nav-link" do %>
+      <i class="fa-solid fa-user-shield"></i><span class="label">Admin portal</span>
     <% end %>
   <% end %>
 

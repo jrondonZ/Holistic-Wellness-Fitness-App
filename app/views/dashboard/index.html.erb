@@ -109,22 +109,77 @@
 
 <!-- TRENDS -->
 <div class="row g-3 mb-4">
-  <div class="col-lg-6">
+  <div class="col-lg-4">
     <div class="hwf-card h-100">
-      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Weight trend · 30 days</h2><span class="pill">lb</span></div>
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Weight · 30 days</h2><span class="pill">lb</span></div>
       <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@weight_series, label: 'Weight (lb)', color: '#4a7c59') %>">
         <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
         <div class="chart-empty-note"><i class="fa-solid fa-weight-scale"></i><span>Record weight in a check-in to chart it.</span></div>
       </div>
     </div>
   </div>
-  <div class="col-lg-6">
+  <div class="col-lg-4">
     <div class="hwf-card h-100">
-      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Wellness score · 30 days</h2><span class="pill good">/ 100</span></div>
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">BMI · 30 days</h2>
+        <% if @profile.bmi %><span class="pill <%= { 'Healthy' => 'good', 'Overweight' => 'ok' }[@profile.bmi_category] || 'low' %>"><%= @profile.bmi %></span><% end %>
+      </div>
+      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@bmi_series, label: 'BMI', color: '#a3b18a') %>">
+        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+        <div class="chart-empty-note"><i class="fa-solid fa-chart-line"></i><span>Add your height in My Details to chart BMI.</span></div>
+      </div>
+      <% if @profile.bmi %>
+        <div class="bmi-scale mt-3"><span class="bmi-marker" style="left: <%= [ [ (@profile.bmi - 12) / 28.0 * 100, 2 ].max, 98 ].min %>%;"></span></div>
+        <div class="d-flex justify-content-between field-hint mt-1"><span>Under</span><span>Healthy</span><span>Over</span><span>High</span></div>
+      <% end %>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="hwf-card h-100">
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Wellness · 30 days</h2><span class="pill good">/ 100</span></div>
       <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@wellness_series, label: 'Wellness', color: '#c9a96e') %>">
         <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
         <div class="chart-empty-note"><i class="fa-solid fa-heart-pulse"></i><span>Your wellness trend appears after a few check-ins.</span></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCHEDULING + TRAINING -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-8">
+    <div class="hwf-card h-100">
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Next appointment</h2><%= link_to "Book a session", services_path, class: "btn btn-soft btn-sm" %></div>
+      <% if @next_appointment %>
+        <div class="appt-card" style="border:none; padding:0;">
+          <div class="appt-date">
+            <div class="d"><%= @next_appointment.scheduled_at.strftime("%-d") %></div>
+            <div class="m"><%= @next_appointment.scheduled_at.strftime("%b") %></div>
+          </div>
+          <div class="flex-fill">
+            <div class="fw-bold"><%= @next_appointment.service.name %></div>
+            <div class="small text-muted"><%= @next_appointment.scheduled_at.strftime("%A · %-l:%M %p") %> · <%= @next_appointment.mode_label %></div>
+          </div>
+          <span class="pill <%= @next_appointment.status_tone %>"><%= @next_appointment.status.titleize %></span>
+          <%= link_to "Details", appointment_path(@next_appointment), class: "btn btn-soft btn-sm" %>
+        </div>
+      <% else %>
+        <p class="text-muted mb-2">No upcoming sessions. Book personal training, nutrition, pelvic health, boxing or kids athletics.</p>
+        <%= link_to "Browse services", services_path, class: "btn btn-brand btn-sm" %>
+      <% end %>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="hwf-card h-100">
+      <div class="card-title-sm mb-2">Required training</div>
+      <% pending = @required_training.reject { |t| current_user.training_complete?(t.slug) } %>
+      <% if @required_training.any? && pending.empty? %>
+        <div class="d-flex align-items-center gap-2"><i class="fa-solid fa-circle-check text-brand fs-4"></i><div><div class="fw-semibold">All caught up</div><div class="small text-muted"><%= @training_done %> module<%= 's' unless @training_done == 1 %> complete</div></div></div>
+      <% elsif pending.any? %>
+        <p class="small text-muted mb-2"><%= pending.size %> training<%= 's' unless pending.size == 1 %> to complete.</p>
+        <%= link_to "#{pending.first.title} →", training_path(pending.first), class: "btn btn-brand btn-sm w-100" %>
+      <% else %>
+        <p class="small text-muted mb-0">No training assigned.</p>
+      <% end %>
     </div>
   </div>
 </div>

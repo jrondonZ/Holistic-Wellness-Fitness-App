@@ -1,0 +1,36 @@
+<% content_for :title, "Admin · #{@member.full_name}" %>
+
+<div class="mb-3">
+  <%= link_to admin_conversations_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All conversations<% end %>
+</div>
+
+<div class="hwf-card">
+  <div class="d-flex align-items-center gap-2 pb-3 mb-3 border-bottom">
+    <%= initials_badge(@member) %>
+    <div class="flex-fill">
+      <div class="fw-bold"><%= @member.full_name %></div>
+      <div class="small text-muted"><%= @member.member_id %> · <%= @member.email %></div>
+    </div>
+    <%= link_to "Open chart", admin_user_path(@member), class: "btn btn-soft btn-sm" %>
+  </div>
+
+  <div class="chat-window mb-3">
+    <% if @messages.any? %>
+      <% @messages.each do |m| %>
+        <div class="msg <%= m.from_admin? ? 'out' : 'in' %>">
+          <div><%= simple_format m.body, {}, sanitize: true %></div>
+          <div class="meta"><%= m.from_admin? ? m.sender.first_name : @member.first_name %> · <%= m.created_at.strftime("%b %-d, %-l:%M %p") %></div>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="chat-empty"><i class="fa-solid fa-comments d-block mb-2" style="font-size:1.8rem; color: var(--brand-sage);"></i>No messages yet.</div>
+    <% end %>
+  </div>
+
+  <%= form_with url: reply_admin_conversation_path(@member), method: :post, local: true do %>
+    <div class="input-group">
+      <%= text_field_tag "message[body]", nil, class: "form-control", placeholder: "Reply to #{@member.first_name}…", autocomplete: "off", required: true %>
+      <%= submit_tag "Send", class: "btn btn-brand" %>
+    </div>
+  <% end %>
+</div>

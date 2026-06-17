@@ -33,6 +33,37 @@ Rails.application.routes.draw do
   # Education — holistic wellness & fitness articles (read-only)
   resources :articles, only: [ :index, :show ]
 
+  # Scheduling — browse bookable services and manage appointments
+  resources :services, only: [ :index, :show ]
+  resources :appointments, only: [ :index, :new, :create, :show ] do
+    member do
+      patch :cancel
+      get :calendar # iCalendar (.ics) download
+    end
+  end
+
+  # HIPAA & compliance training
+  resources :trainings, only: [ :index, :show ] do
+    member { post :complete }
+  end
+
+  # Secure messaging with the care team (member side — their own thread)
+  resources :messages, only: [ :index, :create ]
+
+  # -------------------------------------------------------------- Admin portal
+  get "admin", to: "admin/dashboard#index", as: :admin_root
+  namespace :admin do
+    resources :users, only: [ :index, :show ] do
+      resources :assessments, only: [ :create, :update, :destroy ]
+    end
+    resources :appointments, only: [ :index, :show, :update ]
+    resources :conversations, only: [ :index, :show ] do
+      member { post :reply }
+    end
+    resources :services, only: [ :index, :edit, :update ]
+    get "analytics", to: "analytics#index"
+  end
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   get "up" => "rails/health#show", as: :rails_health_check
 end

@@ -1,0 +1,74 @@
+<% content_for :title, "Admin · Appointment" %>
+
+<div class="mb-3">
+  <%= link_to admin_appointments_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All appointments<% end %>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="hwf-card">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="service-icon-lg" style="background: <%= @appointment.service.accent %>;"><i class="fa-solid <%= @appointment.service.icon_name %>"></i></div>
+        <div>
+          <%= status_pill(@appointment.status) %>
+          <h1 class="h4 mb-0 mt-1"><%= @appointment.service.name %></h1>
+        </div>
+      </div>
+      <div class="d-flex align-items-center gap-2 py-2 border-top border-bottom mb-2">
+        <%= initials_badge(@appointment.user) %>
+        <div class="flex-fill">
+          <%= link_to @appointment.user.full_name, admin_user_path(@appointment.user), class: "fw-semibold text-decoration-none" %>
+          <div class="small text-muted"><%= @appointment.user.email %> · <%= @appointment.user.phone.presence %></div>
+        </div>
+      </div>
+      <dl class="row small mb-0">
+        <dt class="col-5 text-muted">Requested for</dt><dd class="col-7"><%= @appointment.scheduled_at.strftime("%A, %b %-d · %-l:%M %p") %></dd>
+        <dt class="col-5 text-muted">Duration</dt><dd class="col-7"><%= @appointment.duration_min %> min</dd>
+        <dt class="col-5 text-muted">Format</dt><dd class="col-7"><%= @appointment.mode_label %></dd>
+        <dt class="col-5 text-muted">Booked</dt><dd class="col-7"><%= @appointment.created_at.strftime("%b %-d, %Y") %></dd>
+      </dl>
+      <% if @appointment.reason.present? %>
+        <div class="mt-3"><div class="card-title-sm">Member's focus</div><p class="small mb-0"><%= simple_format @appointment.reason %></p></div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="hwf-card">
+      <div class="card-title-sm mb-3">Manage booking</div>
+      <%= form_with model: [ :admin, @appointment ], local: true do |f| %>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <%= f.label :status, class: "form-label" %>
+            <%= f.select :status, Appointment::STATUSES.map { |s| [ s.titleize, s ] }, {}, class: "form-select" %>
+          </div>
+          <div class="col-md-6">
+            <%= f.label :mode, "Format", class: "form-label" %>
+            <%= f.select :mode, Appointment::MODES.map { |m| [ m.titleize.sub('_', ' '), m ] }, {}, class: "form-select" %>
+          </div>
+          <div class="col-md-6">
+            <%= f.label :scheduled_at, "Date & time", class: "form-label" %>
+            <%= f.datetime_field :scheduled_at, class: "form-control" %>
+          </div>
+          <div class="col-md-6">
+            <%= f.label :duration_min, "Duration (min)", class: "form-label" %>
+            <%= f.number_field :duration_min, class: "form-control", min: 0 %>
+          </div>
+          <div class="col-12">
+            <%= f.label :meeting_url, "Meeting link (virtual)", class: "form-label" %>
+            <%= f.url_field :meeting_url, class: "form-control", placeholder: "https://meet.google.com/…" %>
+          </div>
+          <div class="col-12">
+            <%= f.label :location, "Location (in person)", class: "form-label" %>
+            <%= f.text_field :location, class: "form-control", placeholder: "177 State Street, Meriden, CT" %>
+          </div>
+          <div class="col-12">
+            <%= f.label :admin_notes, "Note to member", class: "form-label" %>
+            <%= f.text_area :admin_notes, rows: 2, class: "form-control" %>
+          </div>
+        </div>
+        <div class="d-flex gap-2 mt-3"><%= f.submit "Save changes", class: "btn btn-brand" %></div>
+      <% end %>
+    </div>
+  </div>
+</div>

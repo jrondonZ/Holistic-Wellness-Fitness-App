@@ -1,0 +1,61 @@
+<% content_for :title, "Scheduling" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Meet &amp; scheduling</span>
+    <h1 class="h3 mb-0">Book a session</h1>
+  </div>
+  <%= link_to appointments_path, class: "btn btn-soft" do %><i class="fa-solid fa-calendar-day me-1"></i> My appointments<% end %>
+</div>
+
+<% if @upcoming.any? %>
+  <div class="hwf-card mb-4" style="background: var(--brand-green-soft); border: none;">
+    <div class="card-title-sm mb-2">Next up</div>
+    <div class="row g-2">
+      <% @upcoming.each do |appt| %>
+        <div class="col-md-6">
+          <%= link_to appointment_path(appt), class: "appt-card text-decoration-none" do %>
+            <div class="appt-date">
+              <div class="d"><%= appt.scheduled_at.strftime("%-d") %></div>
+              <div class="m"><%= appt.scheduled_at.strftime("%b") %></div>
+            </div>
+            <div class="flex-fill">
+              <div class="fw-bold text-dark"><%= appt.service.name %></div>
+              <div class="small text-muted"><%= appt.scheduled_at.strftime("%a · %-l:%M %p") %> · <%= appt.mode_label %></div>
+            </div>
+            <span class="pill <%= appt.status_tone %>"><%= appt.status.titleize %></span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<div class="filter-chips mb-4">
+  <%= link_to "All", services_path, class: "filter-chip #{'active' unless @category}" %>
+  <% @categories.each do |c| %>
+    <%= link_to c, services_path(category: c), class: "filter-chip #{'active' if @category == c}" %>
+  <% end %>
+</div>
+
+<div class="row g-4">
+  <% @services.each do |service| %>
+    <div class="col-md-6 col-lg-4">
+      <div class="hwf-card is-hover h-100 d-flex flex-column">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="service-icon-lg" style="background: <%= service.accent %>;"><i class="fa-solid <%= service.icon_name %>"></i></div>
+          <div>
+            <span class="pill gold"><%= service.category %></span>
+            <h2 class="h5 mb-0 mt-1"><%= service.name %></h2>
+          </div>
+        </div>
+        <p class="text-muted flex-fill"><%= service.tagline %></p>
+        <div class="d-flex justify-content-between align-items-center text-muted small mb-3">
+          <span><i class="fa-regular fa-clock me-1"></i><%= service.duration_min %> min</span>
+          <span class="fw-bold text-dark"><%= service.price %></span>
+        </div>
+        <%= link_to "View &amp; book".html_safe, service_path(service), class: "btn btn-brand w-100" %>
+      </div>
+    </div>
+  <% end %>
+</div>

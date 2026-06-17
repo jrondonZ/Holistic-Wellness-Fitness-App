@@ -1,0 +1,63 @@
+<% content_for :title, @appointment.service.name %>
+
+<div class="mb-3">
+  <%= link_to appointments_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> My appointments<% end %>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="hwf-card">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="service-icon-lg" style="background: <%= @appointment.service.accent %>;"><i class="fa-solid <%= @appointment.service.icon_name %>"></i></div>
+        <div>
+          <span class="pill <%= @appointment.status_tone %>"><%= @appointment.status.titleize %></span>
+          <h1 class="h4 mb-0 mt-1"><%= @appointment.service.name %></h1>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <div class="card-title-sm">When</div>
+          <div class="fw-bold fs-5"><%= @appointment.scheduled_at.strftime("%A, %B %-d, %Y") %></div>
+          <div><%= @appointment.scheduled_at.strftime("%-l:%M %p") %> – <%= @appointment.ends_at.strftime("%-l:%M %p") %></div>
+        </div>
+        <div class="col-sm-6">
+          <div class="card-title-sm">Format</div>
+          <div class="fw-bold fs-5"><%= @appointment.mode_label %></div>
+          <% if @appointment.virtual? && @appointment.meeting_url.present? %>
+            <%= link_to "Join meeting", @appointment.meeting_url, target: "_blank", rel: "noopener", class: "btn btn-brand btn-sm mt-1" %>
+          <% elsif !@appointment.virtual? %>
+            <div class="text-muted small"><%= @appointment.location.presence || "177 State Street, Meriden, CT" %></div>
+          <% end %>
+        </div>
+        <% if @appointment.reason.present? %>
+          <div class="col-12">
+            <div class="card-title-sm">Focus</div>
+            <p class="mb-0"><%= simple_format @appointment.reason %></p>
+          </div>
+        <% end %>
+        <% if @appointment.admin_notes.present? %>
+          <div class="col-12">
+            <div class="card-title-sm">Note from your coach</div>
+            <div class="p-3 rounded" style="background: var(--brand-green-soft);"><%= simple_format @appointment.admin_notes %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="hwf-card">
+      <div class="card-title-sm mb-2">Actions</div>
+      <div class="d-grid gap-2">
+        <%= link_to calendar_appointment_path(@appointment), class: "btn btn-soft" do %><i class="fa-regular fa-calendar-plus me-1"></i> Add to calendar<% end %>
+        <% unless @appointment.cancelled? || @appointment.status == "completed" %>
+          <%= button_to cancel_appointment_path(@appointment), method: :patch, class: "btn btn-outline-brand",
+                form: { data: { turbo_confirm: "Cancel this appointment?" } } do %>
+            <i class="fa-solid fa-xmark me-1"></i> Cancel appointment
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

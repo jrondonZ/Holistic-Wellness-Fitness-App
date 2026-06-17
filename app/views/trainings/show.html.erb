@@ -1,0 +1,75 @@
+<% content_for :title, @training.title %>
+
+<div class="mb-3">
+  <%= link_to trainings_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All training<% end %>
+</div>
+
+<% if @completion&.acknowledged? %>
+  <div class="hwf-card text-center mb-4" style="background: var(--brand-green-soft); border: none;">
+    <div class="cert-badge mb-2"><i class="fa-solid fa-certificate"></i></div>
+    <h2 class="h5 mb-1">Training complete</h2>
+    <p class="mb-0 text-muted">
+      <%= current_user.full_name %> completed <strong><%= @training.title %></strong>
+      on <%= @completion.completed_at&.strftime("%B %-d, %Y") %><%= " · scored #{@completion.score}%" if @completion.score %>.
+    </p>
+  </div>
+<% end %>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <article class="hwf-card p-4 p-md-5">
+      <span class="pill gold">HIPAA &amp; Privacy</span>
+      <h1 class="h3 mt-3"><%= @training.title %></h1>
+      <p class="lead text-muted"><%= @training.summary %></p>
+      <hr class="my-4">
+      <div class="article-body">
+        <% @training.sections.each do |para| %>
+          <% if para.start_with?("## ") %>
+            <h2 class="h5 mt-4"><%= para.delete_prefix("## ") %></h2>
+          <% else %>
+            <p><%= para %></p>
+          <% end %>
+        <% end %>
+      </div>
+    </article>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="hwf-card" style="position: sticky; top: 84px;">
+      <h2 class="h6 card-title-sm mb-3"><i class="fa-solid fa-clipboard-check me-1"></i> Acknowledge &amp; sign</h2>
+
+      <%= form_with url: complete_training_path(@training), method: :post, local: true do %>
+        <% if @training.quiz? %>
+          <div class="mb-3">
+            <div class="fw-semibold mb-2">Knowledge check</div>
+            <p class="field-hint mb-3">Score <%= TrainingModule::PASS_THRESHOLD %>%+ to pass.</p>
+            <% @training.questions.each_with_index do |q, i| %>
+              <div class="mb-3">
+                <div class="fw-semibold mb-2"><span class="training-step me-1"><%= i + 1 %></span> <%= q["q"] %></div>
+                <% Array(q["options"]).each_with_index do |opt, oi| %>
+                  <label class="quiz-option">
+                    <%= radio_button_tag "answers[#{i}]", oi, false, required: true %><%= opt %>
+                  </label>
+                <% end %>
+              </div>
+            <% end %>
+            <hr class="my-3">
+          <% end %>
+
+        <label class="d-flex gap-2 align-items-start mb-3">
+          <%= check_box_tag :acknowledge, "1", false, class: "form-check-input mt-1", required: true %>
+          <span class="small">I confirm I have read and understood this training, and I will protect members' health information accordingly.</span>
+        </label>
+
+        <div class="mb-3">
+          <%= label_tag :signature, "Type your full name to sign", class: "form-label" %>
+          <%= text_field_tag :signature, current_user.full_name, class: "form-control", required: true %>
+        </div>
+
+        <div class="d-grid">
+          <%= submit_tag(@completion&.acknowledged? ? "Re-submit" : "Complete training", class: "btn btn-brand") %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

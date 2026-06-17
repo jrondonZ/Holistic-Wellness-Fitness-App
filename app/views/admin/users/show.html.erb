@@ -1,0 +1,160 @@
+<% content_for :title, "Admin · #{@member.full_name}" %>
+<% weight = @member.current_weight %>
+
+<div class="mb-3">
+  <%= link_to admin_users_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All members<% end %>
+</div>
+
+<!-- Member banner -->
+<div class="patient-banner mb-4">
+  <div class="row align-items-center g-3">
+    <div class="col-lg-7">
+      <div class="d-flex align-items-center gap-3">
+        <%= initials_badge(@member, extra_class: "lg") %>
+        <div>
+          <h1><%= @member.full_name %></h1>
+          <div class="patient-meta mt-1">
+            <span><%= @member.member_id %></span>
+            <% if @profile.age %><span class="sep">·</span><span><%= @profile.age %> yrs</span><% end %>
+            <% if @profile.sex.present? %><span class="sep">·</span><span><%= @profile.sex %></span><% end %>
+            <span class="sep">·</span><span><%= @member.email %></span>
+          </div>
+          <div class="mt-2"><span class="pill gold"><%= @profile.primary_goal.presence || "No goal set" %></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <div class="banner-chips justify-content-lg-end">
+        <div class="banner-chip"><div class="k">Weight</div><div class="v"><%= weight ? "#{weight.to_f.round}" : "—" %></div></div>
+        <div class="banner-chip"><div class="k">BMI</div><div class="v"><%= @profile.bmi || "—" %></div></div>
+        <div class="banner-chip"><div class="k">Active (wk)</div><div class="v"><%= @week_minutes %><span class="small">m</span></div></div>
+      </div>
+      <div class="d-flex gap-2 justify-content-lg-end mt-3">
+        <%= link_to admin_conversation_path(@member), class: "btn btn-sm", style: "background:#fff;color:var(--brand-green-dark);font-weight:600;border-radius:30px;" do %>
+          <i class="fa-solid fa-comments me-1"></i> Message<%= " (#{@unread})" if @unread.positive? %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- LEFT: chart data -->
+  <div class="col-lg-7">
+    <div class="row g-3 mb-3">
+      <div class="col-md-6">
+        <div class="hwf-card h-100">
+          <div class="card-title-sm mb-2">Weight trend</div>
+          <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@weight_series, label: 'Weight (lb)', color: '#4a7c59') %>">
+            <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+            <div class="chart-empty-note"><i class="fa-solid fa-weight-scale"></i><span>No weight data.</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="hwf-card h-100">
+          <div class="card-title-sm mb-2">BMI trend</div>
+          <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@bmi_series, label: 'BMI', color: '#c9a96e') %>">
+            <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+            <div class="chart-empty-note"><i class="fa-solid fa-chart-line"></i><span>Need height + weights.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hwf-card mb-3">
+      <div class="card-title-sm mb-2">Recent check-ins</div>
+      <% if @recent_checkins.any? %>
+        <div class="table-scroll">
+          <table class="flowsheet">
+            <thead><tr><th>Date</th><th>Mood</th><th>Energy</th><th>Sleep</th><th>Weight</th><th>BP</th><th>Score</th></tr></thead>
+            <tbody>
+              <% @recent_checkins.each do |c| %>
+                <tr>
+                  <td class="fw-semibold"><%= c.checkin_date.strftime("%b %-d") %></td>
+                  <td><%= scale_dots(c.mood) %></td>
+                  <td><%= scale_dots(c.energy) %></td>
+                  <td><%= c.sleep_hours ? "#{c.sleep_hours.to_f}h" : "—" %></td>
+                  <td><%= c.weight ? "#{c.weight.to_f.round}" : "—" %></td>
+                  <td><%= c.blood_pressure || "—" %></td>
+                  <td><span class="pill <%= score_tone(c.wellness_score) %>"><%= c.wellness_score || "—" %></span></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <p class="text-muted small mb-0">No check-ins recorded.</p>
+      <% end %>
+    </div>
+
+    <div class="hwf-card">
+      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Appointments</h2></div>
+      <% if @appointments.any? %>
+        <% @appointments.each do |appt| %>
+          <%= link_to admin_appointment_path(appt), class: "d-flex align-items-center gap-2 py-2 border-bottom text-decoration-none" do %>
+            <i class="fa-solid <%= appt.service.icon_name %> text-brand"></i>
+            <div class="flex-fill">
+              <div class="small fw-semibold text-dark"><%= appt.service.name %></div>
+              <div class="small text-muted"><%= appt.scheduled_at.strftime("%b %-d, %Y · %-l:%M %p") %></div>
+            </div>
+            <%= status_pill(appt.status) %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <p class="text-muted small mb-0">No appointments.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- RIGHT: diagnose -->
+  <div class="col-lg-5" id="diagnose">
+    <div class="hwf-card mb-3">
+      <div class="card-title-sm mb-2"><i class="fa-solid fa-wand-magic-sparkles me-1"></i> Diagnostic flags</div>
+      <p class="field-hint mb-3">Auto-generated from chart data — for clinical review, not a diagnosis.</p>
+      <% @flags.each do |f| %>
+        <div class="flag-row">
+          <div class="flag-icon <%= flag_tone(f.level) %>"><i class="fa-solid <%= f.icon %>"></i></div>
+          <div>
+            <div class="fw-semibold"><%= f.title %></div>
+            <div class="small text-muted"><%= f.detail %></div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="hwf-card">
+      <div class="card-title-sm mb-3"><i class="fa-solid fa-notes-medical me-1"></i> Assessments</div>
+
+      <% @assessments.each do |a| %>
+        <div class="d-flex gap-2 mb-3">
+          <div class="severity-bar <%= severity_tone(a.severity) %>"></div>
+          <div class="flex-fill">
+            <div class="d-flex justify-content-between">
+              <div class="fw-semibold"><%= a.title %></div>
+              <span class="pill <%= severity_tone(a.severity) %>"><%= a.severity.titleize %></span>
+            </div>
+            <div class="small text-muted mb-1"><%= a.category %> · <%= a.status.titleize %> · <%= a.author.first_name %> · <%= a.created_at.strftime("%b %-d") %></div>
+            <% if a.summary.present? %><div class="small"><%= a.summary %></div><% end %>
+            <% if a.recommendations.present? %><div class="small mt-1"><strong>Plan:</strong> <%= a.recommendations %></div><% end %>
+            <%= button_to "Remove", admin_user_assessment_path(@member, a), method: :delete, class: "btn btn-link btn-sm text-danger p-0 mt-1",
+                  form: { data: { turbo_confirm: "Remove this assessment?" } } %>
+          </div>
+        </div>
+      <% end %>
+
+      <hr class="my-3">
+      <div class="fw-semibold mb-2">Add assessment</div>
+      <%= form_with model: [ :admin, @member, @assessment ], local: true do |f| %>
+        <div class="mb-2"><%= f.text_field :title, class: "form-control", placeholder: "Title (e.g. Elevated BP follow-up)", required: true %></div>
+        <div class="row g-2 mb-2">
+          <div class="col-6"><%= f.select :category, Assessment::CATEGORIES, { include_blank: "Category" }, class: "form-select" %></div>
+          <div class="col-6"><%= f.select :severity, Assessment::SEVERITIES.map { |s| [ s.titleize, s ] }, {}, class: "form-select" %></div>
+        </div>
+        <div class="mb-2"><%= f.text_area :summary, rows: 2, class: "form-control", placeholder: "Assessment summary" %></div>
+        <div class="mb-2"><%= f.text_area :recommendations, rows: 2, class: "form-control", placeholder: "Recommended plan" %></div>
+        <div class="d-grid"><%= f.submit "Save assessment", class: "btn btn-brand btn-sm" %></div>
+      <% end %>
+    </div>
+  </div>
+</div>

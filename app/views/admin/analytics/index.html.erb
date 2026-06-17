@@ -1,0 +1,106 @@
+<% content_for :title, "Admin · Analytics" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Admin portal</span>
+    <h1 class="h3 mb-0">Analytics</h1>
+  </div>
+</div>
+
+<!-- KPIs -->
+<div class="row g-3 mb-4">
+  <% completion = @member_count.zero? ? 0 : (@active_count * 100.0 / @member_count).round %>
+  <% [
+    { v: @member_count, l: "Total members", i: "fa-users" },
+    { v: "#{completion}%", l: "Active (14d)", i: "fa-bolt" },
+    { v: @appt_total, l: "Appointments", i: "fa-calendar-check" },
+    { v: @appt_completed, l: "Completed sessions", i: "fa-circle-check" }
+  ].each do |k| %>
+    <div class="col-6 col-lg-3">
+      <div class="hwf-card kpi h-100">
+        <div class="stat-icon mb-2"><i class="fa-solid <%= k[:i] %>"></i></div>
+        <div class="stat-value"><%= k[:v] %></div>
+        <div class="stat-label"><%= k[:l] %></div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="card-title-sm mb-2">Check-ins · 8 weeks</div>
+      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@checkins_weekly, label: 'Check-ins', color: '#4a7c59') %>">
+        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+        <div class="chart-empty-note"><i class="fa-solid fa-chart-line"></i><span>No data.</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="card-title-sm mb-2">New members · 8 weeks</div>
+      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@signups_weekly, label: 'Signups', color: '#c9a96e', type: 'bar') %>">
+        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+        <div class="chart-empty-note"><i class="fa-solid fa-user-plus"></i><span>No data.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="card-title-sm mb-2">Bookings by service</div>
+      <% if @appts_by_service.any? %>
+        <div data-controller="chart" data-chart-payload-value="<%= trend_payload({ labels: @appts_by_service.keys, values: @appts_by_service.values }, label: 'Bookings', color: '#a3b18a', type: 'bar') %>">
+          <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+        </div>
+      <% else %>
+        <p class="text-muted small mb-0">No bookings yet.</p>
+      <% end %>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="card-title-sm mb-2">Logged workouts by category</div>
+      <% if @workout_categories.any? %>
+        <div data-controller="chart" data-chart-payload-value="<%= trend_payload({ labels: @workout_categories.keys, values: @workout_categories.values }, label: 'Sessions', color: '#4a7c59', type: 'bar') %>">
+          <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+        </div>
+      <% else %>
+        <p class="text-muted small mb-0">No workouts logged yet.</p>
+      <% end %>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="card-title-sm mb-3">HIPAA &amp; training completion</div>
+      <% @training_progress.each do |t| %>
+        <div class="dist-row">
+          <div class="small text-truncate"><%= t[:title] %></div>
+          <div class="dist-track"><div class="dist-fill" style="width: <%= t[:pct] %>%"></div></div>
+          <div class="small text-muted text-end"><%= t[:pct] %>%</div>
+        </div>
+      <% end %>
+      <% if @training_progress.empty? %><p class="text-muted small mb-0">No training modules.</p><% end %>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="hwf-card h-100">
+      <div class="card-title-sm mb-3">Member wellbeing (latest score)</div>
+      <% total = @wellness_distribution[:values].sum %>
+      <% @wellness_distribution[:labels].each_with_index do |label, i| %>
+        <% val = @wellness_distribution[:values][i] %>
+        <div class="dist-row">
+          <div class="small"><%= label %></div>
+          <div class="dist-track"><div class="dist-fill" style="width: <%= total.zero? ? 0 : (val * 100.0 / total).round %>%"></div></div>
+          <div class="small text-muted text-end"><%= val %></div>
+        </div>
+      <% end %>
+      <% if total.zero? %><p class="text-muted small mb-0">No wellness scores yet.</p><% end %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,20 @@
+<aside class="chart-sidebar">
+  <div class="chart-nav-label d-none d-lg-block">Admin</div>
+  <% admin_nav_items.each do |item| %>
+    <%= link_to item[:href], class: "chart-nav-link #{'active' if nav_active?(item[:href])}" do %>
+      <i class="fa-solid <%= item[:icon] %>"></i>
+      <span class="label"><%= item[:label] %></span>
+      <% if item[:badge] == :threads && unread_thread_count > 0 %>
+        <span class="nav-badge"><%= unread_thread_count %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <div class="chart-nav-label d-none d-lg-block mt-3">Shortcuts</div>
+  <%= link_to admin_appointments_path(status: "requested"), class: "chart-nav-link" do %>
+    <i class="fa-solid fa-bell"></i><span class="label">Pending requests</span>
+  <% end %>
+  <%= link_to dashboard_path, class: "chart-nav-link" do %>
+    <i class="fa-solid fa-arrow-left"></i><span class="label">Back to my chart</span>
+  <% end %>
+</aside>

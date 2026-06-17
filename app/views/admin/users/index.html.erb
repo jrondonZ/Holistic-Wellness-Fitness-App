@@ -1,0 +1,47 @@
+<% content_for :title, "Admin · Members" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Admin portal</span>
+    <h1 class="h3 mb-0">Members <span class="text-muted fs-6">(<%= @members.size %>)</span></h1>
+  </div>
+  <%= form_with url: admin_users_path, method: :get, local: true, class: "d-flex gap-2" do %>
+    <%= text_field_tag :q, @q, class: "form-control form-control-sm", placeholder: "Search name or email…" %>
+    <%= submit_tag "Search", class: "btn btn-soft btn-sm" %>
+  <% end %>
+</div>
+
+<div class="hwf-card">
+  <% if @members.any? %>
+    <div class="table-scroll">
+      <table class="flowsheet">
+        <thead>
+          <tr><th>Member</th><th>ID</th><th>Goal</th><th>Check-ins</th><th>Last check-in</th><th>Joined</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% @members.each do |m| %>
+            <tr>
+              <td>
+                <%= link_to admin_user_path(m), class: "d-flex align-items-center gap-2 text-decoration-none" do %>
+                  <%= initials_badge(m) %>
+                  <div>
+                    <div class="fw-semibold text-dark"><%= m.full_name %></div>
+                    <div class="small text-muted"><%= m.email %></div>
+                  </div>
+                <% end %>
+              </td>
+              <td class="small text-muted"><%= m.member_id %></td>
+              <td><%= m.health_profile&.primary_goal.presence || "—" %></td>
+              <td><%= @checkin_counts[m.id].to_i %></td>
+              <td><%= @last_checkin[m.id]&.strftime("%b %-d") || "—" %></td>
+              <td class="small text-muted"><%= m.created_at.strftime("%b %-d, %Y") %></td>
+              <td class="text-end"><%= link_to "Open chart", admin_user_path(m), class: "btn btn-soft btn-sm" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="empty-state"><div class="icon"><i class="fa-solid fa-users"></i></div><p class="mb-0">No members found.</p></div>
+  <% end %>
+</div>

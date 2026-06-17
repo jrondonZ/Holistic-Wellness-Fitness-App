@@ -1,0 +1,39 @@
+<% content_for :title, @service.name %>
+
+<div class="mb-3">
+  <%= link_to services_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All services<% end %>
+</div>
+
+<div class="patient-banner mb-4" style="background: linear-gradient(135deg, <%= @service.accent %>, var(--brand-green-dark));">
+  <div class="d-flex align-items-center gap-3">
+    <div class="service-icon-lg" style="background: rgba(255,255,255,0.18); font-size: 1.8rem; width: 64px; height: 64px;">
+      <i class="fa-solid <%= @service.icon_name %>"></i>
+    </div>
+    <div>
+      <span class="pill" style="background: rgba(255,255,255,0.2); color:#fff;"><%= @service.category %></span>
+      <h1 class="mt-1"><%= @service.name %></h1>
+      <div class="patient-meta">
+        <span><i class="fa-regular fa-clock me-1"></i><%= @service.duration_min %> min</span>
+        <span class="sep">·</span><span><%= @service.price %></span>
+        <% if @service.provider_name.present? %><span class="sep">·</span><span><i class="fa-solid fa-user-nurse me-1"></i><%= @service.provider_name %></span><% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="hwf-card">
+      <div class="card-title-sm mb-2">About this session</div>
+      <p><%= simple_format @service.description.presence || @service.tagline %></p>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="hwf-card text-center">
+      <i class="fa-solid fa-calendar-plus text-brand" style="font-size: 2rem;"></i>
+      <h2 class="h5 mt-2">Ready to book?</h2>
+      <p class="text-muted">Request a time and we'll confirm your <%= @service.name.downcase %> session.</p>
+      <%= link_to "Choose a time", new_appointment_path(service_id: @service.slug), class: "btn btn-brand w-100" %>
+    </div>
+  </div>
+</div>

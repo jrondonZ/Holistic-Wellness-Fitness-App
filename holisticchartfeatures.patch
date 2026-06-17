@@ -1,0 +1,3545 @@
+From 5014ca0ecdd138afeaf54e12840c73739c06bb7f Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Wed, 17 Jun 2026 12:38:17 +0000
+Subject: [PATCH] Add appointments, HIPAA training, messaging, BMI charts &
+ admin portal
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Member features:
+- Scheduling & appointments: bookable services (personal training, nutrition,
+  pelvic health, boxing, kids athletics, holistic coaching), request/confirm
+  flow, virtual meeting links and iCalendar (.ics) export
+- HIPAA privacy training with a knowledge-check quiz, sign-off and certificate
+- Secure messaging with the care team (member <-> admin only)
+- BMI trend chart + category gauge integrated into the dashboard
+
+Admin portal (custom-built; see note on administrate below):
+- Overview with KPIs, "needs attention" flags and trend charts
+- Members directory + full read-only member chart
+- "Help diagnose": rule-based HealthInsights flags + clinical assessments
+- Appointment management (confirm/cancel/complete, meeting links)
+- Conversations (DM) inbox with unread tracking
+- Service catalog management
+- Analytics: bookings by service, weekly check-ins/signups, workout mix,
+  training completion and wellbeing distribution
+- Admin-only access guard + admin layout/navigation
+
+Foundations: User role enum (member/admin), 8 migrations, 6 new models.
+Quality: 41 tests / 123 assertions, RuboCop clean, Brakeman 0 warnings.
+
+Note: evaluated the `administrate` gem (v0.20.1) as requested and did NOT
+adopt it — it requires Rails < 8.0 (this app is Rails 8.1) and pulls in
+sassc-rails/jquery-rails/selectize-rails which conflict with our propshaft +
+import map pipeline. Built a brand-consistent custom admin instead.
+
+https://claude.ai/code/session_013G5LkhSCvb4gf5hV3EUE9n
+---
+ app/assets/stylesheets/application.css        |  90 ++++++++++
+ app/controllers/admin/analytics_controller.rb |  50 ++++++
+ .../admin/appointments_controller.rb          |  49 ++++++
+ .../admin/assessments_controller.rb           |  39 +++++
+ app/controllers/admin/base_controller.rb      |  24 +++
+ .../admin/conversations_controller.rb         |  31 ++++
+ app/controllers/admin/dashboard_controller.rb |  40 +++++
+ app/controllers/admin/services_controller.rb  |  33 ++++
+ app/controllers/admin/users_controller.rb     |  42 +++++
+ app/controllers/appointments_controller.rb    |  56 ++++++
+ app/controllers/dashboard_controller.rb       |  12 ++
+ app/controllers/messages_controller.rb        |  17 ++
+ app/controllers/services_controller.rb        |  12 ++
+ app/controllers/trainings_controller.rb       |  52 ++++++
+ app/helpers/admin_helper.rb                   |  42 +++++
+ app/helpers/chart_helper.rb                   |  15 +-
+ app/models/appointment.rb                     |  89 ++++++++++
+ app/models/assessment.rb                      |  29 ++++
+ app/models/health_insights.rb                 | 108 ++++++++++++
+ app/models/message.rb                         |  34 ++++
+ app/models/service.rb                         |  43 +++++
+ app/models/training_completion.rb             |  13 ++
+ app/models/training_module.rb                 |  36 ++++
+ app/models/user.rb                            |  29 ++++
+ app/views/admin/analytics/index.html.erb      | 106 ++++++++++++
+ app/views/admin/appointments/index.html.erb   |  41 +++++
+ app/views/admin/appointments/show.html.erb    |  74 ++++++++
+ app/views/admin/conversations/index.html.erb  |  33 ++++
+ app/views/admin/conversations/show.html.erb   |  36 ++++
+ app/views/admin/dashboard/index.html.erb      | 111 ++++++++++++
+ app/views/admin/services/edit.html.erb        |  37 ++++
+ app/views/admin/services/index.html.erb       |  31 ++++
+ app/views/admin/users/index.html.erb          |  47 +++++
+ app/views/admin/users/show.html.erb           | 160 ++++++++++++++++++
+ app/views/appointments/index.html.erb         |  64 +++++++
+ app/views/appointments/new.html.erb           |  58 +++++++
+ app/views/appointments/show.html.erb          |  63 +++++++
+ app/views/dashboard/index.html.erb            |  63 ++++++-
+ app/views/layouts/_admin_navbar.html.erb      |  35 ++++
+ app/views/layouts/_admin_sidebar.html.erb     |  20 +++
+ app/views/layouts/_app_navbar.html.erb        |   3 +
+ app/views/layouts/_chart_sidebar.html.erb     |  10 ++
+ app/views/layouts/admin.html.erb              |  14 ++
+ app/views/messages/index.html.erb             |  42 +++++
+ app/views/services/index.html.erb             |  61 +++++++
+ app/views/services/show.html.erb              |  39 +++++
+ app/views/trainings/index.html.erb            |  46 +++++
+ app/views/trainings/show.html.erb             |  75 ++++++++
+ config/routes.rb                              |  31 ++++
+ .../20260617000001_add_role_to_users.rb       |   9 +
+ db/migrate/20260617000002_create_services.rb  |  23 +++
+ .../20260617000003_create_appointments.rb     |  24 +++
+ db/migrate/20260617000004_create_messages.rb  |  17 ++
+ .../20260617000005_create_assessments.rb      |  18 ++
+ .../20260617000006_create_training_modules.rb |  19 +++
+ ...60617000007_create_training_completions.rb |  16 ++
+ ...008_change_appointment_duration_default.rb |   6 +
+ db/schema.rb                                  | 113 ++++++++++++-
+ db/seeds.rb                                   | 138 ++++++++++++++-
+ test/integration/feature_flows_test.rb        | 121 +++++++++++++
+ test/models/appointment_test.rb               |  36 ++++
+ test/models/message_test.rb                   |  31 ++++
+ test/models/service_test.rb                   |  21 +++
+ 63 files changed, 2868 insertions(+), 9 deletions(-)
+ create mode 100644 app/controllers/admin/analytics_controller.rb
+ create mode 100644 app/controllers/admin/appointments_controller.rb
+ create mode 100644 app/controllers/admin/assessments_controller.rb
+ create mode 100644 app/controllers/admin/base_controller.rb
+ create mode 100644 app/controllers/admin/conversations_controller.rb
+ create mode 100644 app/controllers/admin/dashboard_controller.rb
+ create mode 100644 app/controllers/admin/services_controller.rb
+ create mode 100644 app/controllers/admin/users_controller.rb
+ create mode 100644 app/controllers/appointments_controller.rb
+ create mode 100644 app/controllers/messages_controller.rb
+ create mode 100644 app/controllers/services_controller.rb
+ create mode 100644 app/controllers/trainings_controller.rb
+ create mode 100644 app/helpers/admin_helper.rb
+ create mode 100644 app/models/appointment.rb
+ create mode 100644 app/models/assessment.rb
+ create mode 100644 app/models/health_insights.rb
+ create mode 100644 app/models/message.rb
+ create mode 100644 app/models/service.rb
+ create mode 100644 app/models/training_completion.rb
+ create mode 100644 app/models/training_module.rb
+ create mode 100644 app/views/admin/analytics/index.html.erb
+ create mode 100644 app/views/admin/appointments/index.html.erb
+ create mode 100644 app/views/admin/appointments/show.html.erb
+ create mode 100644 app/views/admin/conversations/index.html.erb
+ create mode 100644 app/views/admin/conversations/show.html.erb
+ create mode 100644 app/views/admin/dashboard/index.html.erb
+ create mode 100644 app/views/admin/services/edit.html.erb
+ create mode 100644 app/views/admin/services/index.html.erb
+ create mode 100644 app/views/admin/users/index.html.erb
+ create mode 100644 app/views/admin/users/show.html.erb
+ create mode 100644 app/views/appointments/index.html.erb
+ create mode 100644 app/views/appointments/new.html.erb
+ create mode 100644 app/views/appointments/show.html.erb
+ create mode 100644 app/views/layouts/_admin_navbar.html.erb
+ create mode 100644 app/views/layouts/_admin_sidebar.html.erb
+ create mode 100644 app/views/layouts/admin.html.erb
+ create mode 100644 app/views/messages/index.html.erb
+ create mode 100644 app/views/services/index.html.erb
+ create mode 100644 app/views/services/show.html.erb
+ create mode 100644 app/views/trainings/index.html.erb
+ create mode 100644 app/views/trainings/show.html.erb
+ create mode 100644 db/migrate/20260617000001_add_role_to_users.rb
+ create mode 100644 db/migrate/20260617000002_create_services.rb
+ create mode 100644 db/migrate/20260617000003_create_appointments.rb
+ create mode 100644 db/migrate/20260617000004_create_messages.rb
+ create mode 100644 db/migrate/20260617000005_create_assessments.rb
+ create mode 100644 db/migrate/20260617000006_create_training_modules.rb
+ create mode 100644 db/migrate/20260617000007_create_training_completions.rb
+ create mode 100644 db/migrate/20260617000008_change_appointment_duration_default.rb
+ create mode 100644 test/integration/feature_flows_test.rb
+ create mode 100644 test/models/appointment_test.rb
+ create mode 100644 test/models/message_test.rb
+ create mode 100644 test/models/service_test.rb
+
+diff --git a/app/assets/stylesheets/application.css b/app/assets/stylesheets/application.css
+index d3a9f8a..2ad88e4 100644
+--- a/app/assets/stylesheets/application.css
++++ b/app/assets/stylesheets/application.css
+@@ -484,3 +484,93 @@ a:hover { color: var(--brand-green-dark); }
+ @media (min-width: 992px) {
+   .chart-nav-link span.label { display: inline; }
+ }
++
++/* =========================================================== Added features */
++
++/* Admin theme */
++.admin-navbar {
++  background: var(--brand-green-dark);
++  box-shadow: 0 1px 12px rgba(0, 0, 0, 0.15);
++}
++.admin-navbar .navbar-brand { color: #fff !important; }
++.admin-body { background: #f3f1ea; }
++
++/* Nav unread badge */
++.nav-badge {
++  margin-left: auto;
++  background: var(--tone-low);
++  color: #fff;
++  font-size: 0.68rem;
++  font-weight: 700;
++  min-width: 20px;
++  height: 20px;
++  padding: 0 6px;
++  border-radius: 20px;
++  display: inline-grid;
++  place-items: center;
++}
++
++/* KPI tiles */
++.kpi { text-align: left; }
++.kpi .stat-value { font-size: 1.9rem; }
++
++/* Severity / flag dots */
++.flag-row { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.7rem 0; border-bottom: 1px solid var(--line); }
++.flag-row:last-child { border-bottom: none; }
++.flag-icon { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; flex: 0 0 auto; }
++.flag-icon.good { background: rgba(74,124,89,.14); color: var(--brand-green); }
++.flag-icon.ok { background: rgba(201,169,110,.18); color: #97732f; }
++.flag-icon.low { background: rgba(194,103,78,.16); color: var(--tone-low); }
++.flag-icon.muted { background: var(--surface-2); color: var(--text-muted); }
++.severity-bar { width: 4px; border-radius: 4px; align-self: stretch; }
++.severity-bar.good { background: var(--brand-green); }
++.severity-bar.ok { background: var(--brand-gold); }
++.severity-bar.low { background: var(--tone-low); }
++.severity-bar.muted { background: var(--line); }
++
++/* Messaging / chat */
++.chat-window { display: flex; flex-direction: column; gap: 0.6rem; max-height: 56vh; overflow-y: auto; padding: 0.5rem; }
++.msg { max-width: 78%; padding: 0.65rem 0.9rem; border-radius: 16px; box-shadow: var(--shadow-sm); }
++.msg .meta { font-size: 0.7rem; opacity: 0.7; margin-top: 0.25rem; }
++.msg.in { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 4px; }
++.msg.out { align-self: flex-end; background: var(--brand-green); color: #fff; border-bottom-right-radius: 4px; }
++.msg.out .meta { color: rgba(255,255,255,0.85); }
++.chat-empty { text-align: center; color: var(--text-muted); padding: 2rem 1rem; }
++
++.thread-row { display: flex; align-items: center; gap: 0.85rem; padding: 0.85rem; border-radius: 12px; text-decoration: none; border: 1px solid transparent; }
++.thread-row:hover { background: var(--surface-2); }
++.thread-row.unread { background: var(--brand-green-soft); }
++
++/* Appointments */
++.appt-card { display: flex; gap: 1rem; align-items: center; padding: 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
++.appt-date {
++  flex: 0 0 auto; width: 64px; text-align: center; border-radius: 12px;
++  background: var(--brand-green-soft); color: var(--brand-green-dark); padding: 0.5rem 0; line-height: 1.1;
++}
++.appt-date .d { font-size: 1.5rem; font-weight: 800; }
++.appt-date .m { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; }
++.service-icon-lg { width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; font-size: 1.5rem; color: #fff; flex: 0 0 auto; }
++
++/* Time-slot picker */
++.slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 0.5rem; }
++.slot { text-align: center; padding: 0.5rem; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: all 0.15s; }
++.slot:hover { border-color: var(--brand-sage); }
++.slot input { position: absolute; opacity: 0; }
++.slot.is-active { background: var(--brand-green); color: #fff; border-color: var(--brand-green); }
++
++/* Training / quiz */
++.quiz-option { display: block; padding: 0.7rem 0.9rem; border: 1px solid var(--line); border-radius: 12px; margin-bottom: 0.5rem; cursor: pointer; transition: all 0.15s; }
++.quiz-option:hover { border-color: var(--brand-sage); }
++.quiz-option input { margin-right: 0.6rem; }
++.quiz-option:has(input:checked) { background: var(--brand-green-soft); border-color: var(--brand-green); }
++.training-step { width: 28px; height: 28px; border-radius: 50%; background: var(--brand-green); color: #fff; display: inline-grid; place-items: center; font-weight: 700; font-size: 0.85rem; }
++.cert-badge { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, var(--brand-green), var(--brand-sage)); color: #fff; display: grid; place-items: center; font-size: 2.4rem; margin: 0 auto; box-shadow: var(--shadow); }
++
++/* BMI gauge */
++.bmi-scale { height: 12px; border-radius: 20px; background: linear-gradient(90deg, #6fa8dc 0 18.5%, var(--brand-green) 18.5% 25%, var(--brand-gold) 25% 30%, var(--tone-low) 30%); position: relative; }
++.bmi-marker { position: absolute; top: -5px; width: 4px; height: 22px; background: var(--text-dark); border-radius: 3px; transform: translateX(-50%); }
++
++/* Simple bars for distributions */
++.dist-row { display: grid; grid-template-columns: 130px 1fr 44px; gap: 0.6rem; align-items: center; margin-bottom: 0.5rem; }
++.dist-track { height: 12px; border-radius: 10px; background: var(--surface-2); overflow: hidden; }
++.dist-fill { height: 100%; background: linear-gradient(90deg, var(--brand-sage), var(--brand-green)); border-radius: 10px; }
+diff --git a/app/controllers/admin/analytics_controller.rb b/app/controllers/admin/analytics_controller.rb
+new file mode 100644
+index 0000000..0b70f9b
+--- /dev/null
++++ b/app/controllers/admin/analytics_controller.rb
+@@ -0,0 +1,50 @@
++module Admin
++  class AnalyticsController < BaseController
++    def index
++      @member_count = User.members.count
++      @active_count = User.members.where(id: Checkin.where(checkin_date: 14.days.ago..).select(:user_id)).distinct.count
++      @appt_total   = Appointment.count
++      @appt_completed = Appointment.where(status: "completed").count
++
++      @appts_by_service = Appointment.joins(:service).group("services.name").count
++                                     .sort_by { |_, v| -v }.to_h
++      @appts_by_status  = Appointment.group(:status).count
++      @workout_categories = WorkoutLog.joins(:workout).group("workouts.category").count
++                                      .sort_by { |_, v| -v }.to_h
++
++      @checkins_weekly = weekly_counts(Checkin.all, :created_at)
++      @signups_weekly  = weekly_counts(User.members, :created_at)
++
++      @training_progress = TrainingModule.ordered.map do |t|
++        done = t.training_completions.acknowledged.count
++        { title: t.title, done: done, pct: @member_count.zero? ? 0 : (done * 100.0 / @member_count).round }
++      end
++
++      @wellness_distribution = wellness_distribution
++    end
++
++    private
++
++    def weekly_counts(scope, column)
++      weeks = (0..7).map { |n| Date.current.beginning_of_week - (7 - n).weeks }
++      counts = Hash.new(0)
++      scope.where(column => 8.weeks.ago.beginning_of_week..).pluck(column).each do |t|
++        counts[t.to_date.beginning_of_week] += 1
++      end
++      { labels: weeks.map { |w| w.strftime("%-m/%-d") }, values: weeks.map { |w| counts[w] } }
++    end
++
++    # Bucket each member's most recent wellness score.
++    def wellness_distribution
++      buckets = { "Low (<50)" => 0, "Okay (50–74)" => 0, "Good (75+)" => 0 }
++      User.members.find_each do |m|
++        score = m.latest_checkin&.wellness_score
++        next unless score
++
++        key = score >= 75 ? "Good (75+)" : score >= 50 ? "Okay (50–74)" : "Low (<50)"
++        buckets[key] += 1
++      end
++      { labels: buckets.keys, values: buckets.values }
++    end
++  end
++end
+diff --git a/app/controllers/admin/appointments_controller.rb b/app/controllers/admin/appointments_controller.rb
+new file mode 100644
+index 0000000..9fe3b2a
+--- /dev/null
++++ b/app/controllers/admin/appointments_controller.rb
+@@ -0,0 +1,49 @@
++module Admin
++  class AppointmentsController < BaseController
++    before_action :set_appointment, only: [ :show, :update ]
++
++    def index
++      @status = params[:status].presence
++      scope = Appointment.includes(:user, :service)
++      @appointments =
++        case @status
++        when "upcoming" then scope.upcoming
++        when nil        then scope.order(scheduled_at: :desc)
++        else scope.by_status(@status).order(scheduled_at: :desc)
++        end
++      @counts = Appointment.group(:status).count
++      @pending = Appointment.where(status: "requested").count
++    end
++
++    def show
++    end
++
++    def update
++      if @appointment.update(appointment_params.merge(status_timestamps))
++        redirect_to admin_appointment_path(@appointment), success: "Appointment updated."
++      else
++        flash.now[:danger] = @appointment.errors.full_messages.to_sentence
++        render :show, status: :unprocessable_entity
++      end
++    end
++
++    private
++
++    def set_appointment
++      @appointment = Appointment.find(params[:id])
++    end
++
++    def appointment_params
++      params.require(:appointment).permit(:status, :mode, :scheduled_at, :duration_min,
++                                          :location, :meeting_url, :admin_notes)
++    end
++
++    def status_timestamps
++      case params.dig(:appointment, :status)
++      when "confirmed" then { confirmed_at: Time.current }
++      when "cancelled" then { cancelled_at: Time.current }
++      else {}
++      end
++    end
++  end
++end
+diff --git a/app/controllers/admin/assessments_controller.rb b/app/controllers/admin/assessments_controller.rb
+new file mode 100644
+index 0000000..1069f32
+--- /dev/null
++++ b/app/controllers/admin/assessments_controller.rb
+@@ -0,0 +1,39 @@
++module Admin
++  # The "help diagnose" tool — care-team assessments recorded on a member chart.
++  class AssessmentsController < BaseController
++    before_action :set_member
++
++    def create
++      @assessment = @member.assessments.new(assessment_params.merge(author: current_user))
++      if @assessment.save
++        redirect_to admin_user_path(@member, anchor: "diagnose"), success: "Assessment added to the chart."
++      else
++        redirect_to admin_user_path(@member, anchor: "diagnose"), danger: @assessment.errors.full_messages.to_sentence
++      end
++    end
++
++    def update
++      @assessment = @member.assessments.find(params[:id])
++      if @assessment.update(assessment_params)
++        redirect_to admin_user_path(@member, anchor: "diagnose"), success: "Assessment updated."
++      else
++        redirect_to admin_user_path(@member, anchor: "diagnose"), danger: @assessment.errors.full_messages.to_sentence
++      end
++    end
++
++    def destroy
++      @member.assessments.find(params[:id]).destroy
++      redirect_to admin_user_path(@member, anchor: "diagnose"), success: "Assessment removed."
++    end
++
++    private
++
++    def set_member
++      @member = User.members.find(params[:user_id])
++    end
++
++    def assessment_params
++      params.require(:assessment).permit(:title, :category, :severity, :status, :summary, :recommendations)
++    end
++  end
++end
+diff --git a/app/controllers/admin/base_controller.rb b/app/controllers/admin/base_controller.rb
+new file mode 100644
+index 0000000..a795146
+--- /dev/null
++++ b/app/controllers/admin/base_controller.rb
+@@ -0,0 +1,24 @@
++module Admin
++  # Base controller for the staff/admin portal. Requires an admin session and
++  # renders inside the admin layout.
++  class BaseController < ApplicationController
++    layout "admin"
++    before_action :require_admin
++
++    private
++
++    def require_admin
++      return if current_user&.admin?
++
++      flash[:danger] = "That area is for the care team only."
++      redirect_to(current_user ? dashboard_path : login_path)
++    end
++
++    # Shared unread-thread count for the admin nav badge.
++    def unread_thread_count
++      @unread_thread_count ||=
++        Message.unread.joins(:sender).where.not(users: { role: "admin" }).distinct.count(:member_id)
++    end
++    helper_method :unread_thread_count
++  end
++end
+diff --git a/app/controllers/admin/conversations_controller.rb b/app/controllers/admin/conversations_controller.rb
+new file mode 100644
+index 0000000..fed7ba4
+--- /dev/null
++++ b/app/controllers/admin/conversations_controller.rb
+@@ -0,0 +1,31 @@
++module Admin
++  # Secure messaging from the care team's side — one thread per member.
++  class ConversationsController < BaseController
++    def index
++      @threads = User.members
++                     .left_joins(:messages)
++                     .select("users.*, MAX(messages.created_at) AS last_message_at, COUNT(messages.id) AS message_count")
++                     .group("users.id")
++                     .order(Arel.sql("MAX(messages.created_at) DESC"))
++      @unread = Message.unread.where("messages.sender_id = messages.member_id").group(:member_id).count
++      @last_bodies = Message.where(id: Message.group(:member_id).select("MAX(id)")).index_by(&:member_id)
++    end
++
++    def show
++      @member   = User.members.find(params[:id])
++      @messages = @member.messages.chronological.includes(:sender)
++      @member.messages.unread.where("sender_id = member_id").update_all(read_at: Time.current)
++      @message  = Message.new
++    end
++
++    def reply
++      @member = User.members.find(params[:id])
++      message = @member.messages.new(sender: current_user, body: params.dig(:message, :body))
++      if message.save
++        redirect_to admin_conversation_path(@member)
++      else
++        redirect_to admin_conversation_path(@member), danger: "Your reply can't be blank."
++      end
++    end
++  end
++end
+diff --git a/app/controllers/admin/dashboard_controller.rb b/app/controllers/admin/dashboard_controller.rb
+new file mode 100644
+index 0000000..c68d548
+--- /dev/null
++++ b/app/controllers/admin/dashboard_controller.rb
+@@ -0,0 +1,40 @@
++module Admin
++  class DashboardController < BaseController
++    def index
++      @member_count   = User.members.count
++      @active_count   = User.members.where(id: Checkin.where(checkin_date: 14.days.ago..).select(:user_id)).distinct.count
++      @pending_appts  = Appointment.where(status: "requested").count
++      @upcoming_appts = Appointment.upcoming.count
++      @open_assessments = Assessment.open.count
++      @unread_threads = unread_thread_count
++
++      @recent_appointments = Appointment.includes(:user, :service).order(created_at: :desc).limit(6)
++      @new_members         = User.members.order(created_at: :desc).limit(5)
++
++      @signup_series  = daily_counts(User.members, :created_at)
++      @checkin_series = daily_counts(Checkin.all, :created_at)
++
++      # Members whose charts currently raise a concern-level flag.
++      @attention = members_needing_attention
++    end
++
++    private
++
++    # Count rows per day for the last 14 days → { labels:, values: }.
++    def daily_counts(scope, column)
++      days = (0..13).map { |n| Date.current - (13 - n) }
++      grouped = scope.where(column => 14.days.ago.beginning_of_day..)
++                     .pluck(column).group_by(&:to_date).transform_values(&:size)
++      { labels: days.map { |d| d.strftime("%-m/%-d") }, values: days.map { |d| grouped[d].to_i } }
++    end
++
++    def members_needing_attention
++      active_ids = Checkin.where(checkin_date: 21.days.ago..).distinct.pluck(:user_id)
++      User.members.where(id: active_ids).limit(25).filter_map do |member|
++        flags = HealthInsights.for(member)
++        concern = flags.select { |f| %w[concern urgent watch].include?(f.level) }
++        { member: member, flags: concern } if concern.any?
++      end.sort_by { |h| h[:flags].any? { |f| %w[concern urgent].include?(f.level) } ? 0 : 1 }.first(6)
++    end
++  end
++end
+diff --git a/app/controllers/admin/services_controller.rb b/app/controllers/admin/services_controller.rb
+new file mode 100644
+index 0000000..70073de
+--- /dev/null
++++ b/app/controllers/admin/services_controller.rb
+@@ -0,0 +1,33 @@
++module Admin
++  class ServicesController < BaseController
++    before_action :set_service, only: [ :edit, :update ]
++
++    def index
++      @services = Service.ordered
++      @booking_counts = Appointment.group(:service_id).count
++    end
++
++    def edit
++    end
++
++    def update
++      if @service.update(service_params)
++        redirect_to admin_services_path, success: "#{@service.name} updated."
++      else
++        flash.now[:danger] = @service.errors.full_messages.to_sentence
++        render :edit, status: :unprocessable_entity
++      end
++    end
++
++    private
++
++    def set_service
++      @service = Service.find_by!(slug: params[:id])
++    end
++
++    def service_params
++      params.require(:service).permit(:name, :category, :tagline, :description, :duration_min,
++                                      :price_cents, :provider_name, :color, :icon, :active, :position)
++    end
++  end
++end
+diff --git a/app/controllers/admin/users_controller.rb b/app/controllers/admin/users_controller.rb
+new file mode 100644
+index 0000000..77159dc
+--- /dev/null
++++ b/app/controllers/admin/users_controller.rb
+@@ -0,0 +1,42 @@
++module Admin
++  class UsersController < BaseController
++    def index
++      @q = params[:q].to_s.strip
++      scope = User.members.order(created_at: :desc)
++      if @q.present?
++        like = "%#{@q.downcase}%"
++        scope = scope.where("lower(first_name) LIKE ? OR lower(last_name) LIKE ? OR lower(email) LIKE ? OR lower(username) LIKE ?",
++                            like, like, like, like)
++      end
++      @members = scope
++      @checkin_counts = Checkin.group(:user_id).count
++      @last_checkin   = Checkin.group(:user_id).maximum(:checkin_date)
++    end
++
++    def show
++      @member  = User.members.find(params[:id])
++      @profile = @member.ensure_health_profile
++      @flags   = HealthInsights.for(@member)
++      @recent_checkins = @member.checkins.order(checkin_date: :desc).limit(7)
++      @appointments    = @member.appointments.includes(:service).order(scheduled_at: :desc).limit(8)
++      @assessments     = @member.assessments.recent.includes(:author)
++      @assessment      = Assessment.new
++      @weight_series   = series(@member.checkins.where.not(weight: nil).order(:checkin_date).last(30)) { |c| c.weight.to_f }
++      @bmi_series      = bmi_series(@member)
++      @unread          = @member.messages.unread.where.not(sender_id: @member.id).count
++      @week_minutes    = @member.workout_logs.where(performed_on: Date.current.beginning_of_week..).sum(:duration_min)
++    end
++
++    private
++
++    def series(records)
++      records = records.reject { |r| yield(r).nil? }
++      { labels: records.map { |r| r.checkin_date.strftime("%b %-d") }, values: records.map { |r| yield(r) } }
++    end
++
++    def bmi_series(member)
++      history = member.bmi_history(limit: 30)
++      { labels: history.map { |d, _| d.strftime("%b %-d") }, values: history.map { |_, v| v } }
++    end
++  end
++end
+diff --git a/app/controllers/appointments_controller.rb b/app/controllers/appointments_controller.rb
+new file mode 100644
+index 0000000..fa9d025
+--- /dev/null
++++ b/app/controllers/appointments_controller.rb
+@@ -0,0 +1,56 @@
++class AppointmentsController < ChartController
++  before_action :set_appointment, only: [ :show, :cancel, :calendar ]
++
++  def index
++    @upcoming = current_user.appointments.upcoming.includes(:service)
++    @past     = current_user.appointments.past.includes(:service).limit(25)
++  end
++
++  def show
++  end
++
++  def new
++    @service = Service.active.find_by!(slug: params[:service_id])
++    @appointment = current_user.appointments.new(
++      service: @service, duration_min: @service.duration_min,
++      scheduled_at: next_business_slot, mode: "in_person"
++    )
++  end
++
++  def create
++    @appointment = current_user.appointments.new(appointment_params)
++    if @appointment.save
++      redirect_to appointment_path(@appointment),
++                  success: "Requested! We'll confirm your #{@appointment.service.name} session shortly."
++    else
++      @service = @appointment.service
++      flash.now[:danger] = "Please fix: #{@appointment.errors.full_messages.to_sentence}."
++      render :new, status: :unprocessable_entity
++    end
++  end
++
++  def cancel
++    @appointment.update(status: "cancelled", cancelled_at: Time.current)
++    redirect_to appointments_path, success: "Appointment cancelled."
++  end
++
++  def calendar
++    send_data @appointment.to_ics,
++              filename: "hwf-appointment-#{@appointment.id}.ics",
++              type: "text/calendar; charset=utf-8"
++  end
++
++  private
++
++  def set_appointment
++    @appointment = current_user.appointments.find(params[:id])
++  end
++
++  def appointment_params
++    params.require(:appointment).permit(:service_id, :scheduled_at, :mode, :reason)
++  end
++
++  def next_business_slot
++    (Time.current + 2.days).change(hour: 9, min: 0)
++  end
++end
+diff --git a/app/controllers/dashboard_controller.rb b/app/controllers/dashboard_controller.rb
+index 8d04187..95b15e4 100644
+--- a/app/controllers/dashboard_controller.rb
++++ b/app/controllers/dashboard_controller.rb
+@@ -24,9 +24,15 @@ class DashboardController < ChartController
+     @recommended_workouts = recommended_workouts
+     @recommended_articles = Article.newest.limit(3)
+ 
++    # --- Scheduling & training shortcuts -------------------------------------
++    @next_appointment = current_user.appointments.upcoming.includes(:service).first
++    @required_training = TrainingModule.required.ordered
++    @training_done = current_user.training_completions.acknowledged.count
++
+     # --- Trend series for the chart cards ------------------------------------
+     @weight_series   = series(trend_checkins.select { |c| c.weight.present? }) { |c| c.weight.to_f }
+     @wellness_series = series(trend_checkins) { |c| c.wellness_score }
++    @bmi_series      = bmi_series
+     @nutrition_week  = nutrition_week_series
+   end
+ 
+@@ -41,6 +47,12 @@ class DashboardController < ChartController
+     }
+   end
+ 
++  # BMI over time from the member's dated weights and profile height.
++  def bmi_series
++    history = current_user.bmi_history(limit: 30)
++    { labels: history.map { |d, _| d.strftime("%b %-d") }, values: history.map { |_, v| v } }
++  end
++
+   # Build { labels: [...], values: [...] } skipping nil measurements.
+   def series(records)
+     records = records.reject { |r| yield(r).nil? }
+diff --git a/app/controllers/messages_controller.rb b/app/controllers/messages_controller.rb
+new file mode 100644
+index 0000000..3055c4e
+--- /dev/null
++++ b/app/controllers/messages_controller.rb
+@@ -0,0 +1,17 @@
++# Member-side secure messaging — their single conversation with the care team.
++class MessagesController < ChartController
++  def index
++    @messages = current_user.messages.chronological.includes(:sender)
++    # Mark the care team's messages as read now that the member is viewing them.
++    current_user.messages.unread.where.not(sender_id: current_user.id).update_all(read_at: Time.current)
++  end
++
++  def create
++    message = current_user.messages.new(sender: current_user, body: params.dig(:message, :body))
++    if message.save
++      redirect_to messages_path
++    else
++      redirect_to messages_path, danger: "Your message can't be blank."
++    end
++  end
++end
+diff --git a/app/controllers/services_controller.rb b/app/controllers/services_controller.rb
+new file mode 100644
+index 0000000..c7cbdb8
+--- /dev/null
++++ b/app/controllers/services_controller.rb
+@@ -0,0 +1,12 @@
++class ServicesController < ChartController
++  def index
++    @category   = params[:category].presence
++    @services   = Service.active.in_category(@category).ordered
++    @categories = Service::CATEGORIES
++    @upcoming   = current_user.appointments.upcoming.includes(:service).limit(4)
++  end
++
++  def show
++    @service = Service.active.find_by!(slug: params[:id])
++  end
++end
+diff --git a/app/controllers/trainings_controller.rb b/app/controllers/trainings_controller.rb
+new file mode 100644
+index 0000000..9b29c15
+--- /dev/null
++++ b/app/controllers/trainings_controller.rb
+@@ -0,0 +1,52 @@
++class TrainingsController < ChartController
++  before_action :set_training, only: [ :show, :complete ]
++
++  def index
++    @trainings   = TrainingModule.ordered
++    @completions = current_user.training_completions.index_by(&:training_module_id)
++  end
++
++  def show
++    @completion = @training.completion_for(current_user)
++  end
++
++  def complete
++    signature = params[:signature].to_s.strip
++
++    if params[:acknowledge] != "1" || signature.blank?
++      return redirect_to training_path(@training),
++                         danger: "Please read the material, check the acknowledgement, and sign with your name."
++    end
++
++    score = @training.quiz? ? grade(params[:answers]) : nil
++    if score && score < TrainingModule::PASS_THRESHOLD
++      return redirect_to training_path(@training),
++                         danger: "You scored #{score}%. A score of #{TrainingModule::PASS_THRESHOLD}% is required — review the material and try again."
++    end
++
++    completion = current_user.training_completions.find_or_initialize_by(training_module: @training)
++    completion.update!(acknowledged: true, signature: signature, score: score, completed_at: Time.current)
++
++    redirect_to trainings_path,
++                success: "#{@training.title} completed#{score ? " with a score of #{score}%" : ''}. Thank you!"
++  end
++
++  private
++
++  def set_training
++    @training = TrainingModule.find_by!(slug: params[:id])
++  end
++
++  # Percentage of quiz questions answered correctly.
++  def grade(answers)
++    answers = answers.respond_to?(:to_unsafe_h) ? answers.to_unsafe_h : Hash(answers)
++    answers = answers.transform_keys(&:to_s)
++    questions = @training.questions
++    return 0 if questions.empty?
++
++    correct = questions.each_with_index.count do |q, i|
++      answers[i.to_s].to_s == q["answer"].to_s
++    end
++    (correct * 100.0 / questions.size).round
++  end
++end
+diff --git a/app/helpers/admin_helper.rb b/app/helpers/admin_helper.rb
+new file mode 100644
+index 0000000..74affcb
+--- /dev/null
++++ b/app/helpers/admin_helper.rb
+@@ -0,0 +1,42 @@
++module AdminHelper
++  ADMIN_NAV = [
++    { label: "Overview",     icon: "fa-gauge-high",     path: :admin_root_path },
++    { label: "Members",      icon: "fa-users",          path: :admin_users_path },
++    { label: "Appointments", icon: "fa-calendar-check", path: :admin_appointments_path },
++    { label: "Messages",     icon: "fa-comments",       path: :admin_conversations_path, badge: :threads },
++    { label: "Services",     icon: "fa-list-check",     path: :admin_services_path },
++    { label: "Analytics",    icon: "fa-chart-line",     path: :admin_analytics_path }
++  ].freeze
++
++  def admin_nav_items
++    ADMIN_NAV.map { |item| item.merge(href: send(item[:path])) }
++  end
++
++  # Tone class for a HealthInsights flag level or assessment severity.
++  def flag_tone(level)
++    case level.to_s
++    when "good" then "good"
++    when "watch", "info" then "ok"
++    when "concern", "urgent" then "low"
++    else "muted"
++    end
++  end
++
++  def severity_tone(severity)
++    case severity.to_s
++    when "info" then "muted"
++    when "watch" then "ok"
++    when "concern", "urgent" then "low"
++    else "muted"
++    end
++  end
++
++  def appt_when(appointment)
++    appointment.scheduled_at.strftime("%a, %b %-d · %-l:%M %p")
++  end
++
++  def status_pill(status)
++    tone = { "requested" => "ok", "confirmed" => "good", "completed" => "muted", "cancelled" => "low" }[status] || "muted"
++    tag.span(status.titleize, class: "pill #{tone}")
++  end
++end
+diff --git a/app/helpers/chart_helper.rb b/app/helpers/chart_helper.rb
+index 2012ce5..9a079b0 100644
+--- a/app/helpers/chart_helper.rb
++++ b/app/helpers/chart_helper.rb
+@@ -1,5 +1,5 @@
+ module ChartHelper
+-  # The left-rail navigation items for the chart.
++  # The left-rail navigation items for the chart, grouped into sections.
+   CHART_NAV = [
+     { label: "Chart Summary", icon: "fa-heart-pulse",   path: :dashboard_path },
+     { label: "Wellness",      icon: "fa-spa",            path: :checkins_path },
+@@ -7,14 +7,23 @@ module ChartHelper
+     { label: "Fitness Log",   icon: "fa-dumbbell",       path: :workout_logs_path },
+     { label: "Video Library", icon: "fa-circle-play",    path: :workouts_path },
+     { label: "Routines",      icon: "fa-calendar-check", path: :routines_path },
+-    { label: "Education",     icon: "fa-book-open",       path: :articles_path },
+-    { label: "My Details",    icon: "fa-id-card",         path: :health_profile_path }
++    { label: "Education",     icon: "fa-book-open",      path: :articles_path },
++    { label: "Scheduling",    icon: "fa-calendar-plus",  path: :services_path },
++    { label: "Appointments",  icon: "fa-calendar-day",   path: :appointments_path },
++    { label: "Messages",      icon: "fa-comments",       path: :messages_path, badge: :messages },
++    { label: "Training",      icon: "fa-shield-halved",  path: :trainings_path },
++    { label: "My Details",    icon: "fa-id-card",        path: :health_profile_path }
+   ].freeze
+ 
+   def chart_nav_items
+     CHART_NAV.map { |item| item.merge(href: send(item[:path])) }
+   end
+ 
++  # Unread care-team messages for a member (for the nav badge).
++  def member_unread_count(user)
++    user.messages.unread.where.not(sender_id: user.id).count
++  end
++
+   def nav_active?(href)
+     current = request.path
+     return current == href if href == root_path
+diff --git a/app/models/appointment.rb b/app/models/appointment.rb
+new file mode 100644
+index 0000000..5bf52a4
+--- /dev/null
++++ b/app/models/appointment.rb
+@@ -0,0 +1,89 @@
++# A member's booking for a service at a scheduled time.
++class Appointment < ApplicationRecord
++  belongs_to :user
++  belongs_to :service
++
++  STATUSES = %w[requested confirmed completed cancelled].freeze
++  MODES    = %w[in_person virtual].freeze
++
++  validates :scheduled_at, presence: true
++  validates :status, inclusion: { in: STATUSES }
++  validates :mode, inclusion: { in: MODES }
++  validate  :not_in_the_past, on: :create
++
++  before_validation :inherit_service_duration, on: :create
++
++  scope :upcoming,  -> { where(scheduled_at: Time.current..).where.not(status: "cancelled").order(:scheduled_at) }
++  scope :past,      -> { where(scheduled_at: ...Time.current).or(where(status: %w[completed cancelled])).order(scheduled_at: :desc) }
++  scope :active,    -> { where.not(status: "cancelled") }
++  scope :by_status, ->(s) { where(status: s) if s.present? }
++  scope :chronological, -> { order(:scheduled_at) }
++
++  def ends_at
++    scheduled_at + (duration_min || service&.duration_min || 60).minutes
++  end
++
++  def virtual?
++    mode == "virtual"
++  end
++
++  def cancelled?
++    status == "cancelled"
++  end
++
++  def upcoming?
++    scheduled_at.future? && !cancelled?
++  end
++
++  def status_tone
++    case status
++    when "confirmed" then "good"
++    when "requested" then "ok"
++    when "completed" then "muted"
++    when "cancelled" then "low"
++    else "muted"
++    end
++  end
++
++  def mode_label
++    virtual? ? "Virtual" : "In person"
++  end
++
++  # A minimal iCalendar payload so members can add the session to any calendar.
++  def to_ics
++    stamp = ->(t) { t.utc.strftime("%Y%m%dT%H%M%SZ") }
++    summary = "#{service&.name} · Holistic Wellness Fitness"
++    location = virtual? ? (meeting_url.presence || "Virtual session") : (location_or_default)
++    <<~ICS
++      BEGIN:VCALENDAR
++      VERSION:2.0
++      PRODID:-//Holistic Wellness Fitness//Holistic Chart//EN
++      BEGIN:VEVENT
++      UID:appointment-#{id}@holisticchart
++      DTSTAMP:#{stamp.call(Time.current)}
++      DTSTART:#{stamp.call(scheduled_at)}
++      DTEND:#{stamp.call(ends_at)}
++      SUMMARY:#{summary}
++      DESCRIPTION:#{reason.to_s.gsub("\n", ' ')}
++      LOCATION:#{location}
++      END:VEVENT
++      END:VCALENDAR
++    ICS
++  end
++
++  private
++
++  def location_or_default
++    location.presence || "177 State Street, Meriden, CT 06450"
++  end
++
++  def inherit_service_duration
++    self.duration_min ||= service&.duration_min
++  end
++
++  def not_in_the_past
++    return if scheduled_at.blank?
++
++    errors.add(:scheduled_at, "can't be in the past") if scheduled_at < Time.current
++  end
++end
+diff --git a/app/models/assessment.rb b/app/models/assessment.rb
+new file mode 100644
+index 0000000..33d31c8
+--- /dev/null
++++ b/app/models/assessment.rb
+@@ -0,0 +1,29 @@
++# A clinical note / assessment an admin records on a member's chart
++# (the "help diagnose" tool). Visible to the member as care-team guidance.
++class Assessment < ApplicationRecord
++  belongs_to :member, class_name: "User", inverse_of: :assessments
++  belongs_to :author, class_name: "User"
++
++  SEVERITIES = %w[info watch concern urgent].freeze
++  STATUSES   = %w[open monitoring resolved].freeze
++  CATEGORIES = [
++    "General", "Nutrition", "Cardiometabolic", "Musculoskeletal",
++    "Mental wellness", "Sleep", "Gut health"
++  ].freeze
++
++  validates :title, presence: true
++  validates :severity, inclusion: { in: SEVERITIES }
++  validates :status, inclusion: { in: STATUSES }
++
++  scope :recent, -> { order(created_at: :desc) }
++  scope :open,   -> { where.not(status: "resolved") }
++
++  def severity_tone
++    case severity
++    when "info" then "muted"
++    when "watch" then "ok"
++    when "concern", "urgent" then "low"
++    else "muted"
++    end
++  end
++end
+diff --git a/app/models/health_insights.rb b/app/models/health_insights.rb
+new file mode 100644
+index 0000000..d2221c0
+--- /dev/null
++++ b/app/models/health_insights.rb
+@@ -0,0 +1,108 @@
++# Rule-based "diagnostic helper" that surfaces flags from a member's chart data.
++# Not medical advice — it highlights patterns for the care team to review.
++class HealthInsights
++  Flag = Struct.new(:level, :title, :detail, :icon, keyword_init: true)
++
++  def self.for(user)
++    new(user).flags
++  end
++
++  def initialize(user)
++    @user = user
++    @recent = user.checkins.order(checkin_date: :desc).limit(7).to_a
++    @profile = user.health_profile
++  end
++
++  def flags
++    out = [ blood_pressure, wellness, stress, sleep, activity, weight_trend, adherence ].compact
++    out.presence || [ Flag.new(level: "good", title: "No flags", icon: "fa-circle-check",
++                               detail: "Recent metrics are within healthy ranges.") ]
++  end
++
++  private
++
++  attr_reader :recent, :profile, :user
++
++  def latest = recent.first
++
++  def blood_pressure
++    c = recent.find { |x| x.systolic && x.diastolic }
++    return unless c
++
++    if c.systolic >= 140 || c.diastolic >= 90
++      Flag.new(level: "concern", icon: "fa-heart-pulse", title: "Elevated blood pressure",
++               detail: "Last reading #{c.blood_pressure} (#{c.bp_category}) on #{c.checkin_date.strftime('%b %-d')}.")
++    elsif c.systolic >= 130 || c.diastolic >= 80
++      Flag.new(level: "watch", icon: "fa-heart-pulse", title: "Borderline blood pressure",
++               detail: "Last reading #{c.blood_pressure} (#{c.bp_category}). Worth monitoring.")
++    end
++  end
++
++  def wellness
++    scores = recent.map(&:wellness_score).compact
++    return if scores.empty?
++
++    avg = scores.sum / scores.size
++    if avg < 50
++      Flag.new(level: "concern", icon: "fa-face-frown", title: "Low wellbeing trend",
++               detail: "7-day average wellness score is #{avg}/100.")
++    elsif avg < 65
++      Flag.new(level: "watch", icon: "fa-face-meh", title: "Dipping wellbeing",
++               detail: "7-day average wellness score is #{avg}/100.")
++    end
++  end
++
++  def stress
++    values = recent.map(&:stress).compact
++    return if values.empty?
++
++    avg = values.sum.to_f / values.size
++    return unless avg >= 3.5
++
++    Flag.new(level: "watch", icon: "fa-bolt", title: "Elevated stress",
++             detail: "Average stress is #{avg.round(1)}/5 over recent check-ins.")
++  end
++
++  def sleep
++    hours = recent.map(&:sleep_hours).compact
++    return if hours.empty?
++
++    avg = hours.sum / hours.size
++    return unless avg < 6
++
++    Flag.new(level: "watch", icon: "fa-moon", title: "Short sleep",
++             detail: "Averaging #{avg.round(1)} hrs/night recently.")
++  end
++
++  def activity
++    minutes = user.workout_logs.where(performed_on: Date.current.beginning_of_week..).sum(:duration_min)
++    return if minutes >= 90
++
++    Flag.new(level: "watch", icon: "fa-dumbbell", title: "Low activity this week",
++             detail: "#{minutes} active minutes logged so far this week.")
++  end
++
++  def weight_trend
++    weighed = user.checkins.where.not(weight: nil).order(checkin_date: :asc).last(10)
++    return if weighed.size < 3
++
++    change = (weighed.last.weight - weighed.first.weight).to_f.round(1)
++    goal = profile&.primary_goal
++    if goal == "Weight loss" && change > 1
++      Flag.new(level: "watch", icon: "fa-weight-scale", title: "Weight trending up",
++               detail: "+#{change} lb across recent check-ins despite a weight-loss goal.")
++    elsif change.abs >= 5
++      Flag.new(level: "info", icon: "fa-weight-scale", title: "Notable weight change",
++               detail: "#{change.positive? ? '+' : ''}#{change} lb across recent check-ins.")
++    end
++  end
++
++  def adherence
++    last = latest&.checkin_date
++    days = last ? (Date.current - last).to_i : nil
++    return if days && days <= 5
++
++    Flag.new(level: "watch", icon: "fa-calendar-xmark", title: "No recent check-ins",
++             detail: last ? "Last check-in was #{days} days ago." : "No check-ins on file yet.")
++  end
++end
+diff --git a/app/models/message.rb b/app/models/message.rb
+new file mode 100644
+index 0000000..baee47c
+--- /dev/null
++++ b/app/models/message.rb
+@@ -0,0 +1,34 @@
++# A direct message inside a member's conversation with the clinic.
++# Threads only ever exist between one member and the admin/care team.
++class Message < ApplicationRecord
++  belongs_to :member, class_name: "User", inverse_of: :messages
++  belongs_to :sender, class_name: "User", inverse_of: :sent_messages
++
++  validates :body, presence: true, length: { maximum: 5000 }
++  validate  :sender_is_member_or_admin
++
++  scope :chronological, -> { order(:created_at) }
++  scope :unread, -> { where(read_at: nil) }
++
++  def from_admin?
++    sender.admin?
++  end
++
++  def from_member?
++    sender_id == member_id
++  end
++
++  def read?
++    read_at.present?
++  end
++
++  private
++
++  # Enforce that only the member themselves or an admin can post in a thread.
++  def sender_is_member_or_admin
++    return if sender.blank? || member.blank?
++    return if sender_id == member_id || sender.admin?
++
++    errors.add(:sender, "must be the member or an admin")
++  end
++end
+diff --git a/app/models/service.rb b/app/models/service.rb
+new file mode 100644
+index 0000000..b0ffa63
+--- /dev/null
++++ b/app/models/service.rb
+@@ -0,0 +1,43 @@
++# A bookable service offered by Holistic Wellness Fitness
++# (personal training, nutrition, pelvic health, boxing, kids athletics, …).
++class Service < ApplicationRecord
++  has_many :appointments, dependent: :restrict_with_error
++
++  CATEGORIES = [
++    "Personal Training", "Nutrition", "Pelvic Health", "Boxing",
++    "Kids Athletic Training", "Holistic Coaching"
++  ].freeze
++
++  validates :name, presence: true
++  validates :slug, presence: true, uniqueness: true
++
++  before_validation :set_slug, on: :create
++
++  scope :active,   -> { where(active: true) }
++  scope :ordered,  -> { order(:position, :name) }
++  scope :in_category, ->(c) { where(category: c) if c.present? }
++
++  def price
++    return "Free" if price_cents.to_i.zero?
++
++    format("$%.0f", price_cents / 100.0)
++  end
++
++  def icon_name
++    icon.presence || "fa-calendar-check"
++  end
++
++  def accent
++    color.presence || "#4a7c59"
++  end
++
++  def to_param
++    slug
++  end
++
++  private
++
++  def set_slug
++    self.slug = name.to_s.parameterize if slug.blank?
++  end
++end
+diff --git a/app/models/training_completion.rb b/app/models/training_completion.rb
+new file mode 100644
+index 0000000..fe89b49
+--- /dev/null
++++ b/app/models/training_completion.rb
+@@ -0,0 +1,13 @@
++# Records a member's completion (and acknowledgement) of a training module.
++class TrainingCompletion < ApplicationRecord
++  belongs_to :user
++  belongs_to :training_module
++
++  validates :user_id, uniqueness: { scope: :training_module_id }
++
++  scope :acknowledged, -> { where(acknowledged: true) }
++
++  def passed?
++    acknowledged? && (score.nil? || score >= TrainingModule::PASS_THRESHOLD)
++  end
++end
+diff --git a/app/models/training_module.rb b/app/models/training_module.rb
+new file mode 100644
+index 0000000..4063dee
+--- /dev/null
++++ b/app/models/training_module.rb
+@@ -0,0 +1,36 @@
++# A compliance/education training (e.g. HIPAA privacy training) members complete.
++class TrainingModule < ApplicationRecord
++  serialize :quiz, coder: JSON
++
++  has_many :training_completions, dependent: :destroy
++  has_many :users, through: :training_completions
++
++  validates :slug, presence: true, uniqueness: true
++  validates :title, presence: true
++
++  scope :ordered,  -> { order(:position, :title) }
++  scope :required, -> { where(required: true) }
++
++  PASS_THRESHOLD = 70 # percent
++
++  def to_param
++    slug
++  end
++
++  # Body split into rendered sections; lines starting with "## " become headings.
++  def sections
++    body.to_s.split(/\n{2,}/).map(&:strip).reject(&:blank?)
++  end
++
++  def questions
++    Array(quiz)
++  end
++
++  def quiz?
++    questions.any?
++  end
++
++  def completion_for(user)
++    training_completions.find_by(user: user)
++  end
++end
+diff --git a/app/models/user.rb b/app/models/user.rb
+index b8a15dc..86a915a 100644
+--- a/app/models/user.rb
++++ b/app/models/user.rb
+@@ -1,10 +1,23 @@
+ class User < ApplicationRecord
+   has_secure_password
+ 
++  enum :role, { member: "member", admin: "admin" }, default: "member"
++
+   has_one  :health_profile, dependent: :destroy
+   has_many :checkins,     dependent: :destroy
+   has_many :meal_entries, dependent: :destroy
+   has_many :workout_logs, dependent: :destroy
++  has_many :appointments, dependent: :destroy
++  has_many :training_completions, dependent: :destroy
++
++  # Messaging: a "thread" is owned by a member; messages may be authored by
++  # the member or by an admin (sender).
++  has_many :messages, foreign_key: :member_id, dependent: :destroy, inverse_of: :member
++  has_many :sent_messages, class_name: "Message", foreign_key: :sender_id, dependent: :destroy, inverse_of: :sender
++  has_many :assessments, foreign_key: :member_id, dependent: :destroy, inverse_of: :member
++
++  scope :members, -> { where(role: "member") }
++  scope :admins,  -> { where(role: "admin") }
+ 
+   validates :first_name, presence: true
+   validates :last_name,  presence: true
+@@ -53,4 +66,20 @@ class User < ApplicationRecord
+   def active_minutes_since(date)
+     workout_logs.where(performed_on: date..).sum(:duration_min)
+   end
++
++  # BMI over time, computed from dated weights and the profile height.
++  # Returns an array of [date, bmi] pairs, oldest first.
++  def bmi_history(limit: 60)
++    profile = health_profile
++    return [] unless profile&.height_in.to_f&.positive?
++
++    checkins.where.not(weight: nil).order(checkin_date: :asc).last(limit).map do |c|
++      [ c.checkin_date, ((c.weight.to_f / (profile.height_in.to_f**2)) * 703).round(1) ]
++    end
++  end
++
++  def training_complete?(slug)
++    training_completions.joins(:training_module)
++                        .where(training_modules: { slug: slug }, acknowledged: true).exists?
++  end
+ end
+diff --git a/app/views/admin/analytics/index.html.erb b/app/views/admin/analytics/index.html.erb
+new file mode 100644
+index 0000000..41545e4
+--- /dev/null
++++ b/app/views/admin/analytics/index.html.erb
+@@ -0,0 +1,106 @@
++<% content_for :title, "Admin · Analytics" %>
++
++<div class="section-head">
++  <div>
++    <span class="eyebrow">Admin portal</span>
++    <h1 class="h3 mb-0">Analytics</h1>
++  </div>
++</div>
++
++<!-- KPIs -->
++<div class="row g-3 mb-4">
++  <% completion = @member_count.zero? ? 0 : (@active_count * 100.0 / @member_count).round %>
++  <% [
++    { v: @member_count, l: "Total members", i: "fa-users" },
++    { v: "#{completion}%", l: "Active (14d)", i: "fa-bolt" },
++    { v: @appt_total, l: "Appointments", i: "fa-calendar-check" },
++    { v: @appt_completed, l: "Completed sessions", i: "fa-circle-check" }
++  ].each do |k| %>
++    <div class="col-6 col-lg-3">
++      <div class="hwf-card kpi h-100">
++        <div class="stat-icon mb-2"><i class="fa-solid <%= k[:i] %>"></i></div>
++        <div class="stat-value"><%= k[:v] %></div>
++        <div class="stat-label"><%= k[:l] %></div>
++      </div>
++    </div>
++  <% end %>
++</div>
++
++<div class="row g-3 mb-4">
++  <div class="col-lg-6">
++    <div class="hwf-card h-100">
++      <div class="card-title-sm mb-2">Check-ins · 8 weeks</div>
++      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@checkins_weekly, label: 'Check-ins', color: '#4a7c59') %>">
++        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
++        <div class="chart-empty-note"><i class="fa-solid fa-chart-line"></i><span>No data.</span></div>
++      </div>
++    </div>
++  </div>
++  <div class="col-lg-6">
++    <div class="hwf-card h-100">
++      <div class="card-title-sm mb-2">New members · 8 weeks</div>
++      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@signups_weekly, label: 'Signups', color: '#c9a96e', type: 'bar') %>">
++        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
++        <div class="chart-empty-note"><i class="fa-solid fa-user-plus"></i><span>No data.</span></div>
++      </div>
++    </div>
++  </div>
++</div>
++
++<div class="row g-3 mb-4">
++  <div class="col-lg-6">
++    <div class="hwf-card h-100">
++      <div class="card-title-sm mb-2">Bookings by service</div>
++      <% if @appts_by_service.any? %>
++        <div data-controller="chart" data-chart-payload-value="<%= trend_payload({ labels: @appts_by_service.keys, values: @appts_by_service.values }, label: 'Bookings', color: '#a3b18a', type: 'bar') %>">
++          <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
++        </div>
++      <% else %>
++        <p class="text-muted small mb-0">No bookings yet.</p>
++      <% end %>
++    </div>
++  </div>
++  <div class="col-lg-6">
++    <div class="hwf-card h-100">
++      <div class="card-title-sm mb-2">Logged workouts by category</div>
++      <% if @workout_categories.any? %>
++        <div data-controller="chart" data-chart-payload-value="<%= trend_payload({ labels: @workout_categories.keys, values: @workout_categories.values }, label: 'Sessions', color: '#4a7c59', type: 'bar') %>">
++          <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
++        </div>
++      <% else %>
++        <p class="text-muted small mb-0">No workouts logged yet.</p>
++      <% end %>
++    </div>
++  </div>
++</div>
++
++<div class="row g-3">
++  <div class="col-lg-6">
++    <div class="hwf-card h-100">
++      <div class="card-title-sm mb-3">HIPAA &amp; training completion</div>
++      <% @training_progress.each do |t| %>
++        <div class="dist-row">
++          <div class="small text-truncate"><%= t[:title] %></div>
++          <div class="dist-track"><div class="dist-fill" style="width: <%= t[:pct] %>%"></div></div>
++          <div class="small text-muted text-end"><%= t[:pct] %>%</div>
++        </div>
++      <% end %>
++      <% if @training_progress.empty? %><p class="text-muted small mb-0">No training modules.</p><% end %>
++    </div>
++  </div>
++  <div class="col-lg-6">
++    <div class="hwf-card h-100">
++      <div class="card-title-sm mb-3">Member wellbeing (latest score)</div>
++      <% total = @wellness_distribution[:values].sum %>
++      <% @wellness_distribution[:labels].each_with_index do |label, i| %>
++        <% val = @wellness_distribution[:values][i] %>
++        <div class="dist-row">
++          <div class="small"><%= label %></div>
++          <div class="dist-track"><div class="dist-fill" style="width: <%= total.zero? ? 0 : (val * 100.0 / total).round %>%"></div></div>
++          <div class="small text-muted text-end"><%= val %></div>
++        </div>
++      <% end %>
++      <% if total.zero? %><p class="text-muted small mb-0">No wellness scores yet.</p><% end %>
++    </div>
++  </div>
++</div>
+diff --git a/app/views/admin/appointments/index.html.erb b/app/views/admin/appointments/index.html.erb
+new file mode 100644
+index 0000000..d8d6056
+--- /dev/null
++++ b/app/views/admin/appointments/index.html.erb
+@@ -0,0 +1,41 @@
++<% content_for :title, "Admin · Appointments" %>
++
++<div class="section-head">
++  <div>
++    <span class="eyebrow">Admin portal</span>
++    <h1 class="h3 mb-0">Appointments</h1>
++  </div>
++  <% if @pending.positive? %><span class="pill ok"><i class="fa-solid fa-bell me-1"></i><%= @pending %> awaiting confirmation</span><% end %>
++</div>
++
++<div class="filter-chips mb-4">
++  <%= link_to "All", admin_appointments_path, class: "filter-chip #{'active' unless @status}" %>
++  <%= link_to "Upcoming", admin_appointments_path(status: "upcoming"), class: "filter-chip #{'active' if @status == 'upcoming'}" %>
++  <% Appointment::STATUSES.each do |s| %>
++    <%= link_to "#{s.titleize} (#{@counts[s].to_i})", admin_appointments_path(status: s), class: "filter-chip #{'active' if @status == s}" %>
++  <% end %>
++</div>
++
++<div class="hwf-card">
++  <% if @appointments.any? %>
++    <div class="table-scroll">
++      <table class="flowsheet">
++        <thead><tr><th>When</th><th>Member</th><th>Service</th><th>Format</th><th>Status</th><th></th></tr></thead>
++        <tbody>
++          <% @appointments.each do |appt| %>
++            <tr>
++              <td class="fw-semibold"><%= appt_when(appt) %></td>
++              <td><%= link_to appt.user.full_name, admin_user_path(appt.user), class: "text-decoration-none" %></td>
++              <td><i class="fa-solid <%= appt.service.icon_name %> text-brand me-1"></i><%= appt.service.name %></td>
++              <td><%= appt.mode_label %></td>
++              <td><%= status_pill(appt.status) %></td>
++              <td class="text-end"><%= link_to "Manage", admin_appointment_path(appt), class: "btn btn-soft btn-sm" %></td>
++            </tr>
++          <% end %>
++        </tbody>
++      </table>
++    </div>
++  <% else %>
++    <div class="empty-state"><div class="icon"><i class="fa-solid fa-calendar-check"></i></div><p class="mb-0">No appointments in this view.</p></div>
++  <% end %>
++</div>
+diff --git a/app/views/admin/appointments/show.html.erb b/app/views/admin/appointments/show.html.erb
+new file mode 100644
+index 0000000..5cab335
+--- /dev/null
++++ b/app/views/admin/appointments/show.html.erb
+@@ -0,0 +1,74 @@
++<% content_for :title, "Admin · Appointment" %>
++
++<div class="mb-3">
++  <%= link_to admin_appointments_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All appointments<% end %>
++</div>
++
++<div class="row g-4">
++  <div class="col-lg-5">
++    <div class="hwf-card">
++      <div class="d-flex align-items-center gap-3 mb-3">
++        <div class="service-icon-lg" style="background: <%= @appointment.service.accent %>;"><i class="fa-solid <%= @appointment.service.icon_name %>"></i></div>
++        <div>
++          <%= status_pill(@appointment.status) %>
++          <h1 class="h4 mb-0 mt-1"><%= @appointment.service.name %></h1>
++        </div>
++      </div>
++      <div class="d-flex align-items-center gap-2 py-2 border-top border-bottom mb-2">
++        <%= initials_badge(@appointment.user) %>
++        <div class="flex-fill">
++          <%= link_to @appointment.user.full_name, admin_user_path(@appointment.user), class: "fw-semibold text-decoration-none" %>
++          <div class="small text-muted"><%= @appointment.user.email %> · <%= @appointment.user.phone.presence %></div>
++        </div>
++      </div>
++      <dl class="row small mb-0">
++        <dt class="col-5 text-muted">Requested for</dt><dd class="col-7"><%= @appointment.scheduled_at.strftime("%A, %b %-d · %-l:%M %p") %></dd>
++        <dt class="col-5 text-muted">Duration</dt><dd class="col-7"><%= @appointment.duration_min %> min</dd>
++        <dt class="col-5 text-muted">Format</dt><dd class="col-7"><%= @appointment.mode_label %></dd>
++        <dt class="col-5 text-muted">Booked</dt><dd class="col-7"><%= @appointment.created_at.strftime("%b %-d, %Y") %></dd>
++      </dl>
++      <% if @appointment.reason.present? %>
++        <div class="mt-3"><div class="card-title-sm">Member's focus</div><p class="small mb-0"><%= simple_format @appointment.reason %></p></div>
++      <% end %>
++    </div>
++  </div>
++
++  <div class="col-lg-7">
++    <div class="hwf-card">
++      <div class="card-title-sm mb-3">Manage booking</div>
++      <%= form_with model: [ :admin, @appointment ], local: true do |f| %>
++        <div class="row g-3">
++          <div class="col-md-6">
++            <%= f.label :status, class: "form-label" %>
++            <%= f.select :status, Appointment::STATUSES.map { |s| [ s.titleize, s ] }, {}, class: "form-select" %>
++          </div>
++          <div class="col-md-6">
++            <%= f.label :mode, "Format", class: "form-label" %>
++            <%= f.select :mode, Appointment::MODES.map { |m| [ m.titleize.sub('_', ' '), m ] }, {}, class: "form-select" %>
++          </div>
++          <div class="col-md-6">
++            <%= f.label :scheduled_at, "Date & time", class: "form-label" %>
++            <%= f.datetime_field :scheduled_at, class: "form-control" %>
++          </div>
++          <div class="col-md-6">
++            <%= f.label :duration_min, "Duration (min)", class: "form-label" %>
++            <%= f.number_field :duration_min, class: "form-control", min: 0 %>
++          </div>
++          <div class="col-12">
++            <%= f.label :meeting_url, "Meeting link (virtual)", class: "form-label" %>
++            <%= f.url_field :meeting_url, class: "form-control", placeholder: "https://meet.google.com/…" %>
++          </div>
++          <div class="col-12">
++            <%= f.label :location, "Location (in person)", class: "form-label" %>
++            <%= f.text_field :location, class: "form-control", placeholder: "177 State Street, Meriden, CT" %>
++          </div>
++          <div class="col-12">
++            <%= f.label :admin_notes, "Note to member", class: "form-label" %>
++            <%= f.text_area :admin_notes, rows: 2, class: "form-control" %>
++          </div>
++        </div>
++        <div class="d-flex gap-2 mt-3"><%= f.submit "Save changes", class: "btn btn-brand" %></div>
++      <% end %>
++    </div>
++  </div>
++</div>
+diff --git a/app/views/admin/conversations/index.html.erb b/app/views/admin/conversations/index.html.erb
+new file mode 100644
+index 0000000..9ab7197
+--- /dev/null
++++ b/app/views/admin/conversations/index.html.erb
+@@ -0,0 +1,33 @@
++<% content_for :title, "Admin · Messages" %>
++
++<div class="section-head">
++  <div>
++    <span class="eyebrow">Admin portal</span>
++    <h1 class="h3 mb-0">Conversations</h1>
++  </div>
++  <% if unread_thread_count.positive? %><span class="pill low"><%= unread_thread_count %> unread</span><% end %>
++</div>
++
++<div class="hwf-card">
++  <% @threads.each do |member| %>
++    <% unread = @unread[member.id].to_i %>
++    <% last = @last_bodies[member.id] %>
++    <%= link_to admin_conversation_path(member), class: "thread-row #{'unread' if unread.positive?}" do %>
++      <%= initials_badge(member) %>
++      <div class="flex-fill min-w-0">
++        <div class="d-flex justify-content-between">
++          <span class="fw-semibold text-dark"><%= member.full_name %></span>
++          <% if last %><span class="small text-muted"><%= last.created_at.strftime("%b %-d") %></span><% end %>
++        </div>
++        <div class="small text-muted text-truncate">
++          <% if last %>
++            <%= last.from_admin? ? "You: " : "" %><%= truncate(last.body, length: 70) %>
++          <% else %>
++            <span class="fst-italic">No messages yet — start the conversation</span>
++          <% end %>
++        </div>
++      </div>
++      <% if unread.positive? %><span class="nav-badge" style="margin-left:0;"><%= unread %></span><% end %>
++    <% end %>
++  <% end %>
++</div>
+diff --git a/app/views/admin/conversations/show.html.erb b/app/views/admin/conversations/show.html.erb
+new file mode 100644
+index 0000000..95486cc
+--- /dev/null
++++ b/app/views/admin/conversations/show.html.erb
+@@ -0,0 +1,36 @@
++<% content_for :title, "Admin · #{@member.full_name}" %>
++
++<div class="mb-3">
++  <%= link_to admin_conversations_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All conversations<% end %>
++</div>
++
++<div class="hwf-card">
++  <div class="d-flex align-items-center gap-2 pb-3 mb-3 border-bottom">
++    <%= initials_badge(@member) %>
++    <div class="flex-fill">
++      <div class="fw-bold"><%= @member.full_name %></div>
++      <div class="small text-muted"><%= @member.member_id %> · <%= @member.email %></div>
++    </div>
++    <%= link_to "Open chart", admin_user_path(@member), class: "btn btn-soft btn-sm" %>
++  </div>
++
++  <div class="chat-window mb-3">
++    <% if @messages.any? %>
++      <% @messages.each do |m| %>
++        <div class="msg <%= m.from_admin? ? 'out' : 'in' %>">
++          <div><%= simple_format m.body, {}, sanitize: true %></div>
++          <div class="meta"><%= m.from_admin? ? m.sender.first_name : @member.first_name %> · <%= m.created_at.strftime("%b %-d, %-l:%M %p") %></div>
++        </div>
++      <% end %>
++    <% else %>
++      <div class="chat-empty"><i class="fa-solid fa-comments d-block mb-2" style="font-size:1.8rem; color: var(--brand-sage);"></i>No messages yet.</div>
++    <% end %>
++  </div>
++
++  <%= form_with url: reply_admin_conversation_path(@member), method: :post, local: true do %>
++    <div class="input-group">
++      <%= text_field_tag "message[body]", nil, class: "form-control", placeholder: "Reply to #{@member.first_name}…", autocomplete: "off", required: true %>
++      <%= submit_tag "Send", class: "btn btn-brand" %>
++    </div>
++  <% end %>
++</div>
+diff --git a/app/views/admin/dashboard/index.html.erb b/app/views/admin/dashboard/index.html.erb
+new file mode 100644
+index 0000000..fb1dbca
+--- /dev/null
++++ b/app/views/admin/dashboard/index.html.erb
+@@ -0,0 +1,111 @@
++<% content_for :title, "Admin · Overview" %>
++
++<div class="section-head">
++  <div>
++    <span class="eyebrow">Admin portal</span>
++    <h1 class="h3 mb-0">Practice overview</h1>
++  </div>
++  <%= link_to admin_analytics_path, class: "btn btn-soft" do %><i class="fa-solid fa-chart-line me-1"></i> Full analytics<% end %>
++</div>
++
++<!-- KPIs -->
++<div class="row g-3 mb-4">
++  <% [
++    { v: @member_count, l: "Members", i: "fa-users", link: admin_users_path },
++    { v: @active_count, l: "Active (14d)", i: "fa-bolt", link: admin_users_path },
++    { v: @pending_appts, l: "Pending requests", i: "fa-bell", link: admin_appointments_path(status: "requested") },
++    { v: @upcoming_appts, l: "Upcoming sessions", i: "fa-calendar-check", link: admin_appointments_path(status: "upcoming") },
++    { v: @unread_threads, l: "Unread threads", i: "fa-comments", link: admin_conversations_path },
++    { v: @open_assessments, l: "Open assessments", i: "fa-notes-medical", link: admin_users_path }
++  ].each do |k| %>
++    <div class="col-6 col-lg-2">
++      <%= link_to k[:link], class: "hwf-card is-hover h-100 text-decoration-none d-block" do %>
++        <div class="stat-icon mb-2"><i class="fa-solid <%= k[:i] %>"></i></div>
++        <div class="stat-value" style="font-size:1.7rem;"><%= k[:v] %></div>
++        <div class="stat-label"><%= k[:l] %></div>
++      <% end %>
++    </div>
++  <% end %>
++</div>
++
++<div class="row g-3 mb-4">
++  <div class="col-lg-6">
++    <div class="hwf-card h-100">
++      <div class="card-title-sm mb-2">Check-ins · 14 days</div>
++      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@checkin_series, label: 'Check-ins', color: '#4a7c59', type: 'bar') %>">
++        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
++        <div class="chart-empty-note"><i class="fa-solid fa-chart-column"></i><span>No check-ins yet.</span></div>
++      </div>
++    </div>
++  </div>
++  <div class="col-lg-6">
++    <div class="hwf-card h-100">
++      <div class="card-title-sm mb-2">New members · 14 days</div>
++      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@signup_series, label: 'Signups', color: '#c9a96e', type: 'bar') %>">
++        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
++        <div class="chart-empty-note"><i class="fa-solid fa-user-plus"></i><span>No signups in range.</span></div>
++      </div>
++    </div>
++  </div>
++</div>
++
++<div class="row g-3">
++  <!-- Needs attention -->
++  <div class="col-lg-7">
++    <div class="hwf-card mb-3">
++      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Needs attention</h2><%= link_to "All members", admin_users_path, class: "btn btn-soft btn-sm" %></div>
++      <% if @attention.any? %>
++        <% @attention.each do |row| %>
++          <%= link_to admin_user_path(row[:member]), class: "flag-row text-decoration-none" do %>
++            <%= initials_badge(row[:member]) %>
++            <div class="flex-fill">
++              <div class="fw-semibold text-dark"><%= row[:member].full_name %></div>
++              <div class="small">
++                <% row[:flags].first(2).each do |f| %>
++                  <span class="pill <%= flag_tone(f.level) %> me-1"><i class="fa-solid <%= f.icon %> me-1"></i><%= f.title %></span>
++                <% end %>
++              </div>
++            </div>
++            <i class="fa-solid fa-chevron-right text-muted"></i>
++          <% end %>
++        <% end %>
++      <% else %>
++        <div class="empty-state"><div class="icon"><i class="fa-solid fa-circle-check"></i></div><p class="mb-0">All clear — no flags right now.</p></div>
++      <% end %>
++    </div>
++  </div>
++
++  <!-- Recent activity -->
++  <div class="col-lg-5">
++    <div class="hwf-card mb-3">
++      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Recent bookings</h2><%= link_to "All", admin_appointments_path, class: "btn btn-soft btn-sm" %></div>
++      <% if @recent_appointments.any? %>
++        <% @recent_appointments.each do |appt| %>
++          <%= link_to admin_appointment_path(appt), class: "d-flex align-items-center gap-2 py-2 border-bottom text-decoration-none" do %>
++            <i class="fa-solid <%= appt.service.icon_name %> text-brand"></i>
++            <div class="flex-fill">
++              <div class="small fw-semibold text-dark"><%= appt.user.full_name %> · <%= appt.service.name %></div>
++              <div class="small text-muted"><%= appt.scheduled_at.strftime("%b %-d, %-l:%M %p") %></div>
++            </div>
++            <%= status_pill(appt.status) %>
++          <% end %>
++        <% end %>
++      <% else %>
++        <p class="text-muted small mb-0 mt-2">No bookings yet.</p>
++      <% end %>
++    </div>
++
++    <div class="hwf-card">
++      <div class="card-title-sm mb-2">Newest members</div>
++      <% @new_members.each do |m| %>
++        <%= link_to admin_user_path(m), class: "d-flex align-items-center gap-2 py-2 text-decoration-none" do %>
++          <%= initials_badge(m) %>
++          <div class="flex-fill">
++            <div class="small fw-semibold text-dark"><%= m.full_name %></div>
++            <div class="small text-muted"><%= m.member_id %> · joined <%= m.created_at.strftime("%b %-d") %></div>
++          </div>
++        <% end %>
++      <% end %>
++    </div>
++  </div>
++</div>
+diff --git a/app/views/admin/services/edit.html.erb b/app/views/admin/services/edit.html.erb
+new file mode 100644
+index 0000000..b5f31d1
+--- /dev/null
++++ b/app/views/admin/services/edit.html.erb
+@@ -0,0 +1,37 @@
++<% content_for :title, "Admin · Edit #{@service.name}" %>
++
++<div class="mb-3">
++  <%= link_to admin_services_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> Services<% end %>
++</div>
++
++<div class="section-head"><div><span class="eyebrow">Service</span><h1 class="h3 mb-0">Edit <%= @service.name %></h1></div></div>
++
++<div class="hwf-card" style="max-width: 760px;">
++  <%= form_with model: [ :admin, @service ], local: true do |f| %>
++    <% if @service.errors.any? %>
++      <div class="alert alert-danger"><ul class="mb-0"><% @service.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul></div>
++    <% end %>
++    <div class="row g-3">
++      <div class="col-md-8"><%= f.label :name, class: "form-label" %><%= f.text_field :name, class: "form-control" %></div>
++      <div class="col-md-4"><%= f.label :category, class: "form-label" %><%= f.select :category, Service::CATEGORIES, {}, class: "form-select" %></div>
++      <div class="col-12"><%= f.label :tagline, class: "form-label" %><%= f.text_field :tagline, class: "form-control" %></div>
++      <div class="col-12"><%= f.label :description, class: "form-label" %><%= f.text_area :description, rows: 4, class: "form-control" %></div>
++      <div class="col-md-4"><%= f.label :duration_min, "Duration (min)", class: "form-label" %><%= f.number_field :duration_min, class: "form-control", min: 0 %></div>
++      <div class="col-md-4"><%= f.label :price_cents, "Price (cents)", class: "form-label" %><%= f.number_field :price_cents, class: "form-control", min: 0 %></div>
++      <div class="col-md-4"><%= f.label :provider_name, "Provider", class: "form-label" %><%= f.text_field :provider_name, class: "form-control" %></div>
++      <div class="col-md-4"><%= f.label :icon, "Font Awesome icon", class: "form-label" %><%= f.text_field :icon, class: "form-control", placeholder: "fa-dumbbell" %></div>
++      <div class="col-md-4"><%= f.label :color, "Accent color", class: "form-label" %><%= f.text_field :color, class: "form-control", placeholder: "#4a7c59" %></div>
++      <div class="col-md-4"><%= f.label :position, "Sort order", class: "form-label" %><%= f.number_field :position, class: "form-control" %></div>
++      <div class="col-12">
++        <div class="form-check form-switch">
++          <%= f.check_box :active, class: "form-check-input" %>
++          <%= f.label :active, "Visible to members (bookable)", class: "form-check-label" %>
++        </div>
++      </div>
++    </div>
++    <div class="d-flex gap-2 mt-4">
++      <%= f.submit "Save service", class: "btn btn-brand" %>
++      <%= link_to "Cancel", admin_services_path, class: "btn btn-outline-brand" %>
++    </div>
++  <% end %>
++</div>
+diff --git a/app/views/admin/services/index.html.erb b/app/views/admin/services/index.html.erb
+new file mode 100644
+index 0000000..74814ef
+--- /dev/null
++++ b/app/views/admin/services/index.html.erb
+@@ -0,0 +1,31 @@
++<% content_for :title, "Admin · Services" %>
++
++<div class="section-head">
++  <div>
++    <span class="eyebrow">Admin portal</span>
++    <h1 class="h3 mb-0">Service catalog</h1>
++  </div>
++</div>
++
++<div class="row g-3">
++  <% @services.each do |service| %>
++    <div class="col-md-6 col-lg-4">
++      <div class="hwf-card h-100 <%= 'opacity-50' unless service.active %>">
++        <div class="d-flex align-items-center gap-3 mb-2">
++          <div class="service-icon-lg" style="background: <%= service.accent %>; width:48px; height:48px; font-size:1.2rem;"><i class="fa-solid <%= service.icon_name %>"></i></div>
++          <div class="flex-fill">
++            <span class="pill gold"><%= service.category %></span>
++            <h2 class="h6 mb-0 mt-1"><%= service.name %></h2>
++          </div>
++          <% unless service.active %><span class="pill low">Hidden</span><% end %>
++        </div>
++        <p class="small text-muted"><%= service.tagline %></p>
++        <div class="d-flex justify-content-between align-items-center small text-muted">
++          <span><%= service.duration_min %> min · <%= service.price %></span>
++          <span><%= @booking_counts[service.id].to_i %> booking<%= 's' unless @booking_counts[service.id].to_i == 1 %></span>
++        </div>
++        <%= link_to "Edit", edit_admin_service_path(service), class: "btn btn-soft btn-sm w-100 mt-3" %>
++      </div>
++    </div>
++  <% end %>
++</div>
+diff --git a/app/views/admin/users/index.html.erb b/app/views/admin/users/index.html.erb
+new file mode 100644
+index 0000000..287e403
+--- /dev/null
++++ b/app/views/admin/users/index.html.erb
+@@ -0,0 +1,47 @@
++<% content_for :title, "Admin · Members" %>
++
++<div class="section-head">
++  <div>
++    <span class="eyebrow">Admin portal</span>
++    <h1 class="h3 mb-0">Members <span class="text-muted fs-6">(<%= @members.size %>)</span></h1>
++  </div>
++  <%= form_with url: admin_users_path, method: :get, local: true, class: "d-flex gap-2" do %>
++    <%= text_field_tag :q, @q, class: "form-control form-control-sm", placeholder: "Search name or email…" %>
++    <%= submit_tag "Search", class: "btn btn-soft btn-sm" %>
++  <% end %>
++</div>
++
++<div class="hwf-card">
++  <% if @members.any? %>
++    <div class="table-scroll">
++      <table class="flowsheet">
++        <thead>
++          <tr><th>Member</th><th>ID</th><th>Goal</th><th>Check-ins</th><th>Last check-in</th><th>Joined</th><th></th></tr>
++        </thead>
++        <tbody>
++          <% @members.each do |m| %>
++            <tr>
++              <td>
++                <%= link_to admin_user_path(m), class: "d-flex align-items-center gap-2 text-decoration-none" do %>
++                  <%= initials_badge(m) %>
++                  <div>
++                    <div class="fw-semibold text-dark"><%= m.full_name %></div>
++                    <div class="small text-muted"><%= m.email %></div>
++                  </div>
++                <% end %>
++              </td>
++              <td class="small text-muted"><%= m.member_id %></td>
++              <td><%= m.health_profile&.primary_goal.presence || "—" %></td>
++              <td><%= @checkin_counts[m.id].to_i %></td>
++              <td><%= @last_checkin[m.id]&.strftime("%b %-d") || "—" %></td>
++              <td class="small text-muted"><%= m.created_at.strftime("%b %-d, %Y") %></td>
++              <td class="text-end"><%= link_to "Open chart", admin_user_path(m), class: "btn btn-soft btn-sm" %></td>
++            </tr>
++          <% end %>
++        </tbody>
++      </table>
++    </div>
++  <% else %>
++    <div class="empty-state"><div class="icon"><i class="fa-solid fa-users"></i></div><p class="mb-0">No members found.</p></div>
++  <% end %>
++</div>
+diff --git a/app/views/admin/users/show.html.erb b/app/views/admin/users/show.html.erb
+new file mode 100644
+index 0000000..aedd972
+--- /dev/null
++++ b/app/views/admin/users/show.html.erb
+@@ -0,0 +1,160 @@
++<% content_for :title, "Admin · #{@member.full_name}" %>
++<% weight = @member.current_weight %>
++
++<div class="mb-3">
++  <%= link_to admin_users_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All members<% end %>
++</div>
++
++<!-- Member banner -->
++<div class="patient-banner mb-4">
++  <div class="row align-items-center g-3">
++    <div class="col-lg-7">
++      <div class="d-flex align-items-center gap-3">
++        <%= initials_badge(@member, extra_class: "lg") %>
++        <div>
++          <h1><%= @member.full_name %></h1>
++          <div class="patient-meta mt-1">
++            <span><%= @member.member_id %></span>
++            <% if @profile.age %><span class="sep">·</span><span><%= @profile.age %> yrs</span><% end %>
++            <% if @profile.sex.present? %><span class="sep">·</span><span><%= @profile.sex %></span><% end %>
++            <span class="sep">·</span><span><%= @member.email %></span>
++          </div>
++          <div class="mt-2"><span class="pill gold"><%= @profile.primary_goal.presence || "No goal set" %></span></div>
++        </div>
++      </div>
++    </div>
++    <div class="col-lg-5">
++      <div class="banner-chips justify-content-lg-end">
++        <div class="banner-chip"><div class="k">Weight</div><div class="v"><%= weight ? "#{weight.to_f.round}" : "—" %></div></div>
++        <div class="banner-chip"><div class="k">BMI</div><div class="v"><%= @profile.bmi || "—" %></div></div>
++        <div class="banner-chip"><div class="k">Active (wk)</div><div class="v"><%= @week_minutes %><span class="small">m</span></div></div>
++      </div>
++      <div class="d-flex gap-2 justify-content-lg-end mt-3">
++        <%= link_to admin_conversation_path(@member), class: "btn btn-sm", style: "background:#fff;color:var(--brand-green-dark);font-weight:600;border-radius:30px;" do %>
++          <i class="fa-solid fa-comments me-1"></i> Message<%= " (#{@unread})" if @unread.positive? %>
++        <% end %>
++      </div>
++    </div>
++  </div>
++</div>
++
++<div class="row g-3">
++  <!-- LEFT: chart data -->
++  <div class="col-lg-7">
++    <div class="row g-3 mb-3">
++      <div class="col-md-6">
++        <div class="hwf-card h-100">
++          <div class="card-title-sm mb-2">Weight trend</div>
++          <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@weight_series, label: 'Weight (lb)', color: '#4a7c59') %>">
++            <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
++            <div class="chart-empty-note"><i class="fa-solid fa-weight-scale"></i><span>No weight data.</span></div>
++          </div>
++        </div>
++      </div>
++      <div class="col-md-6">
++        <div class="hwf-card h-100">
++          <div class="card-title-sm mb-2">BMI trend</div>
++          <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@bmi_series, label: 'BMI', color: '#c9a96e') %>">
++            <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
++            <div class="chart-empty-note"><i class="fa-solid fa-chart-line"></i><span>Need height + weights.</span></div>
++          </div>
++        </div>
++      </div>
++    </div>
++
++    <div class="hwf-card mb-3">
++      <div class="card-title-sm mb-2">Recent check-ins</div>
++      <% if @recent_checkins.any? %>
++        <div class="table-scroll">
++          <table class="flowsheet">
++            <thead><tr><th>Date</th><th>Mood</th><th>Energy</th><th>Sleep</th><th>Weight</th><th>BP</th><th>Score</th></tr></thead>
++            <tbody>
++              <% @recent_checkins.each do |c| %>
++                <tr>
++                  <td class="fw-semibold"><%= c.checkin_date.strftime("%b %-d") %></td>
++                  <td><%= scale_dots(c.mood) %></td>
++                  <td><%= scale_dots(c.energy) %></td>
++                  <td><%= c.sleep_hours ? "#{c.sleep_hours.to_f}h" : "—" %></td>
++                  <td><%= c.weight ? "#{c.weight.to_f.round}" : "—" %></td>
++                  <td><%= c.blood_pressure || "—" %></td>
++                  <td><span class="pill <%= score_tone(c.wellness_score) %>"><%= c.wellness_score || "—" %></span></td>
++                </tr>
++              <% end %>
++            </tbody>
++          </table>
++        </div>
++      <% else %>
++        <p class="text-muted small mb-0">No check-ins recorded.</p>
++      <% end %>
++    </div>
++
++    <div class="hwf-card">
++      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Appointments</h2></div>
++      <% if @appointments.any? %>
++        <% @appointments.each do |appt| %>
++          <%= link_to admin_appointment_path(appt), class: "d-flex align-items-center gap-2 py-2 border-bottom text-decoration-none" do %>
++            <i class="fa-solid <%= appt.service.icon_name %> text-brand"></i>
++            <div class="flex-fill">
++              <div class="small fw-semibold text-dark"><%= appt.service.name %></div>
++              <div class="small text-muted"><%= appt.scheduled_at.strftime("%b %-d, %Y · %-l:%M %p") %></div>
++            </div>
++            <%= status_pill(appt.status) %>
++          <% end %>
++        <% end %>
++      <% else %>
++        <p class="text-muted small mb-0">No appointments.</p>
++      <% end %>
++    </div>
++  </div>
++
++  <!-- RIGHT: diagnose -->
++  <div class="col-lg-5" id="diagnose">
++    <div class="hwf-card mb-3">
++      <div class="card-title-sm mb-2"><i class="fa-solid fa-wand-magic-sparkles me-1"></i> Diagnostic flags</div>
++      <p class="field-hint mb-3">Auto-generated from chart data — for clinical review, not a diagnosis.</p>
++      <% @flags.each do |f| %>
++        <div class="flag-row">
++          <div class="flag-icon <%= flag_tone(f.level) %>"><i class="fa-solid <%= f.icon %>"></i></div>
++          <div>
++            <div class="fw-semibold"><%= f.title %></div>
++            <div class="small text-muted"><%= f.detail %></div>
++          </div>
++        </div>
++      <% end %>
++    </div>
++
++    <div class="hwf-card">
++      <div class="card-title-sm mb-3"><i class="fa-solid fa-notes-medical me-1"></i> Assessments</div>
++
++      <% @assessments.each do |a| %>
++        <div class="d-flex gap-2 mb-3">
++          <div class="severity-bar <%= severity_tone(a.severity) %>"></div>
++          <div class="flex-fill">
++            <div class="d-flex justify-content-between">
++              <div class="fw-semibold"><%= a.title %></div>
++              <span class="pill <%= severity_tone(a.severity) %>"><%= a.severity.titleize %></span>
++            </div>
++            <div class="small text-muted mb-1"><%= a.category %> · <%= a.status.titleize %> · <%= a.author.first_name %> · <%= a.created_at.strftime("%b %-d") %></div>
++            <% if a.summary.present? %><div class="small"><%= a.summary %></div><% end %>
++            <% if a.recommendations.present? %><div class="small mt-1"><strong>Plan:</strong> <%= a.recommendations %></div><% end %>
++            <%= button_to "Remove", admin_user_assessment_path(@member, a), method: :delete, class: "btn btn-link btn-sm text-danger p-0 mt-1",
++                  form: { data: { turbo_confirm: "Remove this assessment?" } } %>
++          </div>
++        </div>
++      <% end %>
++
++      <hr class="my-3">
++      <div class="fw-semibold mb-2">Add assessment</div>
++      <%= form_with model: [ :admin, @member, @assessment ], local: true do |f| %>
++        <div class="mb-2"><%= f.text_field :title, class: "form-control", placeholder: "Title (e.g. Elevated BP follow-up)", required: true %></div>
++        <div class="row g-2 mb-2">
++          <div class="col-6"><%= f.select :category, Assessment::CATEGORIES, { include_blank: "Category" }, class: "form-select" %></div>
++          <div class="col-6"><%= f.select :severity, Assessment::SEVERITIES.map { |s| [ s.titleize, s ] }, {}, class: "form-select" %></div>
++        </div>
++        <div class="mb-2"><%= f.text_area :summary, rows: 2, class: "form-control", placeholder: "Assessment summary" %></div>
++        <div class="mb-2"><%= f.text_area :recommendations, rows: 2, class: "form-control", placeholder: "Recommended plan" %></div>
++        <div class="d-grid"><%= f.submit "Save assessment", class: "btn btn-brand btn-sm" %></div>
++      <% end %>
++    </div>
++  </div>
++</div>
+diff --git a/app/views/appointments/index.html.erb b/app/views/appointments/index.html.erb
+new file mode 100644
+index 0000000..72ecebd
+--- /dev/null
++++ b/app/views/appointments/index.html.erb
+@@ -0,0 +1,64 @@
++<% content_for :title, "Appointments" %>
++
++<div class="section-head">
++  <div>
++    <span class="eyebrow">Meet &amp; scheduling</span>
++    <h1 class="h3 mb-0">My appointments</h1>
++  </div>
++  <%= link_to services_path, class: "btn btn-brand" do %><i class="fa-solid fa-plus me-1"></i> Book a session<% end %>
++</div>
++
++<h2 class="h6 card-title-sm mb-3">Upcoming</h2>
++<% if @upcoming.any? %>
++  <div class="d-flex flex-column gap-2 mb-4">
++    <% @upcoming.each do |appt| %>
++      <div class="appt-card">
++        <div class="appt-date">
++          <div class="d"><%= appt.scheduled_at.strftime("%-d") %></div>
++          <div class="m"><%= appt.scheduled_at.strftime("%b") %></div>
++        </div>
++        <div class="flex-fill">
++          <div class="fw-bold"><%= appt.service.name %></div>
++          <div class="small text-muted">
++            <%= appt.scheduled_at.strftime("%A · %-l:%M %p") %> · <%= appt.mode_label %>
++            <% if appt.virtual? && appt.meeting_url.present? %>
++              · <%= link_to "Join link", appt.meeting_url, target: "_blank", rel: "noopener", class: "text-brand" %>
++            <% end %>
++          </div>
++        </div>
++        <span class="pill <%= appt.status_tone %>"><%= appt.status.titleize %></span>
++        <div class="d-flex gap-2">
++          <%= link_to '<i class="fa-regular fa-calendar-plus"></i>'.html_safe, calendar_appointment_path(appt), class: "btn btn-soft btn-sm", title: "Add to calendar" %>
++          <%= link_to "Details", appointment_path(appt), class: "btn btn-soft btn-sm" %>
++        </div>
++      </div>
++    <% end %>
++  </div>
++<% else %>
++  <div class="hwf-card empty-state mb-4">
++    <div class="icon"><i class="fa-solid fa-calendar-day"></i></div>
++    <p class="mb-3">No upcoming sessions. Book personal training, nutrition, pelvic health, boxing or kids athletics.</p>
++    <%= link_to "Browse services", services_path, class: "btn btn-brand" %>
++  </div>
++<% end %>
++
++<% if @past.any? %>
++  <h2 class="h6 card-title-sm mb-3">History</h2>
++  <div class="hwf-card">
++    <div class="table-scroll">
++      <table class="flowsheet">
++        <thead><tr><th>Date</th><th>Service</th><th>Format</th><th>Status</th></tr></thead>
++        <tbody>
++          <% @past.each do |appt| %>
++            <tr>
++              <td class="fw-semibold"><%= appt.scheduled_at.strftime("%b %-d, %Y") %></td>
++              <td><%= link_to appt.service.name, appointment_path(appt), class: "text-decoration-none" %></td>
++              <td><%= appt.mode_label %></td>
++              <td><span class="pill <%= appt.status_tone %>"><%= appt.status.titleize %></span></td>
++            </tr>
++          <% end %>
++        </tbody>
++      </table>
++    </div>
++  </div>
++<% end %>
+diff --git a/app/views/appointments/new.html.erb b/app/views/appointments/new.html.erb
+new file mode 100644
+index 0000000..36dbe13
+--- /dev/null
++++ b/app/views/appointments/new.html.erb
+@@ -0,0 +1,58 @@
++<% content_for :title, "Book #{@service.name}" %>
++
++<div class="mb-3">
++  <%= link_to service_path(@service), class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> Back to <%= @service.name %><% end %>
++</div>
++
++<div class="section-head">
++  <div>
++    <span class="eyebrow"><%= @service.category %></span>
++    <h1 class="h3 mb-0">Request your session</h1>
++  </div>
++</div>
++
++<div class="hwf-card" style="max-width: 720px;">
++  <div class="d-flex align-items-center gap-3 mb-4">
++    <div class="service-icon-lg" style="background: <%= @service.accent %>;"><i class="fa-solid <%= @service.icon_name %>"></i></div>
++    <div>
++      <div class="fw-bold"><%= @service.name %></div>
++      <div class="small text-muted"><%= @service.duration_min %> min · <%= @service.price %></div>
++    </div>
++  </div>
++
++  <%= form_with model: @appointment, local: true do |f| %>
++    <% if @appointment.errors.any? %>
++      <div class="alert alert-danger">
++        <ul class="mb-0"><% @appointment.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
++      </div>
++    <% end %>
++
++    <%= f.hidden_field :service_id, value: @service.id %>
++
++    <div class="row g-3">
++      <div class="col-md-6">
++        <%= f.label :scheduled_at, "Preferred date & time", class: "form-label" %>
++        <%= f.datetime_field :scheduled_at, class: "form-control", min: Time.current.strftime("%Y-%m-%dT%H:%M") %>
++      </div>
++      <div class="col-md-6">
++        <span class="form-label d-block">Format</span>
++        <div class="btn-group w-100" role="group">
++          <%= f.radio_button :mode, "in_person", class: "btn-check", id: "mode_in_person" %>
++          <%= f.label "mode_in_person", class: "btn btn-outline-brand" do %><i class="fa-solid fa-location-dot me-1"></i> In person<% end %>
++          <%= f.radio_button :mode, "virtual", class: "btn-check", id: "mode_virtual" %>
++          <%= f.label "mode_virtual", class: "btn btn-outline-brand" do %><i class="fa-solid fa-video me-1"></i> Virtual<% end %>
++        </div>
++      </div>
++      <div class="col-12">
++        <%= f.label :reason, "What would you like to focus on? (optional)", class: "form-label" %>
++        <%= f.text_area :reason, rows: 3, class: "form-control", placeholder: "Goals, injuries, questions…" %>
++      </div>
++    </div>
++
++    <div class="d-flex gap-2 mt-4">
++      <%= f.submit "Request session", class: "btn btn-brand" %>
++      <%= link_to "Cancel", services_path, class: "btn btn-outline-brand" %>
++    </div>
++    <p class="field-hint mt-3"><i class="fa-solid fa-circle-info me-1"></i>You'll get a confirmation once the care team approves your time. Virtual sessions include a meeting link.</p>
++  <% end %>
++</div>
+diff --git a/app/views/appointments/show.html.erb b/app/views/appointments/show.html.erb
+new file mode 100644
+index 0000000..f9a6796
+--- /dev/null
++++ b/app/views/appointments/show.html.erb
+@@ -0,0 +1,63 @@
++<% content_for :title, @appointment.service.name %>
++
++<div class="mb-3">
++  <%= link_to appointments_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> My appointments<% end %>
++</div>
++
++<div class="row g-4">
++  <div class="col-lg-8">
++    <div class="hwf-card">
++      <div class="d-flex align-items-center gap-3 mb-3">
++        <div class="service-icon-lg" style="background: <%= @appointment.service.accent %>;"><i class="fa-solid <%= @appointment.service.icon_name %>"></i></div>
++        <div>
++          <span class="pill <%= @appointment.status_tone %>"><%= @appointment.status.titleize %></span>
++          <h1 class="h4 mb-0 mt-1"><%= @appointment.service.name %></h1>
++        </div>
++      </div>
++
++      <div class="row g-3">
++        <div class="col-sm-6">
++          <div class="card-title-sm">When</div>
++          <div class="fw-bold fs-5"><%= @appointment.scheduled_at.strftime("%A, %B %-d, %Y") %></div>
++          <div><%= @appointment.scheduled_at.strftime("%-l:%M %p") %> – <%= @appointment.ends_at.strftime("%-l:%M %p") %></div>
++        </div>
++        <div class="col-sm-6">
++          <div class="card-title-sm">Format</div>
++          <div class="fw-bold fs-5"><%= @appointment.mode_label %></div>
++          <% if @appointment.virtual? && @appointment.meeting_url.present? %>
++            <%= link_to "Join meeting", @appointment.meeting_url, target: "_blank", rel: "noopener", class: "btn btn-brand btn-sm mt-1" %>
++          <% elsif !@appointment.virtual? %>
++            <div class="text-muted small"><%= @appointment.location.presence || "177 State Street, Meriden, CT" %></div>
++          <% end %>
++        </div>
++        <% if @appointment.reason.present? %>
++          <div class="col-12">
++            <div class="card-title-sm">Focus</div>
++            <p class="mb-0"><%= simple_format @appointment.reason %></p>
++          </div>
++        <% end %>
++        <% if @appointment.admin_notes.present? %>
++          <div class="col-12">
++            <div class="card-title-sm">Note from your coach</div>
++            <div class="p-3 rounded" style="background: var(--brand-green-soft);"><%= simple_format @appointment.admin_notes %></div>
++          </div>
++        <% end %>
++      </div>
++    </div>
++  </div>
++
++  <div class="col-lg-4">
++    <div class="hwf-card">
++      <div class="card-title-sm mb-2">Actions</div>
++      <div class="d-grid gap-2">
++        <%= link_to calendar_appointment_path(@appointment), class: "btn btn-soft" do %><i class="fa-regular fa-calendar-plus me-1"></i> Add to calendar<% end %>
++        <% unless @appointment.cancelled? || @appointment.status == "completed" %>
++          <%= button_to cancel_appointment_path(@appointment), method: :patch, class: "btn btn-outline-brand",
++                form: { data: { turbo_confirm: "Cancel this appointment?" } } do %>
++            <i class="fa-solid fa-xmark me-1"></i> Cancel appointment
++          <% end %>
++        <% end %>
++      </div>
++    </div>
++  </div>
++</div>
+diff --git a/app/views/dashboard/index.html.erb b/app/views/dashboard/index.html.erb
+index 01aa9b5..598fdf4 100644
+--- a/app/views/dashboard/index.html.erb
++++ b/app/views/dashboard/index.html.erb
+@@ -109,18 +109,33 @@
+ 
+ <!-- TRENDS -->
+ <div class="row g-3 mb-4">
+-  <div class="col-lg-6">
++  <div class="col-lg-4">
+     <div class="hwf-card h-100">
+-      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Weight trend · 30 days</h2><span class="pill">lb</span></div>
++      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Weight · 30 days</h2><span class="pill">lb</span></div>
+       <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@weight_series, label: 'Weight (lb)', color: '#4a7c59') %>">
+         <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+         <div class="chart-empty-note"><i class="fa-solid fa-weight-scale"></i><span>Record weight in a check-in to chart it.</span></div>
+       </div>
+     </div>
+   </div>
+-  <div class="col-lg-6">
++  <div class="col-lg-4">
+     <div class="hwf-card h-100">
+-      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Wellness score · 30 days</h2><span class="pill good">/ 100</span></div>
++      <div class="section-head"><h2 class="h6 card-title-sm mb-0">BMI · 30 days</h2>
++        <% if @profile.bmi %><span class="pill <%= { 'Healthy' => 'good', 'Overweight' => 'ok' }[@profile.bmi_category] || 'low' %>"><%= @profile.bmi %></span><% end %>
++      </div>
++      <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@bmi_series, label: 'BMI', color: '#a3b18a') %>">
++        <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
++        <div class="chart-empty-note"><i class="fa-solid fa-chart-line"></i><span>Add your height in My Details to chart BMI.</span></div>
++      </div>
++      <% if @profile.bmi %>
++        <div class="bmi-scale mt-3"><span class="bmi-marker" style="left: <%= [ [ (@profile.bmi - 12) / 28.0 * 100, 2 ].max, 98 ].min %>%;"></span></div>
++        <div class="d-flex justify-content-between field-hint mt-1"><span>Under</span><span>Healthy</span><span>Over</span><span>High</span></div>
++      <% end %>
++    </div>
++  </div>
++  <div class="col-lg-4">
++    <div class="hwf-card h-100">
++      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Wellness · 30 days</h2><span class="pill good">/ 100</span></div>
+       <div data-controller="chart" data-chart-payload-value="<%= trend_payload(@wellness_series, label: 'Wellness', color: '#c9a96e') %>">
+         <div class="chart-canvas-wrap"><canvas data-chart-target="canvas"></canvas></div>
+         <div class="chart-empty-note"><i class="fa-solid fa-heart-pulse"></i><span>Your wellness trend appears after a few check-ins.</span></div>
+@@ -129,6 +144,46 @@
+   </div>
+ </div>
+ 
++<!-- SCHEDULING + TRAINING -->
++<div class="row g-3 mb-4">
++  <div class="col-lg-8">
++    <div class="hwf-card h-100">
++      <div class="section-head"><h2 class="h6 card-title-sm mb-0">Next appointment</h2><%= link_to "Book a session", services_path, class: "btn btn-soft btn-sm" %></div>
++      <% if @next_appointment %>
++        <div class="appt-card" style="border:none; padding:0;">
++          <div class="appt-date">
++            <div class="d"><%= @next_appointment.scheduled_at.strftime("%-d") %></div>
++            <div class="m"><%= @next_appointment.scheduled_at.strftime("%b") %></div>
++          </div>
++          <div class="flex-fill">
++            <div class="fw-bold"><%= @next_appointment.service.name %></div>
++            <div class="small text-muted"><%= @next_appointment.scheduled_at.strftime("%A · %-l:%M %p") %> · <%= @next_appointment.mode_label %></div>
++          </div>
++          <span class="pill <%= @next_appointment.status_tone %>"><%= @next_appointment.status.titleize %></span>
++          <%= link_to "Details", appointment_path(@next_appointment), class: "btn btn-soft btn-sm" %>
++        </div>
++      <% else %>
++        <p class="text-muted mb-2">No upcoming sessions. Book personal training, nutrition, pelvic health, boxing or kids athletics.</p>
++        <%= link_to "Browse services", services_path, class: "btn btn-brand btn-sm" %>
++      <% end %>
++    </div>
++  </div>
++  <div class="col-lg-4">
++    <div class="hwf-card h-100">
++      <div class="card-title-sm mb-2">Required training</div>
++      <% pending = @required_training.reject { |t| current_user.training_complete?(t.slug) } %>
++      <% if @required_training.any? && pending.empty? %>
++        <div class="d-flex align-items-center gap-2"><i class="fa-solid fa-circle-check text-brand fs-4"></i><div><div class="fw-semibold">All caught up</div><div class="small text-muted"><%= @training_done %> module<%= 's' unless @training_done == 1 %> complete</div></div></div>
++      <% elsif pending.any? %>
++        <p class="small text-muted mb-2"><%= pending.size %> training<%= 's' unless pending.size == 1 %> to complete.</p>
++        <%= link_to "#{pending.first.title} →", training_path(pending.first), class: "btn btn-brand btn-sm w-100" %>
++      <% else %>
++        <p class="small text-muted mb-0">No training assigned.</p>
++      <% end %>
++    </div>
++  </div>
++</div>
++
+ <div class="row g-3">
+   <!-- LEFT: flowsheet + activity -->
+   <div class="col-lg-7">
+diff --git a/app/views/layouts/_admin_navbar.html.erb b/app/views/layouts/_admin_navbar.html.erb
+new file mode 100644
+index 0000000..c4c440f
+--- /dev/null
++++ b/app/views/layouts/_admin_navbar.html.erb
+@@ -0,0 +1,35 @@
++<nav class="navbar navbar-expand-lg admin-navbar sticky-top">
++  <div class="container-fluid px-3 px-lg-4">
++    <%= link_to admin_root_path, class: "navbar-brand text-white" do %>
++      <span class="leaf" style="background: var(--brand-gold);"><i class="fa-solid fa-user-shield"></i></span>
++      <span>Holistic Wellness Fitness</span>
++      <span class="brand-chip" style="color: var(--brand-gold); border-color: var(--brand-gold);">Admin</span>
++    <% end %>
++
++    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#adminTopNav" aria-label="Toggle navigation">
++      <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
++    </button>
++
++    <div class="collapse navbar-collapse" id="adminTopNav">
++      <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
++        <li class="nav-item"><%= link_to "Member view", dashboard_path, class: "nav-link text-white-50" %></li>
++        <li class="nav-item dropdown ms-lg-2">
++          <a class="nav-link d-flex align-items-center gap-2 text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
++            <%= initials_badge(current_user) %>
++            <span class="d-none d-lg-inline fw-semibold"><%= current_user.first_name %></span>
++            <i class="fa-solid fa-chevron-down small"></i>
++          </a>
++          <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
++            <li class="px-3 py-2">
++              <div class="fw-bold"><%= current_user.full_name %></div>
++              <div class="small text-muted"><%= current_user.title.presence || "Care team" %></div>
++            </li>
++            <li><hr class="dropdown-divider"></li>
++            <li><%= link_to '<i class="fa-solid fa-heart-pulse me-2"></i>My chart'.html_safe, dashboard_path, class: "dropdown-item" %></li>
++            <li><%= link_to '<i class="fa-solid fa-right-from-bracket me-2"></i>Sign out'.html_safe, logout_path, class: "dropdown-item" %></li>
++          </ul>
++        </li>
++      </ul>
++    </div>
++  </div>
++</nav>
+diff --git a/app/views/layouts/_admin_sidebar.html.erb b/app/views/layouts/_admin_sidebar.html.erb
+new file mode 100644
+index 0000000..4118a17
+--- /dev/null
++++ b/app/views/layouts/_admin_sidebar.html.erb
+@@ -0,0 +1,20 @@
++<aside class="chart-sidebar">
++  <div class="chart-nav-label d-none d-lg-block">Admin</div>
++  <% admin_nav_items.each do |item| %>
++    <%= link_to item[:href], class: "chart-nav-link #{'active' if nav_active?(item[:href])}" do %>
++      <i class="fa-solid <%= item[:icon] %>"></i>
++      <span class="label"><%= item[:label] %></span>
++      <% if item[:badge] == :threads && unread_thread_count > 0 %>
++        <span class="nav-badge"><%= unread_thread_count %></span>
++      <% end %>
++    <% end %>
++  <% end %>
++
++  <div class="chart-nav-label d-none d-lg-block mt-3">Shortcuts</div>
++  <%= link_to admin_appointments_path(status: "requested"), class: "chart-nav-link" do %>
++    <i class="fa-solid fa-bell"></i><span class="label">Pending requests</span>
++  <% end %>
++  <%= link_to dashboard_path, class: "chart-nav-link" do %>
++    <i class="fa-solid fa-arrow-left"></i><span class="label">Back to my chart</span>
++  <% end %>
++</aside>
+diff --git a/app/views/layouts/_app_navbar.html.erb b/app/views/layouts/_app_navbar.html.erb
+index 7d5feba..f6859ec 100644
+--- a/app/views/layouts/_app_navbar.html.erb
++++ b/app/views/layouts/_app_navbar.html.erb
+@@ -28,6 +28,9 @@
+                 <div class="small text-muted"><%= current_user.member_id %></div>
+               </li>
+               <li><hr class="dropdown-divider"></li>
++              <% if current_user.admin? %>
++                <li><%= link_to '<i class="fa-solid fa-user-shield me-2"></i>Admin portal'.html_safe, admin_root_path, class: "dropdown-item fw-semibold text-brand" %></li>
++              <% end %>
+               <li><%= link_to '<i class="fa-solid fa-id-card me-2"></i>My details'.html_safe, health_profile_path, class: "dropdown-item" %></li>
+               <li><%= link_to '<i class="fa-solid fa-right-from-bracket me-2"></i>Sign out'.html_safe, logout_path, class: "dropdown-item" %></li>
+               <li><hr class="dropdown-divider"></li>
+diff --git a/app/views/layouts/_chart_sidebar.html.erb b/app/views/layouts/_chart_sidebar.html.erb
+index 09b17c8..bebbee9 100644
+--- a/app/views/layouts/_chart_sidebar.html.erb
++++ b/app/views/layouts/_chart_sidebar.html.erb
+@@ -4,6 +4,16 @@
+     <%= link_to item[:href], class: "chart-nav-link #{'active' if nav_active?(item[:href])}" do %>
+       <i class="fa-solid <%= item[:icon] %>"></i>
+       <span class="label"><%= item[:label] %></span>
++      <% if item[:badge] == :messages && (unread = member_unread_count(current_user)) > 0 %>
++        <span class="nav-badge"><%= unread %></span>
++      <% end %>
++    <% end %>
++  <% end %>
++
++  <% if current_user.admin? %>
++    <div class="chart-nav-label d-none d-lg-block mt-3">Staff</div>
++    <%= link_to admin_root_path, class: "chart-nav-link" do %>
++      <i class="fa-solid fa-user-shield"></i><span class="label">Admin portal</span>
+     <% end %>
+   <% end %>
+ 
+diff --git a/app/views/layouts/admin.html.erb b/app/views/layouts/admin.html.erb
+new file mode 100644
+index 0000000..d3e6826
+--- /dev/null
++++ b/app/views/layouts/admin.html.erb
+@@ -0,0 +1,14 @@
++<!DOCTYPE html>
++<html lang="en">
++  <%= render "layouts/head" %>
++  <body class="admin-body">
++    <%= render "layouts/admin_navbar" %>
++    <div class="chart-shell">
++      <%= render "layouts/admin_sidebar" %>
++      <main class="chart-main">
++        <div class="flash-stack"><%= render "layouts/flash" %></div>
++        <%= yield %>
++      </main>
++    </div>
++  </body>
++</html>
+diff --git a/app/views/messages/index.html.erb b/app/views/messages/index.html.erb
+new file mode 100644
+index 0000000..7f2cb4f
+--- /dev/null
++++ b/app/views/messages/index.html.erb
+@@ -0,0 +1,42 @@
++<% content_for :title, "Messages" %>
++
++<div class="section-head">
++  <div>
++    <span class="eyebrow">Secure messaging</span>
++    <h1 class="h3 mb-0">Care team</h1>
++  </div>
++  <span class="pill"><i class="fa-solid fa-lock me-1"></i>Private</span>
++</div>
++
++<div class="hwf-card">
++  <div class="d-flex align-items-center gap-2 pb-3 mb-3 border-bottom">
++    <div class="service-icon-lg" style="background: var(--brand-green); width:44px; height:44px; font-size:1.1rem;"><i class="fa-solid fa-user-nurse"></i></div>
++    <div>
++      <div class="fw-bold">Holistic Wellness Fitness</div>
++      <div class="small text-muted">Your coach &amp; care team</div>
++    </div>
++  </div>
++
++  <div class="chat-window mb-3">
++    <% if @messages.any? %>
++      <% @messages.each do |m| %>
++        <div class="msg <%= m.from_member? ? 'out' : 'in' %>">
++          <div><%= simple_format m.body, {}, sanitize: true %></div>
++          <div class="meta"><%= m.from_member? ? "You" : m.sender.first_name %> · <%= m.created_at.strftime("%b %-d, %-l:%M %p") %></div>
++        </div>
++      <% end %>
++    <% else %>
++      <div class="chat-empty">
++        <i class="fa-solid fa-comments d-block mb-2" style="font-size: 1.8rem; color: var(--brand-sage);"></i>
++        Start the conversation — ask a question about your plan, nutrition or an appointment.
++      </div>
++    <% end %>
++  </div>
++
++  <%= form_with url: messages_path, method: :post, local: true do %>
++    <div class="input-group">
++      <%= text_field_tag "message[body]", nil, class: "form-control", placeholder: "Write a message…", autocomplete: "off", required: true %>
++      <%= submit_tag "Send", class: "btn btn-brand" %>
++    </div>
++  <% end %>
++</div>
+diff --git a/app/views/services/index.html.erb b/app/views/services/index.html.erb
+new file mode 100644
+index 0000000..a695bd4
+--- /dev/null
++++ b/app/views/services/index.html.erb
+@@ -0,0 +1,61 @@
++<% content_for :title, "Scheduling" %>
++
++<div class="section-head">
++  <div>
++    <span class="eyebrow">Meet &amp; scheduling</span>
++    <h1 class="h3 mb-0">Book a session</h1>
++  </div>
++  <%= link_to appointments_path, class: "btn btn-soft" do %><i class="fa-solid fa-calendar-day me-1"></i> My appointments<% end %>
++</div>
++
++<% if @upcoming.any? %>
++  <div class="hwf-card mb-4" style="background: var(--brand-green-soft); border: none;">
++    <div class="card-title-sm mb-2">Next up</div>
++    <div class="row g-2">
++      <% @upcoming.each do |appt| %>
++        <div class="col-md-6">
++          <%= link_to appointment_path(appt), class: "appt-card text-decoration-none" do %>
++            <div class="appt-date">
++              <div class="d"><%= appt.scheduled_at.strftime("%-d") %></div>
++              <div class="m"><%= appt.scheduled_at.strftime("%b") %></div>
++            </div>
++            <div class="flex-fill">
++              <div class="fw-bold text-dark"><%= appt.service.name %></div>
++              <div class="small text-muted"><%= appt.scheduled_at.strftime("%a · %-l:%M %p") %> · <%= appt.mode_label %></div>
++            </div>
++            <span class="pill <%= appt.status_tone %>"><%= appt.status.titleize %></span>
++          <% end %>
++        </div>
++      <% end %>
++    </div>
++  </div>
++<% end %>
++
++<div class="filter-chips mb-4">
++  <%= link_to "All", services_path, class: "filter-chip #{'active' unless @category}" %>
++  <% @categories.each do |c| %>
++    <%= link_to c, services_path(category: c), class: "filter-chip #{'active' if @category == c}" %>
++  <% end %>
++</div>
++
++<div class="row g-4">
++  <% @services.each do |service| %>
++    <div class="col-md-6 col-lg-4">
++      <div class="hwf-card is-hover h-100 d-flex flex-column">
++        <div class="d-flex align-items-center gap-3 mb-3">
++          <div class="service-icon-lg" style="background: <%= service.accent %>;"><i class="fa-solid <%= service.icon_name %>"></i></div>
++          <div>
++            <span class="pill gold"><%= service.category %></span>
++            <h2 class="h5 mb-0 mt-1"><%= service.name %></h2>
++          </div>
++        </div>
++        <p class="text-muted flex-fill"><%= service.tagline %></p>
++        <div class="d-flex justify-content-between align-items-center text-muted small mb-3">
++          <span><i class="fa-regular fa-clock me-1"></i><%= service.duration_min %> min</span>
++          <span class="fw-bold text-dark"><%= service.price %></span>
++        </div>
++        <%= link_to "View &amp; book".html_safe, service_path(service), class: "btn btn-brand w-100" %>
++      </div>
++    </div>
++  <% end %>
++</div>
+diff --git a/app/views/services/show.html.erb b/app/views/services/show.html.erb
+new file mode 100644
+index 0000000..add5523
+--- /dev/null
++++ b/app/views/services/show.html.erb
+@@ -0,0 +1,39 @@
++<% content_for :title, @service.name %>
++
++<div class="mb-3">
++  <%= link_to services_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All services<% end %>
++</div>
++
++<div class="patient-banner mb-4" style="background: linear-gradient(135deg, <%= @service.accent %>, var(--brand-green-dark));">
++  <div class="d-flex align-items-center gap-3">
++    <div class="service-icon-lg" style="background: rgba(255,255,255,0.18); font-size: 1.8rem; width: 64px; height: 64px;">
++      <i class="fa-solid <%= @service.icon_name %>"></i>
++    </div>
++    <div>
++      <span class="pill" style="background: rgba(255,255,255,0.2); color:#fff;"><%= @service.category %></span>
++      <h1 class="mt-1"><%= @service.name %></h1>
++      <div class="patient-meta">
++        <span><i class="fa-regular fa-clock me-1"></i><%= @service.duration_min %> min</span>
++        <span class="sep">·</span><span><%= @service.price %></span>
++        <% if @service.provider_name.present? %><span class="sep">·</span><span><i class="fa-solid fa-user-nurse me-1"></i><%= @service.provider_name %></span><% end %>
++      </div>
++    </div>
++  </div>
++</div>
++
++<div class="row g-4">
++  <div class="col-lg-7">
++    <div class="hwf-card">
++      <div class="card-title-sm mb-2">About this session</div>
++      <p><%= simple_format @service.description.presence || @service.tagline %></p>
++    </div>
++  </div>
++  <div class="col-lg-5">
++    <div class="hwf-card text-center">
++      <i class="fa-solid fa-calendar-plus text-brand" style="font-size: 2rem;"></i>
++      <h2 class="h5 mt-2">Ready to book?</h2>
++      <p class="text-muted">Request a time and we'll confirm your <%= @service.name.downcase %> session.</p>
++      <%= link_to "Choose a time", new_appointment_path(service_id: @service.slug), class: "btn btn-brand w-100" %>
++    </div>
++  </div>
++</div>
+diff --git a/app/views/trainings/index.html.erb b/app/views/trainings/index.html.erb
+new file mode 100644
+index 0000000..2b434a4
+--- /dev/null
++++ b/app/views/trainings/index.html.erb
+@@ -0,0 +1,46 @@
++<% content_for :title, "Training" %>
++
++<div class="section-head">
++  <div>
++    <span class="eyebrow">Compliance &amp; education</span>
++    <h1 class="h3 mb-0">Required training</h1>
++  </div>
++</div>
++
++<% if @trainings.any? %>
++  <div class="row g-3">
++    <% @trainings.each do |t| %>
++      <% completion = @completions[t.id] %>
++      <% done = completion&.acknowledged? %>
++      <div class="col-md-6">
++        <div class="hwf-card is-hover h-100">
++          <div class="d-flex justify-content-between align-items-start mb-2">
++            <div class="service-icon-lg" style="background: <%= done ? 'var(--brand-green)' : 'var(--brand-gold)' %>; width:48px; height:48px; font-size:1.2rem;">
++              <i class="fa-solid <%= done ? 'fa-circle-check' : 'fa-shield-halved' %>"></i>
++            </div>
++            <% if done %>
++              <span class="pill good"><i class="fa-solid fa-check me-1"></i>Completed</span>
++            <% elsif t.required %>
++              <span class="pill low">Required</span>
++            <% end %>
++          </div>
++          <h2 class="h5"><%= t.title %></h2>
++          <p class="text-muted"><%= t.summary %></p>
++          <div class="d-flex justify-content-between align-items-center mt-3">
++            <span class="small text-muted"><i class="fa-regular fa-clock me-1"></i><%= t.minutes %> min<%= " · v#{t.version}" if t.version.present? %></span>
++            <% if done %>
++              <%= link_to "Review", training_path(t), class: "btn btn-soft btn-sm" %>
++            <% else %>
++              <%= link_to "Start training", training_path(t), class: "btn btn-brand btn-sm" %>
++            <% end %>
++          </div>
++          <% if done && completion.completed_at %>
++            <div class="field-hint mt-2">Completed <%= completion.completed_at.strftime("%b %-d, %Y") %><%= " · #{completion.score}%" if completion.score %></div>
++          <% end %>
++        </div>
++      </div>
++    <% end %>
++  </div>
++<% else %>
++  <div class="hwf-card empty-state"><div class="icon"><i class="fa-solid fa-shield-halved"></i></div><p class="mb-0">No training assigned right now.</p></div>
++<% end %>
+diff --git a/app/views/trainings/show.html.erb b/app/views/trainings/show.html.erb
+new file mode 100644
+index 0000000..3ee54ca
+--- /dev/null
++++ b/app/views/trainings/show.html.erb
+@@ -0,0 +1,75 @@
++<% content_for :title, @training.title %>
++
++<div class="mb-3">
++  <%= link_to trainings_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All training<% end %>
++</div>
++
++<% if @completion&.acknowledged? %>
++  <div class="hwf-card text-center mb-4" style="background: var(--brand-green-soft); border: none;">
++    <div class="cert-badge mb-2"><i class="fa-solid fa-certificate"></i></div>
++    <h2 class="h5 mb-1">Training complete</h2>
++    <p class="mb-0 text-muted">
++      <%= current_user.full_name %> completed <strong><%= @training.title %></strong>
++      on <%= @completion.completed_at&.strftime("%B %-d, %Y") %><%= " · scored #{@completion.score}%" if @completion.score %>.
++    </p>
++  </div>
++<% end %>
++
++<div class="row g-4">
++  <div class="col-lg-8">
++    <article class="hwf-card p-4 p-md-5">
++      <span class="pill gold">HIPAA &amp; Privacy</span>
++      <h1 class="h3 mt-3"><%= @training.title %></h1>
++      <p class="lead text-muted"><%= @training.summary %></p>
++      <hr class="my-4">
++      <div class="article-body">
++        <% @training.sections.each do |para| %>
++          <% if para.start_with?("## ") %>
++            <h2 class="h5 mt-4"><%= para.delete_prefix("## ") %></h2>
++          <% else %>
++            <p><%= para %></p>
++          <% end %>
++        <% end %>
++      </div>
++    </article>
++  </div>
++
++  <div class="col-lg-4">
++    <div class="hwf-card" style="position: sticky; top: 84px;">
++      <h2 class="h6 card-title-sm mb-3"><i class="fa-solid fa-clipboard-check me-1"></i> Acknowledge &amp; sign</h2>
++
++      <%= form_with url: complete_training_path(@training), method: :post, local: true do %>
++        <% if @training.quiz? %>
++          <div class="mb-3">
++            <div class="fw-semibold mb-2">Knowledge check</div>
++            <p class="field-hint mb-3">Score <%= TrainingModule::PASS_THRESHOLD %>%+ to pass.</p>
++            <% @training.questions.each_with_index do |q, i| %>
++              <div class="mb-3">
++                <div class="fw-semibold mb-2"><span class="training-step me-1"><%= i + 1 %></span> <%= q["q"] %></div>
++                <% Array(q["options"]).each_with_index do |opt, oi| %>
++                  <label class="quiz-option">
++                    <%= radio_button_tag "answers[#{i}]", oi, false, required: true %><%= opt %>
++                  </label>
++                <% end %>
++              </div>
++            <% end %>
++            <hr class="my-3">
++          <% end %>
++
++        <label class="d-flex gap-2 align-items-start mb-3">
++          <%= check_box_tag :acknowledge, "1", false, class: "form-check-input mt-1", required: true %>
++          <span class="small">I confirm I have read and understood this training, and I will protect members' health information accordingly.</span>
++        </label>
++
++        <div class="mb-3">
++          <%= label_tag :signature, "Type your full name to sign", class: "form-label" %>
++          <%= text_field_tag :signature, current_user.full_name, class: "form-control", required: true %>
++        </div>
++
++        <div class="d-grid">
++          <%= submit_tag(@completion&.acknowledged? ? "Re-submit" : "Complete training", class: "btn btn-brand") %>
++        </div>
++      <% end %>
++    </div>
++  </div>
++</div>
+diff --git a/config/routes.rb b/config/routes.rb
+index 56005d8..c850a1b 100644
+--- a/config/routes.rb
++++ b/config/routes.rb
+@@ -33,6 +33,37 @@ Rails.application.routes.draw do
+   # Education — holistic wellness & fitness articles (read-only)
+   resources :articles, only: [ :index, :show ]
+ 
++  # Scheduling — browse bookable services and manage appointments
++  resources :services, only: [ :index, :show ]
++  resources :appointments, only: [ :index, :new, :create, :show ] do
++    member do
++      patch :cancel
++      get :calendar # iCalendar (.ics) download
++    end
++  end
++
++  # HIPAA & compliance training
++  resources :trainings, only: [ :index, :show ] do
++    member { post :complete }
++  end
++
++  # Secure messaging with the care team (member side — their own thread)
++  resources :messages, only: [ :index, :create ]
++
++  # -------------------------------------------------------------- Admin portal
++  get "admin", to: "admin/dashboard#index", as: :admin_root
++  namespace :admin do
++    resources :users, only: [ :index, :show ] do
++      resources :assessments, only: [ :create, :update, :destroy ]
++    end
++    resources :appointments, only: [ :index, :show, :update ]
++    resources :conversations, only: [ :index, :show ] do
++      member { post :reply }
++    end
++    resources :services, only: [ :index, :edit, :update ]
++    get "analytics", to: "analytics#index"
++  end
++
+   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
+   get "up" => "rails/health#show", as: :rails_health_check
+ end
+diff --git a/db/migrate/20260617000001_add_role_to_users.rb b/db/migrate/20260617000001_add_role_to_users.rb
+new file mode 100644
+index 0000000..a9fd54f
+--- /dev/null
++++ b/db/migrate/20260617000001_add_role_to_users.rb
+@@ -0,0 +1,9 @@
++class AddRoleToUsers < ActiveRecord::Migration[8.1]
++  def change
++    add_column :users, :role, :string, null: false, default: "member"
++    add_column :users, :phone, :string
++    add_column :users, :title, :string
++    add_column :users, :bio, :text
++    add_index  :users, :role
++  end
++end
+diff --git a/db/migrate/20260617000002_create_services.rb b/db/migrate/20260617000002_create_services.rb
+new file mode 100644
+index 0000000..251ed6b
+--- /dev/null
++++ b/db/migrate/20260617000002_create_services.rb
+@@ -0,0 +1,23 @@
++class CreateServices < ActiveRecord::Migration[8.1]
++  def change
++    create_table :services do |t|
++      t.string  :name, null: false
++      t.string  :slug, null: false
++      t.string  :category
++      t.string  :tagline
++      t.text    :description
++      t.integer :duration_min, default: 60
++      t.integer :price_cents
++      t.string  :provider_name
++      t.string  :color
++      t.string  :icon
++      t.boolean :active, null: false, default: true
++      t.integer :position, default: 0
++
++      t.timestamps
++    end
++
++    add_index :services, :slug, unique: true
++    add_index :services, :category
++  end
++end
+diff --git a/db/migrate/20260617000003_create_appointments.rb b/db/migrate/20260617000003_create_appointments.rb
+new file mode 100644
+index 0000000..9c17913
+--- /dev/null
++++ b/db/migrate/20260617000003_create_appointments.rb
+@@ -0,0 +1,24 @@
++class CreateAppointments < ActiveRecord::Migration[8.1]
++  def change
++    create_table :appointments do |t|
++      t.references :user, null: false, foreign_key: true
++      t.references :service, null: false, foreign_key: true
++      t.datetime :scheduled_at, null: false
++      t.integer  :duration_min, default: 60
++      t.string   :status, null: false, default: "requested"
++      t.string   :mode, null: false, default: "in_person"
++      t.string   :location
++      t.string   :meeting_url
++      t.text     :reason
++      t.text     :admin_notes
++      t.datetime :confirmed_at
++      t.datetime :cancelled_at
++
++      t.timestamps
++    end
++
++    add_index :appointments, [ :user_id, :scheduled_at ]
++    add_index :appointments, :status
++    add_index :appointments, :scheduled_at
++  end
++end
+diff --git a/db/migrate/20260617000004_create_messages.rb b/db/migrate/20260617000004_create_messages.rb
+new file mode 100644
+index 0000000..b711c2f
+--- /dev/null
++++ b/db/migrate/20260617000004_create_messages.rb
+@@ -0,0 +1,17 @@
++class CreateMessages < ActiveRecord::Migration[8.1]
++  def change
++    create_table :messages do |t|
++      # The member whose conversation this belongs to (a thread is always
++      # between one member and the clinic/admin team).
++      t.references :member, null: false, foreign_key: { to_table: :users }
++      # The author of this individual message (the member or an admin).
++      t.references :sender, null: false, foreign_key: { to_table: :users }
++      t.text     :body, null: false
++      t.datetime :read_at
++
++      t.timestamps
++    end
++
++    add_index :messages, [ :member_id, :created_at ]
++  end
++end
+diff --git a/db/migrate/20260617000005_create_assessments.rb b/db/migrate/20260617000005_create_assessments.rb
+new file mode 100644
+index 0000000..8d7906d
+--- /dev/null
++++ b/db/migrate/20260617000005_create_assessments.rb
+@@ -0,0 +1,18 @@
++class CreateAssessments < ActiveRecord::Migration[8.1]
++  def change
++    create_table :assessments do |t|
++      t.references :member, null: false, foreign_key: { to_table: :users }
++      t.references :author, null: false, foreign_key: { to_table: :users }
++      t.string  :title, null: false
++      t.string  :category
++      t.string  :severity, null: false, default: "info"
++      t.string  :status, null: false, default: "open"
++      t.text    :summary
++      t.text    :recommendations
++
++      t.timestamps
++    end
++
++    add_index :assessments, [ :member_id, :created_at ]
++  end
++end
+diff --git a/db/migrate/20260617000006_create_training_modules.rb b/db/migrate/20260617000006_create_training_modules.rb
+new file mode 100644
+index 0000000..734442b
+--- /dev/null
++++ b/db/migrate/20260617000006_create_training_modules.rb
+@@ -0,0 +1,19 @@
++class CreateTrainingModules < ActiveRecord::Migration[8.1]
++  def change
++    create_table :training_modules do |t|
++      t.string  :slug, null: false
++      t.string  :title, null: false
++      t.string  :version
++      t.text    :summary
++      t.text    :body
++      t.integer :minutes, default: 10
++      t.boolean :required, null: false, default: true
++      t.integer :position, default: 0
++      t.text    :quiz # JSON-encoded knowledge-check questions
++
++      t.timestamps
++    end
++
++    add_index :training_modules, :slug, unique: true
++  end
++end
+diff --git a/db/migrate/20260617000007_create_training_completions.rb b/db/migrate/20260617000007_create_training_completions.rb
+new file mode 100644
+index 0000000..d54aeca
+--- /dev/null
++++ b/db/migrate/20260617000007_create_training_completions.rb
+@@ -0,0 +1,16 @@
++class CreateTrainingCompletions < ActiveRecord::Migration[8.1]
++  def change
++    create_table :training_completions do |t|
++      t.references :user, null: false, foreign_key: true
++      t.references :training_module, null: false, foreign_key: true
++      t.datetime :completed_at
++      t.string   :signature
++      t.integer  :score
++      t.boolean  :acknowledged, null: false, default: false
++
++      t.timestamps
++    end
++
++    add_index :training_completions, [ :user_id, :training_module_id ], unique: true, name: "index_training_completions_on_user_and_module"
++  end
++end
+diff --git a/db/migrate/20260617000008_change_appointment_duration_default.rb b/db/migrate/20260617000008_change_appointment_duration_default.rb
+new file mode 100644
+index 0000000..2e9b0ae
+--- /dev/null
++++ b/db/migrate/20260617000008_change_appointment_duration_default.rb
+@@ -0,0 +1,6 @@
++class ChangeAppointmentDurationDefault < ActiveRecord::Migration[8.1]
++  def change
++    # Remove the fixed default so new bookings inherit their service's duration.
++    change_column_default :appointments, :duration_min, from: 60, to: nil
++  end
++end
+diff --git a/db/schema.rb b/db/schema.rb
+index 8da3afb..a1af0a1 100644
+--- a/db/schema.rb
++++ b/db/schema.rb
+@@ -10,7 +10,29 @@
+ #
+ # It's strongly recommended that you check this file into your version control system.
+ 
+-ActiveRecord::Schema[8.1].define(version: 2026_06_01_000009) do
++ActiveRecord::Schema[8.1].define(version: 2026_06_17_000008) do
++  create_table "appointments", force: :cascade do |t|
++    t.text "admin_notes"
++    t.datetime "cancelled_at"
++    t.datetime "confirmed_at"
++    t.datetime "created_at", null: false
++    t.integer "duration_min"
++    t.string "location"
++    t.string "meeting_url"
++    t.string "mode", default: "in_person", null: false
++    t.text "reason"
++    t.datetime "scheduled_at", null: false
++    t.integer "service_id", null: false
++    t.string "status", default: "requested", null: false
++    t.datetime "updated_at", null: false
++    t.integer "user_id", null: false
++    t.index ["scheduled_at"], name: "index_appointments_on_scheduled_at"
++    t.index ["service_id"], name: "index_appointments_on_service_id"
++    t.index ["status"], name: "index_appointments_on_status"
++    t.index ["user_id", "scheduled_at"], name: "index_appointments_on_user_id_and_scheduled_at"
++    t.index ["user_id"], name: "index_appointments_on_user_id"
++  end
++
+   create_table "articles", force: :cascade do |t|
+     t.string "author"
+     t.text "body"
+@@ -26,6 +48,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_000009) do
+     t.index ["category"], name: "index_articles_on_category"
+   end
+ 
++  create_table "assessments", force: :cascade do |t|
++    t.integer "author_id", null: false
++    t.string "category"
++    t.datetime "created_at", null: false
++    t.integer "member_id", null: false
++    t.text "recommendations"
++    t.string "severity", default: "info", null: false
++    t.string "status", default: "open", null: false
++    t.text "summary"
++    t.string "title", null: false
++    t.datetime "updated_at", null: false
++    t.index ["author_id"], name: "index_assessments_on_author_id"
++    t.index ["member_id", "created_at"], name: "index_assessments_on_member_id_and_created_at"
++    t.index ["member_id"], name: "index_assessments_on_member_id"
++  end
++
+   create_table "checkins", force: :cascade do |t|
+     t.date "checkin_date", null: false
+     t.datetime "created_at", null: false
+@@ -81,6 +119,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_000009) do
+     t.index ["user_id"], name: "index_meal_entries_on_user_id"
+   end
+ 
++  create_table "messages", force: :cascade do |t|
++    t.text "body", null: false
++    t.datetime "created_at", null: false
++    t.integer "member_id", null: false
++    t.datetime "read_at"
++    t.integer "sender_id", null: false
++    t.datetime "updated_at", null: false
++    t.index ["member_id", "created_at"], name: "index_messages_on_member_id_and_created_at"
++    t.index ["member_id"], name: "index_messages_on_member_id"
++    t.index ["sender_id"], name: "index_messages_on_sender_id"
++  end
++
+   create_table "routine_items", force: :cascade do |t|
+     t.datetime "created_at", null: false
+     t.string "day_label"
+@@ -106,15 +156,68 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_000009) do
+     t.datetime "updated_at", null: false
+   end
+ 
++  create_table "services", force: :cascade do |t|
++    t.boolean "active", default: true, null: false
++    t.string "category"
++    t.string "color"
++    t.datetime "created_at", null: false
++    t.text "description"
++    t.integer "duration_min", default: 60
++    t.string "icon"
++    t.string "name", null: false
++    t.integer "position", default: 0
++    t.integer "price_cents"
++    t.string "provider_name"
++    t.string "slug", null: false
++    t.string "tagline"
++    t.datetime "updated_at", null: false
++    t.index ["category"], name: "index_services_on_category"
++    t.index ["slug"], name: "index_services_on_slug", unique: true
++  end
++
++  create_table "training_completions", force: :cascade do |t|
++    t.boolean "acknowledged", default: false, null: false
++    t.datetime "completed_at"
++    t.datetime "created_at", null: false
++    t.integer "score"
++    t.string "signature"
++    t.integer "training_module_id", null: false
++    t.datetime "updated_at", null: false
++    t.integer "user_id", null: false
++    t.index ["training_module_id"], name: "index_training_completions_on_training_module_id"
++    t.index ["user_id", "training_module_id"], name: "index_training_completions_on_user_and_module", unique: true
++    t.index ["user_id"], name: "index_training_completions_on_user_id"
++  end
++
++  create_table "training_modules", force: :cascade do |t|
++    t.text "body"
++    t.datetime "created_at", null: false
++    t.integer "minutes", default: 10
++    t.integer "position", default: 0
++    t.text "quiz"
++    t.boolean "required", default: true, null: false
++    t.string "slug", null: false
++    t.text "summary"
++    t.string "title", null: false
++    t.datetime "updated_at", null: false
++    t.string "version"
++    t.index ["slug"], name: "index_training_modules_on_slug", unique: true
++  end
++
+   create_table "users", force: :cascade do |t|
++    t.text "bio"
+     t.datetime "created_at", null: false
+     t.string "email"
+     t.string "first_name"
+     t.string "last_name"
+     t.string "password_digest"
++    t.string "phone"
++    t.string "role", default: "member", null: false
++    t.string "title"
+     t.datetime "updated_at", null: false
+     t.string "username"
+     t.index ["email"], name: "index_users_on_email", unique: true
++    t.index ["role"], name: "index_users_on_role"
+     t.index ["username"], name: "index_users_on_username", unique: true
+   end
+ 
+@@ -151,11 +254,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_01_000009) do
+     t.index ["category"], name: "index_workouts_on_category"
+   end
+ 
++  add_foreign_key "appointments", "services"
++  add_foreign_key "appointments", "users"
++  add_foreign_key "assessments", "users", column: "author_id"
++  add_foreign_key "assessments", "users", column: "member_id"
+   add_foreign_key "checkins", "users"
+   add_foreign_key "health_profiles", "users"
+   add_foreign_key "meal_entries", "users"
++  add_foreign_key "messages", "users", column: "member_id"
++  add_foreign_key "messages", "users", column: "sender_id"
+   add_foreign_key "routine_items", "routines"
+   add_foreign_key "routine_items", "workouts"
++  add_foreign_key "training_completions", "training_modules"
++  add_foreign_key "training_completions", "users"
+   add_foreign_key "workout_logs", "users"
+   add_foreign_key "workout_logs", "workouts"
+ end
+diff --git a/db/seeds.rb b/db/seeds.rb
+index 33baccd..5c9c6a7 100644
+--- a/db/seeds.rb
++++ b/db/seeds.rb
+@@ -295,4 +295,140 @@ if demo.checkins.none?
+   puts "  • Generated #{demo.checkins.count} check-ins, #{demo.meal_entries.count} meals, #{demo.workout_logs.count} workouts for the demo member"
+ end
+ 
+-puts "✅ Done. Sign in with  username: demo  ·  password: wellness"
++# ------------------------------------------------------------------ Services
++services = [
++  { name: "Personal Training", category: "Personal Training", icon: "fa-dumbbell", color: "#4a7c59",
++    duration_min: 60, price_cents: 7500, provider_name: "HWF Coaching Team", position: 1,
++    tagline: "1:1 strength & conditioning tailored to your goals.",
++    description: "Private personal training sessions built around your body and goals — strength, mobility, fat loss or performance. Every session is programmed and progressed by a certified coach." },
++  { name: "Nutrition Coaching", category: "Nutrition", icon: "fa-bowl-food", color: "#c9a96e",
++    duration_min: 45, price_cents: 9000, provider_name: "Celine Bonilla, RN", position: 2,
++    tagline: "Holistic, gut-focused nutrition with a registered nurse.",
++    description: "Personalized nutrition coaching rooted in whole foods and gut health. We'll review your logs, set realistic targets and build sustainable habits — no crash diets." },
++  { name: "Pelvic Health Therapy", category: "Pelvic Health", icon: "fa-heart-circle-check", color: "#a3b18a",
++    duration_min: 50, price_cents: 11000, provider_name: "Pelvic Health Specialist", position: 3,
++    tagline: "Specialized support for core & pelvic floor health.",
++    description: "Compassionate, evidence-based pelvic floor therapy — pre/postnatal recovery, core retraining and pelvic health education in a private, supportive setting." },
++  { name: "Boxing & Conditioning", category: "Boxing", icon: "fa-hand-fist", color: "#2d4a30",
++    duration_min: 60, price_cents: 6500, provider_name: "HWF Coaching Team", position: 4,
++    tagline: "Technique, cardio and confidence on the pads.",
++    description: "Non-contact boxing for fitness — footwork, combinations and conditioning that build cardiovascular fitness, coordination and stress relief for all levels." },
++  { name: "Kids Athletic Training", category: "Kids Athletic Training", icon: "fa-child-reaching", color: "#6f9e58",
++    duration_min: 45, price_cents: 5000, provider_name: "Youth Development Coach", position: 5,
++    tagline: "Fun, age-appropriate athletic development for kids.",
++    description: "Movement, speed, agility and coordination for young athletes — building confidence and fundamental skills through playful, structured sessions." },
++  { name: "Holistic Coaching Session", category: "Holistic Coaching", icon: "fa-spa", color: "#4a7c59",
++    duration_min: 60, price_cents: 12000, provider_name: "Celine Bonilla, RN", position: 6,
++    tagline: "Whole-self coaching: body, mind and gut.",
++    description: "A deep-dive coaching session integrating nutrition, movement and mindfulness to reset balance, heal the gut and build lasting wellness habits." }
++]
++services.each do |attrs|
++  Service.find_or_initialize_by(name: attrs[:name]).update!(attrs)
++end
++puts "  • #{Service.count} bookable services"
++
++# ----------------------------------------------------------- HIPAA training
++hipaa = TrainingModule.find_or_initialize_by(slug: "hipaa-privacy")
++hipaa.update!(
++  title: "HIPAA Privacy & Security Awareness",
++  version: "2026.1", minutes: 12, required: true, position: 1,
++  summary: "Understand how we protect your health information and your rights under HIPAA.",
++  body: <<~BODY,
++    Holistic Wellness Fitness is committed to protecting your Protected Health Information (PHI). This short training explains what HIPAA means for you and for our team.
++
++    ## What is PHI?
++    Protected Health Information is any information that can identify you and relates to your health, care or payment for care — your name, contact details, vitals, check-ins, assessments and appointment history all count.
++
++    ## Your rights
++    Under HIPAA you have the right to access your records, request corrections, know who we share information with, and ask us to restrict certain uses. Your chart is yours.
++
++    ## How we protect your information
++    We limit access to your PHI to the care team directly involved in your wellness. Information is transmitted over encrypted connections, protected by individual logins, and never sold. Messages in your chart stay between you and the care team.
++
++    ## Your responsibilities
++    Keep your password private, sign out on shared devices, and let us know immediately if you suspect unauthorized access to your account. Together we keep your information safe.
++  BODY
++  quiz: [
++    { "q" => "What does PHI stand for?",
++      "options" => [ "Personal Health Insurance", "Protected Health Information", "Private Health Index" ],
++      "answer" => 1 },
++    { "q" => "Who can access your chart's health information?",
++      "options" => [ "Anyone with the link", "Only the care team involved in your wellness", "All members" ],
++      "answer" => 1 },
++    { "q" => "Which is a good way to protect your PHI?",
++      "options" => [ "Share your password with a friend", "Sign out on shared devices", "Post your vitals publicly" ],
++      "answer" => 1 },
++    { "q" => "Under HIPAA, you have the right to…",
++      "options" => [ "Access and correct your records", "Nothing — records are private from you", "Only view records once a year" ],
++      "answer" => 0 }
++  ]
++)
++puts "  • HIPAA training module ready (#{hipaa.questions.size}-question quiz)"
++
++# ------------------------------------------------------------------- Admin
++admin = User.find_or_initialize_by(username: "celine")
++if admin.new_record?
++  admin.assign_attributes(
++    first_name: "Celine", last_name: "Bonilla", email: "celine@holisticwellnessandfitness.com",
++    password: "celine123", password_confirmation: "celine123", role: "admin",
++    title: "Founder & Holistic Wellness Coach · RN",
++    phone: "203-800-1118"
++  )
++  admin.save!
++  puts "  • Created admin (username: celine / password: celine123)"
++else
++  admin.update!(role: "admin")
++end
++
++# -------------------------------------------- Demo bookings, messages, notes
++if demo.appointments.none?
++  pt = Service.find_by(category: "Personal Training")
++  nutrition = Service.find_by(category: "Nutrition")
++
++  demo.appointments.create!(service: pt, scheduled_at: 3.days.from_now.change(hour: 17, min: 30),
++                            status: "confirmed", mode: "virtual",
++                            meeting_url: "https://meet.google.com/demo-hwf-session", confirmed_at: Time.current,
++                            reason: "Progress check + lower-body strength.")
++  demo.appointments.create!(service: nutrition, scheduled_at: 6.days.from_now.change(hour: 12, min: 0),
++                            status: "requested", mode: "in_person",
++                            reason: "Review nutrition logs and gut-healing plan.")
++  # A completed past session (bypass the future-only guard used on booking).
++  past = demo.appointments.create!(service: pt, scheduled_at: 5.days.from_now.change(hour: 9),
++                                   status: "confirmed", mode: "in_person")
++  past.update_columns(scheduled_at: 1.week.ago.change(hour: 9), status: "completed")
++  puts "  • #{demo.appointments.count} demo appointments"
++end
++
++if demo.messages.none?
++  convo = [
++    [ admin, "Hi Jordan! Lovely progress this week 🎉 How are you feeling after the new routine?", 2.days.ago ],
++    [ demo,  "Thanks Celine! Energy is up, but my sleep has been a little short lately.", 2.days.ago + 3.hours ],
++    [ admin, "Let's build a wind-down routine — I'll add a note to your chart with a few ideas.", 1.day.ago ]
++  ]
++  convo.each do |sender, body, at|
++    m = demo.messages.create!(sender: sender, body: body)
++    m.update_columns(created_at: at, updated_at: at, read_at: (sender == demo ? at : nil))
++  end
++  puts "  • Seeded a demo conversation"
++end
++
++if demo.assessments.none?
++  demo.assessments.create!(
++    author: admin, title: "Sleep optimization", category: "Sleep", severity: "watch", status: "monitoring",
++    summary: "Averaging ~6.5 hrs/night with dips in energy. Sleep is the likely lever for the recent energy and stress scores.",
++    recommendations: "Consistent 10:30pm wind-down, screens off 60 min prior, and the Morning Mobility Wake-Up routine. Reassess in 2 weeks."
++  )
++  puts "  • Seeded a demo assessment"
++end
++
++# Mark HIPAA complete for the demo member so the flow shows a certificate.
++demo.training_completions.find_or_create_by!(training_module: hipaa) do |tc|
++  tc.acknowledged = true
++  tc.signature = demo.full_name
++  tc.score = 100
++  tc.completed_at = 3.days.ago
++end
++
++puts "✅ Done."
++puts "   Member: username demo   · password wellness"
++puts "   Admin:  username celine · password celine123"
+diff --git a/test/integration/feature_flows_test.rb b/test/integration/feature_flows_test.rb
+new file mode 100644
+index 0000000..1aa16e0
+--- /dev/null
++++ b/test/integration/feature_flows_test.rb
+@@ -0,0 +1,121 @@
++require "test_helper"
++
++class FeatureFlowsTest < ActionDispatch::IntegrationTest
++  setup do
++    @member = User.create!(first_name: "Mem", last_name: "Ber", username: "member1",
++                           email: "member1@example.com", password: "password1")
++    @admin = User.create!(first_name: "Ada", last_name: "Min", username: "admin1",
++                          email: "admin1@example.com", password: "password1", role: "admin")
++    @service = Service.create!(name: "Personal Training", category: "Personal Training",
++                               duration_min: 60, price_cents: 7500, icon: "fa-dumbbell")
++    @training = TrainingModule.create!(slug: "hipaa-privacy", title: "HIPAA Privacy",
++                                       summary: "s", body: "## A\n\nbody",
++                                       quiz: [ { "q" => "PHI?", "options" => %w[No Yes], "answer" => 1 } ])
++  end
++
++  def login(user, password = "password1")
++    post login_path, params: { username: user.username, password: password }
++  end
++
++  # ----------------------------------------------------------------- member
++  test "member can browse scheduling and book an appointment" do
++    login(@member)
++    get services_path
++    assert_response :success
++    assert_match "Book a session", response.body
++
++    get service_path(@service)
++    assert_response :success
++
++    get new_appointment_path(service_id: @service.slug)
++    assert_response :success
++
++    assert_difference "Appointment.count", 1 do
++      post appointments_path, params: { appointment: {
++        service_id: @service.id, scheduled_at: 3.days.from_now.change(hour: 10), mode: "virtual", reason: "Test"
++      } }
++    end
++    assert_response :redirect
++  end
++
++  test "member can view and complete training" do
++    login(@member)
++    get trainings_path
++    assert_response :success
++    assert_match "Required training", response.body
++
++    get training_path(@training)
++    assert_response :success
++
++    assert_difference "TrainingCompletion.count", 1 do
++      post complete_training_path(@training), params: { acknowledge: "1", signature: "Mem Ber", answers: { "0" => "1" } }
++    end
++    assert @member.training_complete?("hipaa-privacy")
++  end
++
++  test "member can message the care team" do
++    login(@member)
++    get messages_path
++    assert_response :success
++
++    assert_difference "Message.count", 1 do
++      post messages_path, params: { message: { body: "Hi team" } }
++    end
++    assert_equal @member, Message.last.member
++    assert_equal @member, Message.last.sender
++  end
++
++  test "appointments and BMI/dashboard render" do
++    login(@member)
++    get dashboard_path
++    assert_response :success
++    assert_match "BMI", response.body
++    get appointments_path
++    assert_response :success
++  end
++
++  # ------------------------------------------------------------------ admin
++  test "admin portal pages render" do
++    login(@admin)
++    [ admin_root_path, admin_users_path, admin_user_path(@member), admin_appointments_path,
++      admin_conversations_path, admin_conversation_path(@member), admin_services_path,
++      edit_admin_service_path(@service), admin_analytics_path ].each do |path|
++      get path
++      assert_response :success, "expected 200 for #{path}"
++    end
++    assert_match "Diagnostic flags", get(admin_user_path(@member)) && response.body
++  end
++
++  test "admin can reply, assess, and manage an appointment" do
++    appt = @member.appointments.create!(service: @service, scheduled_at: 2.days.from_now, status: "requested")
++    login(@admin)
++
++    assert_difference "Message.count", 1 do
++      post reply_admin_conversation_path(@member), params: { message: { body: "Reply" } }
++    end
++    assert Message.last.from_admin?
++
++    assert_difference "Assessment.count", 1 do
++      post admin_user_assessments_path(@member), params: { assessment: { title: "Note", category: "General", severity: "info" } }
++    end
++
++    patch admin_appointment_path(appt), params: { appointment: { status: "confirmed", mode: "virtual", meeting_url: "https://meet.example.com/x" } }
++    assert_response :redirect
++    assert_equal "confirmed", appt.reload.status
++    assert appt.confirmed_at.present?
++  end
++
++  # ------------------------------------------------------------------ guard
++  test "members are blocked from the admin portal" do
++    login(@member)
++    get admin_root_path
++    assert_redirected_to dashboard_path
++  end
++
++  test "logged-out visitors are sent to login" do
++    get admin_root_path
++    assert_redirected_to login_path
++    get appointments_path
++    assert_redirected_to login_path
++  end
++end
+diff --git a/test/models/appointment_test.rb b/test/models/appointment_test.rb
+new file mode 100644
+index 0000000..951f40e
+--- /dev/null
++++ b/test/models/appointment_test.rb
+@@ -0,0 +1,36 @@
++require "test_helper"
++
++class AppointmentTest < ActiveSupport::TestCase
++  setup do
++    @user = User.create!(first_name: "A", last_name: "B", username: "appt", email: "appt@e.com", password: "password1")
++    @service = Service.create!(name: "Boxing & Conditioning", category: "Boxing", duration_min: 45)
++  end
++
++  test "cannot be booked in the past" do
++    appt = @user.appointments.new(service: @service, scheduled_at: 1.day.ago)
++    assert_not appt.valid?
++    assert_includes appt.errors[:scheduled_at], "can't be in the past"
++  end
++
++  test "inherits duration from service and computes end time" do
++    appt = @user.appointments.create!(service: @service, scheduled_at: 2.days.from_now)
++    assert_equal 45, appt.duration_min
++    assert_equal appt.scheduled_at + 45.minutes, appt.ends_at
++  end
++
++  test "upcoming scope excludes cancelled and past" do
++    future = @user.appointments.create!(service: @service, scheduled_at: 2.days.from_now)
++    @user.appointments.create!(service: @service, scheduled_at: 3.days.from_now, status: "cancelled")
++    assert_includes Appointment.upcoming, future
++    assert_equal 1, Appointment.upcoming.count
++  end
++
++  test "generates an iCalendar payload" do
++    appt = @user.appointments.create!(service: @service, scheduled_at: 2.days.from_now, mode: "virtual",
++                                      meeting_url: "https://meet.example.com/x")
++    ics = appt.to_ics
++    assert_match "BEGIN:VCALENDAR", ics
++    assert_match "Boxing & Conditioning", ics
++    assert_match "https://meet.example.com/x", ics
++  end
++end
+diff --git a/test/models/message_test.rb b/test/models/message_test.rb
+new file mode 100644
+index 0000000..ab1a784
+--- /dev/null
++++ b/test/models/message_test.rb
+@@ -0,0 +1,31 @@
++require "test_helper"
++
++class MessageTest < ActiveSupport::TestCase
++  setup do
++    @member = User.create!(first_name: "M", last_name: "B", username: "msgmem", email: "m@e.com", password: "password1")
++    @admin  = User.create!(first_name: "Ad", last_name: "Min", username: "msgadm", email: "a@e.com", password: "password1", role: "admin")
++    @other  = User.create!(first_name: "O", last_name: "T", username: "msgoth", email: "o@e.com", password: "password1")
++  end
++
++  test "member may post in their own thread" do
++    msg = Message.new(member: @member, sender: @member, body: "hi")
++    assert msg.valid?
++    assert msg.from_member?
++  end
++
++  test "admin may post in any member thread" do
++    msg = Message.new(member: @member, sender: @admin, body: "hello")
++    assert msg.valid?
++    assert msg.from_admin?
++  end
++
++  test "a different member cannot post in someone else's thread" do
++    msg = Message.new(member: @member, sender: @other, body: "nope")
++    assert_not msg.valid?
++    assert_includes msg.errors[:sender], "must be the member or an admin"
++  end
++
++  test "body is required" do
++    assert_not Message.new(member: @member, sender: @member, body: "").valid?
++  end
++end
+diff --git a/test/models/service_test.rb b/test/models/service_test.rb
+new file mode 100644
+index 0000000..79843cd
+--- /dev/null
++++ b/test/models/service_test.rb
+@@ -0,0 +1,21 @@
++require "test_helper"
++
++class ServiceTest < ActiveSupport::TestCase
++  test "auto-generates a slug from the name" do
++    service = Service.create!(name: "Pelvic Health Therapy", category: "Pelvic Health")
++    assert_equal "pelvic-health-therapy", service.slug
++    assert_equal "pelvic-health-therapy", service.to_param
++  end
++
++  test "formats price from cents" do
++    assert_equal "$75", Service.new(price_cents: 7500).price
++    assert_equal "Free", Service.new(price_cents: 0).price
++  end
++
++  test "active scope filters hidden services" do
++    on = Service.create!(name: "On", category: "Boxing", active: true)
++    Service.create!(name: "Off", category: "Boxing", active: false)
++    assert_includes Service.active, on
++    assert_equal 1, Service.active.count
++  end
++end
+-- 
+2.43.0
+

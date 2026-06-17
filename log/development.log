@@ -19170,3 +19170,137 @@ Processing by WelcomeController#index as HTML
 Completed 200 OK in 35ms (Views: 7.1ms | ActiveRecord: 0.0ms (0 queries, 0 cached) | GC: 0.0ms)
 
 
+Generating image variants require the image_processing gem. Please add `gem "image_processing", "~> 1.2"` to your Gemfile or set `config.active_storage.variant_processor = :disabled`.
+Generating image variants require the image_processing gem. Please add `gem "image_processing", "~> 1.2"` to your Gemfile or set `config.active_storage.variant_processor = :disabled`.
+  [1m[36mActiveRecord::InternalMetadata Load (0.4ms)[0m  [1m[34mSELECT * FROM "ar_internal_metadata" WHERE "ar_internal_metadata"."key" = 'environment' ORDER BY "ar_internal_metadata"."key" ASC LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='HolisticChart'*/[0m
+  [1m[36mActiveRecord::SchemaMigration Load (0.1ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='HolisticChart'*/[0m
+Generating image variants require the image_processing gem. Please add `gem "image_processing", "~> 1.2"` to your Gemfile or set `config.active_storage.variant_processor = :disabled`.
+  [1m[36mActiveRecord::SchemaMigration Load (0.3ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.2ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Full Body Strength — Beginner' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Full Body Strength — Intense' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Upper Body with Weights' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Core & Abs with Weights' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = '40-Min Full Body HIIT' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = '30-Min Standing HIIT' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = '25-Min Beginner HIIT' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Indoor Walking Cardio' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Walk + Cardio Intervals' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Low-Impact Cardio' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Yoga for Complete Beginners' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Yoga for Beginners — The Basics' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Gentle Pilates Flow' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Full Body Stretch & Mobility' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Flexibility & Mobility Routine' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Rest Day Active Recovery' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Morning Mobility Wake-Up' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Count (0.1ms)[0m  [1m[34mSELECT COUNT(*) FROM "workouts" /*application='HolisticChart'*/[0m
+  [1m[36mRoutine Load (0.1ms)[0m  [1m[34mSELECT "routines".* FROM "routines" WHERE "routines"."title" = 'Reset & Restore — Foundations' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Load (0.2ms)[0m  [1m[34mSELECT "routine_items".* FROM "routine_items" WHERE "routine_items"."routine_id" = 1 ORDER BY "routine_items"."position" ASC /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (2.7ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 53 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (0.1ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 54 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (0.0ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 55 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (0.1ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 56 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (30.7ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.2ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Yoga for Complete Beginners' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (3.4ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.185590', 'Day 1 · Mind & body', 'Ease in gently', 1, 1, '2026-06-17 13:03:27.185590', 11) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Indoor Walking Cardio' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (3.4ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.199169', 'Day 2 · Cardio', 'Keep it conversational', 2, 1, '2026-06-17 13:03:27.199169', 8) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Gentle Pilates Flow' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (3.6ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.211142', 'Day 3 · Core', 'Focus on control', 3, 1, '2026-06-17 13:03:27.211142', 13) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Full Body Stretch & Mobility' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (3.7ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.224305', 'Day 4 · Mobility', 'Unwind and restore', 4, 1, '2026-06-17 13:03:27.224305', 14) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutine Load (0.1ms)[0m  [1m[34mSELECT "routines".* FROM "routines" WHERE "routines"."title" = 'Strong & Balanced — Build' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Load (0.1ms)[0m  [1m[34mSELECT "routine_items".* FROM "routine_items" WHERE "routine_items"."routine_id" = 2 ORDER BY "routine_items"."position" ASC /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.0ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (5.6ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 57 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (0.0ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 58 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (0.0ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 59 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (0.0ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 60 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (0.0ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 61 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.2ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Full Body Strength — Beginner' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (2.9ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.261848', 'Day 1 · Full body', 'Quality reps', 1, 2, '2026-06-17 13:03:27.261848', 1) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Upper Body with Weights' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (3.2ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.272656', 'Day 2 · Upper', 'Light dumbbells', 2, 2, '2026-06-17 13:03:27.272656', 3) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = '30-Min Standing HIIT' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (19.2ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.284523', 'Day 3 · Conditioning', 'Joint-friendly', 3, 2, '2026-06-17 13:03:27.284523', 6) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Core & Abs with Weights' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (3.0ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.312847', 'Day 4 · Core', 'Brace the core', 4, 2, '2026-06-17 13:03:27.312847', 4) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.1ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Rest Day Active Recovery' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (2.9ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.325651', 'Day 5 · Recovery', 'Move and breathe', 5, 2, '2026-06-17 13:03:27.325651', 16) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutine Load (0.2ms)[0m  [1m[34mSELECT "routines".* FROM "routines" WHERE "routines"."title" = 'Gut-Friendly Burn' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Load (0.1ms)[0m  [1m[34mSELECT "routine_items".* FROM "routine_items" WHERE "routine_items"."routine_id" = 3 ORDER BY "routine_items"."position" ASC /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (2.9ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 62 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (0.1ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 63 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (0.1ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 64 /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Destroy (0.1ms)[0m  [1m[31mDELETE FROM "routine_items" WHERE "routine_items"."id" = 65 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.2ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = '25-Min Beginner HIIT' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (3.1ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.368394', 'Day 1 · Intervals', 'Build gradually', 1, 3, '2026-06-17 13:03:27.368394', 7) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.7ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.2ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Low-Impact Cardio' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (3.8ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.380982', 'Day 2 · Cardio', 'Steady effort', 2, 3, '2026-06-17 13:03:27.380982', 10) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.5ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.2ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Full Body Stretch & Mobility' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (4.0ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.398555', 'Day 3 · Mobility', 'Active recovery', 3, 3, '2026-06-17 13:03:27.398555', 14) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mWorkout Load (0.3ms)[0m  [1m[34mSELECT "workouts".* FROM "workouts" WHERE "workouts"."title" = 'Yoga for Beginners — The Basics' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Create (3.3ms)[0m  [1m[32mINSERT INTO "routine_items" ("created_at", "day_label", "notes", "position", "routine_id", "updated_at", "workout_id") VALUES ('2026-06-17 13:03:27.411614', 'Day 4 · Restore', 'Calm the system', 4, 3, '2026-06-17 13:03:27.411614', 12) RETURNING "id" /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mRoutine Count (0.1ms)[0m  [1m[34mSELECT COUNT(*) FROM "routines" /*application='HolisticChart'*/[0m
+  [1m[36mRoutineItem Count (0.1ms)[0m  [1m[34mSELECT COUNT(*) FROM "routine_items" /*application='HolisticChart'*/[0m
+  [1m[36mArticle Load (0.1ms)[0m  [1m[34mSELECT "articles".* FROM "articles" WHERE "articles"."title" = 'The Gut–Brain Axis: Why Digestion Shapes Your Mood' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Update (4.7ms)[0m  [1m[33mUPDATE "articles" SET "published_on" = '2026-06-11', "updated_at" = '2026-06-17 13:03:27.440233' WHERE "articles"."id" = 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Load (0.2ms)[0m  [1m[34mSELECT "articles".* FROM "articles" WHERE "articles"."title" = 'Sea Moss: Nature''s Mineral-Rich Multivitamin' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Update (4.8ms)[0m  [1m[33mUPDATE "articles" SET "published_on" = '2026-06-05', "updated_at" = '2026-06-17 13:03:27.456556' WHERE "articles"."id" = 2 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Load (0.2ms)[0m  [1m[34mSELECT "articles".* FROM "articles" WHERE "articles"."title" = 'Strength Training Isn''t Just for the Gym' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Update (3.4ms)[0m  [1m[33mUPDATE "articles" SET "published_on" = '2026-06-14', "updated_at" = '2026-06-17 13:03:27.489275' WHERE "articles"."id" = 3 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Load (0.2ms)[0m  [1m[34mSELECT "articles".* FROM "articles" WHERE "articles"."title" = 'Sleep: The Most Underrated Wellness Tool' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Update (3.0ms)[0m  [1m[33mUPDATE "articles" SET "published_on" = '2026-06-08', "updated_at" = '2026-06-17 13:03:27.502119' WHERE "articles"."id" = 4 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Load (0.2ms)[0m  [1m[34mSELECT "articles".* FROM "articles" WHERE "articles"."title" = 'Mindful Eating: Slowing Down to Heal' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Update (4.0ms)[0m  [1m[33mUPDATE "articles" SET "published_on" = '2026-06-16', "updated_at" = '2026-06-17 13:03:27.513689' WHERE "articles"."id" = 5 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Load (0.1ms)[0m  [1m[34mSELECT "articles".* FROM "articles" WHERE "articles"."title" = 'Breath & Stress: Your Built-In Reset Button' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN immediate TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Update (3.1ms)[0m  [1m[33mUPDATE "articles" SET "published_on" = '2026-06-02', "updated_at" = '2026-06-17 13:03:27.525579' WHERE "articles"."id" = 6 /*application='HolisticChart'*/[0m
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mCOMMIT TRANSACTION /*application='HolisticChart'*/[0m
+  [1m[36mArticle Count (0.1ms)[0m  [1m[34mSELECT COUNT(*) FROM "articles" /*application='HolisticChart'*/[0m
+  [1m[36mUser Load (0.1ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."username" = 'demo' LIMIT 1 /*application='HolisticChart'*/[0m
+  [1m[36mHealthProfile Load (0.1ms)[0m  [1m[34mSELECT "health_profiles".* FROM "health_profiles" WHERE "health_profiles"."user_id" = 1 LIMIT 1 /*application='HolisticChart'*/[0m
+  ↳ app/models/user.rb:34:in 'User#ensure_health_profile'
+  [1m[36mCheckin Exists? (0.1ms)[0m  [1m[34mSELECT 1 AS one FROM "checkins" WHERE "checkins"."user_id" = 1 LIMIT 1 /*application='HolisticChart'*/[0m
+Generating image variants require the image_processing gem. Please add `gem "image_processing", "~> 1.2"` to your Gemfile or set `config.active_storage.variant_processor = :disabled`.

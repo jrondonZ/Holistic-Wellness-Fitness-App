@@ -1,0 +1,31 @@
+<% content_for :title, "Admin · Services" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Admin portal</span>
+    <h1 class="h3 mb-0">Service catalog</h1>
+  </div>
+</div>
+
+<div class="row g-3">
+  <% @services.each do |service| %>
+    <div class="col-md-6 col-lg-4">
+      <div class="hwf-card h-100 <%= 'opacity-50' unless service.active %>">
+        <div class="d-flex align-items-center gap-3 mb-2">
+          <div class="service-icon-lg" style="background: <%= service.accent %>; width:48px; height:48px; font-size:1.2rem;"><i class="fa-solid <%= service.icon_name %>"></i></div>
+          <div class="flex-fill">
+            <span class="pill gold"><%= service.category %></span>
+            <h2 class="h6 mb-0 mt-1"><%= service.name %></h2>
+          </div>
+          <% unless service.active %><span class="pill low">Hidden</span><% end %>
+        </div>
+        <p class="small text-muted"><%= service.tagline %></p>
+        <div class="d-flex justify-content-between align-items-center small text-muted">
+          <span><%= service.duration_min %> min · <%= service.price %></span>
+          <span><%= @booking_counts[service.id].to_i %> booking<%= 's' unless @booking_counts[service.id].to_i == 1 %></span>
+        </div>
+        <%= link_to "Edit", edit_admin_service_path(service), class: "btn btn-soft btn-sm w-100 mt-3" %>
+      </div>
+    </div>
+  <% end %>
+</div>

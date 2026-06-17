@@ -1,5 +1,5 @@
 module ChartHelper
-  # The left-rail navigation items for the chart.
+  # The left-rail navigation items for the chart, grouped into sections.
   CHART_NAV = [
     { label: "Chart Summary", icon: "fa-heart-pulse",   path: :dashboard_path },
     { label: "Wellness",      icon: "fa-spa",            path: :checkins_path },
@@ -7,12 +7,21 @@ module ChartHelper
     { label: "Fitness Log",   icon: "fa-dumbbell",       path: :workout_logs_path },
     { label: "Video Library", icon: "fa-circle-play",    path: :workouts_path },
     { label: "Routines",      icon: "fa-calendar-check", path: :routines_path },
-    { label: "Education",     icon: "fa-book-open",       path: :articles_path },
-    { label: "My Details",    icon: "fa-id-card",         path: :health_profile_path }
+    { label: "Education",     icon: "fa-book-open",      path: :articles_path },
+    { label: "Scheduling",    icon: "fa-calendar-plus",  path: :services_path },
+    { label: "Appointments",  icon: "fa-calendar-day",   path: :appointments_path },
+    { label: "Messages",      icon: "fa-comments",       path: :messages_path, badge: :messages },
+    { label: "Training",      icon: "fa-shield-halved",  path: :trainings_path },
+    { label: "My Details",    icon: "fa-id-card",        path: :health_profile_path }
   ].freeze
 
   def chart_nav_items
     CHART_NAV.map { |item| item.merge(href: send(item[:path])) }
+  end
+
+  # Unread care-team messages for a member (for the nav badge).
+  def member_unread_count(user)
+    user.messages.unread.where.not(sender_id: user.id).count
   end
 
   def nav_active?(href)

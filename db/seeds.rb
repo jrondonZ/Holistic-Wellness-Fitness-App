@@ -295,4 +295,140 @@ if demo.checkins.none?
   puts "  • Generated #{demo.checkins.count} check-ins, #{demo.meal_entries.count} meals, #{demo.workout_logs.count} workouts for the demo member"
 end
 
-puts "✅ Done. Sign in with  username: demo  ·  password: wellness"
+# ------------------------------------------------------------------ Services
+services = [
+  { name: "Personal Training", category: "Personal Training", icon: "fa-dumbbell", color: "#4a7c59",
+    duration_min: 60, price_cents: 7500, provider_name: "HWF Coaching Team", position: 1,
+    tagline: "1:1 strength & conditioning tailored to your goals.",
+    description: "Private personal training sessions built around your body and goals — strength, mobility, fat loss or performance. Every session is programmed and progressed by a certified coach." },
+  { name: "Nutrition Coaching", category: "Nutrition", icon: "fa-bowl-food", color: "#c9a96e",
+    duration_min: 45, price_cents: 9000, provider_name: "Celine Bonilla, RN", position: 2,
+    tagline: "Holistic, gut-focused nutrition with a registered nurse.",
+    description: "Personalized nutrition coaching rooted in whole foods and gut health. We'll review your logs, set realistic targets and build sustainable habits — no crash diets." },
+  { name: "Pelvic Health Therapy", category: "Pelvic Health", icon: "fa-heart-circle-check", color: "#a3b18a",
+    duration_min: 50, price_cents: 11000, provider_name: "Pelvic Health Specialist", position: 3,
+    tagline: "Specialized support for core & pelvic floor health.",
+    description: "Compassionate, evidence-based pelvic floor therapy — pre/postnatal recovery, core retraining and pelvic health education in a private, supportive setting." },
+  { name: "Boxing & Conditioning", category: "Boxing", icon: "fa-hand-fist", color: "#2d4a30",
+    duration_min: 60, price_cents: 6500, provider_name: "HWF Coaching Team", position: 4,
+    tagline: "Technique, cardio and confidence on the pads.",
+    description: "Non-contact boxing for fitness — footwork, combinations and conditioning that build cardiovascular fitness, coordination and stress relief for all levels." },
+  { name: "Kids Athletic Training", category: "Kids Athletic Training", icon: "fa-child-reaching", color: "#6f9e58",
+    duration_min: 45, price_cents: 5000, provider_name: "Youth Development Coach", position: 5,
+    tagline: "Fun, age-appropriate athletic development for kids.",
+    description: "Movement, speed, agility and coordination for young athletes — building confidence and fundamental skills through playful, structured sessions." },
+  { name: "Holistic Coaching Session", category: "Holistic Coaching", icon: "fa-spa", color: "#4a7c59",
+    duration_min: 60, price_cents: 12000, provider_name: "Celine Bonilla, RN", position: 6,
+    tagline: "Whole-self coaching: body, mind and gut.",
+    description: "A deep-dive coaching session integrating nutrition, movement and mindfulness to reset balance, heal the gut and build lasting wellness habits." }
+]
+services.each do |attrs|
+  Service.find_or_initialize_by(name: attrs[:name]).update!(attrs)
+end
+puts "  • #{Service.count} bookable services"
+
+# ----------------------------------------------------------- HIPAA training
+hipaa = TrainingModule.find_or_initialize_by(slug: "hipaa-privacy")
+hipaa.update!(
+  title: "HIPAA Privacy & Security Awareness",
+  version: "2026.1", minutes: 12, required: true, position: 1,
+  summary: "Understand how we protect your health information and your rights under HIPAA.",
+  body: <<~BODY,
+    Holistic Wellness Fitness is committed to protecting your Protected Health Information (PHI). This short training explains what HIPAA means for you and for our team.
+
+    ## What is PHI?
+    Protected Health Information is any information that can identify you and relates to your health, care or payment for care — your name, contact details, vitals, check-ins, assessments and appointment history all count.
+
+    ## Your rights
+    Under HIPAA you have the right to access your records, request corrections, know who we share information with, and ask us to restrict certain uses. Your chart is yours.
+
+    ## How we protect your information
+    We limit access to your PHI to the care team directly involved in your wellness. Information is transmitted over encrypted connections, protected by individual logins, and never sold. Messages in your chart stay between you and the care team.
+
+    ## Your responsibilities
+    Keep your password private, sign out on shared devices, and let us know immediately if you suspect unauthorized access to your account. Together we keep your information safe.
+  BODY
+  quiz: [
+    { "q" => "What does PHI stand for?",
+      "options" => [ "Personal Health Insurance", "Protected Health Information", "Private Health Index" ],
+      "answer" => 1 },
+    { "q" => "Who can access your chart's health information?",
+      "options" => [ "Anyone with the link", "Only the care team involved in your wellness", "All members" ],
+      "answer" => 1 },
+    { "q" => "Which is a good way to protect your PHI?",
+      "options" => [ "Share your password with a friend", "Sign out on shared devices", "Post your vitals publicly" ],
+      "answer" => 1 },
+    { "q" => "Under HIPAA, you have the right to…",
+      "options" => [ "Access and correct your records", "Nothing — records are private from you", "Only view records once a year" ],
+      "answer" => 0 }
+  ]
+)
+puts "  • HIPAA training module ready (#{hipaa.questions.size}-question quiz)"
+
+# ------------------------------------------------------------------- Admin
+admin = User.find_or_initialize_by(username: "celine")
+if admin.new_record?
+  admin.assign_attributes(
+    first_name: "Celine", last_name: "Bonilla", email: "celine@holisticwellnessandfitness.com",
+    password: "celine123", password_confirmation: "celine123", role: "admin",
+    title: "Founder & Holistic Wellness Coach · RN",
+    phone: "203-800-1118"
+  )
+  admin.save!
+  puts "  • Created admin (username: celine / password: celine123)"
+else
+  admin.update!(role: "admin")
+end
+
+# -------------------------------------------- Demo bookings, messages, notes
+if demo.appointments.none?
+  pt = Service.find_by(category: "Personal Training")
+  nutrition = Service.find_by(category: "Nutrition")
+
+  demo.appointments.create!(service: pt, scheduled_at: 3.days.from_now.change(hour: 17, min: 30),
+                            status: "confirmed", mode: "virtual",
+                            meeting_url: "https://meet.google.com/demo-hwf-session", confirmed_at: Time.current,
+                            reason: "Progress check + lower-body strength.")
+  demo.appointments.create!(service: nutrition, scheduled_at: 6.days.from_now.change(hour: 12, min: 0),
+                            status: "requested", mode: "in_person",
+                            reason: "Review nutrition logs and gut-healing plan.")
+  # A completed past session (bypass the future-only guard used on booking).
+  past = demo.appointments.create!(service: pt, scheduled_at: 5.days.from_now.change(hour: 9),
+                                   status: "confirmed", mode: "in_person")
+  past.update_columns(scheduled_at: 1.week.ago.change(hour: 9), status: "completed")
+  puts "  • #{demo.appointments.count} demo appointments"
+end
+
+if demo.messages.none?
+  convo = [
+    [ admin, "Hi Jordan! Lovely progress this week 🎉 How are you feeling after the new routine?", 2.days.ago ],
+    [ demo,  "Thanks Celine! Energy is up, but my sleep has been a little short lately.", 2.days.ago + 3.hours ],
+    [ admin, "Let's build a wind-down routine — I'll add a note to your chart with a few ideas.", 1.day.ago ]
+  ]
+  convo.each do |sender, body, at|
+    m = demo.messages.create!(sender: sender, body: body)
+    m.update_columns(created_at: at, updated_at: at, read_at: (sender == demo ? at : nil))
+  end
+  puts "  • Seeded a demo conversation"
+end
+
+if demo.assessments.none?
+  demo.assessments.create!(
+    author: admin, title: "Sleep optimization", category: "Sleep", severity: "watch", status: "monitoring",
+    summary: "Averaging ~6.5 hrs/night with dips in energy. Sleep is the likely lever for the recent energy and stress scores.",
+    recommendations: "Consistent 10:30pm wind-down, screens off 60 min prior, and the Morning Mobility Wake-Up routine. Reassess in 2 weeks."
+  )
+  puts "  • Seeded a demo assessment"
+end
+
+# Mark HIPAA complete for the demo member so the flow shows a certificate.
+demo.training_completions.find_or_create_by!(training_module: hipaa) do |tc|
+  tc.acknowledged = true
+  tc.signature = demo.full_name
+  tc.score = 100
+  tc.completed_at = 3.days.ago
+end
+
+puts "✅ Done."
+puts "   Member: username demo   · password wellness"
+puts "   Admin:  username celine · password celine123"

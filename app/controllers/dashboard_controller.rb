@@ -24,9 +24,15 @@ class DashboardController < ChartController
     @recommended_workouts = recommended_workouts
     @recommended_articles = Article.newest.limit(3)
 
+    # --- Scheduling & training shortcuts -------------------------------------
+    @next_appointment = current_user.appointments.upcoming.includes(:service).first
+    @required_training = TrainingModule.required.ordered
+    @training_done = current_user.training_completions.acknowledged.count
+
     # --- Trend series for the chart cards ------------------------------------
     @weight_series   = series(trend_checkins.select { |c| c.weight.present? }) { |c| c.weight.to_f }
     @wellness_series = series(trend_checkins) { |c| c.wellness_score }
+    @bmi_series      = bmi_series
     @nutrition_week  = nutrition_week_series
   end
 
@@ -39,6 +45,12 @@ class DashboardController < ChartController
       carbs:    meals.sum { |m| m.carbs_g.to_i },
       fat:      meals.sum { |m| m.fat_g.to_i }
     }
+  end
+
+  # BMI over time from the member's dated weights and profile height.
+  def bmi_series
+    history = current_user.bmi_history(limit: 30)
+    { labels: history.map { |d, _| d.strftime("%b %-d") }, values: history.map { |_, v| v } }
   end
 
   # Build { labels: [...], values: [...] } skipping nil measurements.

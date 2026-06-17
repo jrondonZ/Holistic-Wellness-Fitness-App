@@ -1,0 +1,46 @@
+<% content_for :title, "Training" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Compliance &amp; education</span>
+    <h1 class="h3 mb-0">Required training</h1>
+  </div>
+</div>
+
+<% if @trainings.any? %>
+  <div class="row g-3">
+    <% @trainings.each do |t| %>
+      <% completion = @completions[t.id] %>
+      <% done = completion&.acknowledged? %>
+      <div class="col-md-6">
+        <div class="hwf-card is-hover h-100">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <div class="service-icon-lg" style="background: <%= done ? 'var(--brand-green)' : 'var(--brand-gold)' %>; width:48px; height:48px; font-size:1.2rem;">
+              <i class="fa-solid <%= done ? 'fa-circle-check' : 'fa-shield-halved' %>"></i>
+            </div>
+            <% if done %>
+              <span class="pill good"><i class="fa-solid fa-check me-1"></i>Completed</span>
+            <% elsif t.required %>
+              <span class="pill low">Required</span>
+            <% end %>
+          </div>
+          <h2 class="h5"><%= t.title %></h2>
+          <p class="text-muted"><%= t.summary %></p>
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <span class="small text-muted"><i class="fa-regular fa-clock me-1"></i><%= t.minutes %> min<%= " · v#{t.version}" if t.version.present? %></span>
+            <% if done %>
+              <%= link_to "Review", training_path(t), class: "btn btn-soft btn-sm" %>
+            <% else %>
+              <%= link_to "Start training", training_path(t), class: "btn btn-brand btn-sm" %>
+            <% end %>
+          </div>
+          <% if done && completion.completed_at %>
+            <div class="field-hint mt-2">Completed <%= completion.completed_at.strftime("%b %-d, %Y") %><%= " · #{completion.score}%" if completion.score %></div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="hwf-card empty-state"><div class="icon"><i class="fa-solid fa-shield-halved"></i></div><p class="mb-0">No training assigned right now.</p></div>
+<% end %>
