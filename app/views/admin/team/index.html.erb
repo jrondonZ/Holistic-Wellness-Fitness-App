@@ -1,0 +1,83 @@
+<% content_for :title, "Admin · Team" %>
+
+<div class="section-head">
+  <div>
+    <span class="eyebrow">Owner portal</span>
+    <h1 class="h3 mb-0">Care team &amp; access</h1>
+  </div>
+  <span class="pill gold"><i class="fa-solid fa-crown me-1"></i>Owner only</span>
+</div>
+
+<div class="row g-3">
+  <!-- Current staff -->
+  <div class="col-lg-7">
+    <div class="hwf-card mb-3">
+      <div class="card-title-sm mb-3">Staff (<%= @staff.size %>)</div>
+      <% @staff.each do |person| %>
+        <div class="d-flex align-items-center gap-3 py-2 border-bottom">
+          <%= initials_badge(person) %>
+          <div class="flex-fill">
+            <div class="fw-semibold"><%= person.full_name %>
+              <% if person.owner? %><span class="pill gold ms-1"><i class="fa-solid fa-crown me-1"></i>Owner</span>
+              <% else %><span class="pill good ms-1">Admin</span><% end %>
+            </div>
+            <div class="small text-muted"><%= person.title.presence || person.email %></div>
+          </div>
+          <% if person.owner? %>
+            <span class="small text-muted">Top admin</span>
+          <% elsif person == current_user %>
+            <span class="small text-muted">You</span>
+          <% else %>
+            <%= button_to "Remove access", admin_team_member_path(person), method: :delete,
+                  class: "btn btn-outline-brand btn-sm",
+                  form: { data: { turbo_confirm: "Remove #{person.first_name}'s admin access? They become a regular member." } } %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Promote a member -->
+    <div class="hwf-card">
+      <div class="card-title-sm mb-3">Promote a member to admin</div>
+      <% if @members.any? %>
+        <div class="table-scroll" style="max-height: 320px; overflow-y:auto;">
+          <% @members.each do |member| %>
+            <div class="d-flex align-items-center gap-2 py-2 border-bottom">
+              <%= initials_badge(member) %>
+              <div class="flex-fill">
+                <div class="small fw-semibold"><%= member.full_name %></div>
+                <div class="small text-muted"><%= member.email %></div>
+              </div>
+              <%= button_to "Make admin", admin_team_member_path(member), method: :patch, params: { role: "admin" },
+                    class: "btn btn-soft btn-sm",
+                    form: { data: { turbo_confirm: "Give #{member.first_name} admin access?" } } %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-muted small mb-0">No members to promote yet.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <!-- Add a new admin -->
+  <div class="col-lg-5">
+    <div class="hwf-card" style="position: sticky; top: 84px;">
+      <div class="card-title-sm mb-3"><i class="fa-solid fa-user-plus me-1"></i> Add a new admin</div>
+      <%= form_with model: @user, url: admin_team_path, method: :post, local: true do |f| %>
+        <div class="row g-2">
+          <div class="col-6"><%= f.text_field :first_name, class: "form-control", placeholder: "First name", required: true %></div>
+          <div class="col-6"><%= f.text_field :last_name, class: "form-control", placeholder: "Last name", required: true %></div>
+          <div class="col-12"><%= f.text_field :title, class: "form-control", placeholder: "Title (e.g. Nutrition Coach)" %></div>
+          <div class="col-6"><%= f.text_field :username, class: "form-control", placeholder: "Username", required: true %></div>
+          <div class="col-6"><%= f.telephone_field :phone, class: "form-control", placeholder: "Phone" %></div>
+          <div class="col-12"><%= f.email_field :email, class: "form-control", placeholder: "Email", required: true %></div>
+          <div class="col-6"><%= f.password_field :password, class: "form-control", placeholder: "Password", autocomplete: "new-password", required: true %></div>
+          <div class="col-6"><%= f.password_field :password_confirmation, class: "form-control", placeholder: "Confirm", autocomplete: "new-password", required: true %></div>
+        </div>
+        <div class="d-grid mt-3"><%= f.submit "Add admin", class: "btn btn-brand" %></div>
+        <p class="field-hint mt-2"><i class="fa-solid fa-circle-info me-1"></i>New admins accept the Terms &amp; Privacy Policy on first sign-in. Only you (the owner) can manage the team.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

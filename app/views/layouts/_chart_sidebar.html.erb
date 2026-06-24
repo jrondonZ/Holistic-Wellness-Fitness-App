@@ -10,7 +10,7 @@
     <% end %>
   <% end %>
 
-  <% if current_user.admin? %>
+  <% if current_user.staff? %>
     <div class="chart-nav-label d-none d-lg-block mt-3">Staff</div>
     <%= link_to admin_root_path, class: "chart-nav-link" do %>
       <i class="fa-solid fa-user-shield"></i><span class="label">Admin portal</span>

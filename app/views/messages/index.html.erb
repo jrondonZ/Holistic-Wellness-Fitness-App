@@ -3,40 +3,83 @@
 <div class="section-head">
   <div>
     <span class="eyebrow">Secure messaging</span>
-    <h1 class="h3 mb-0">Care team</h1>
+    <h1 class="h3 mb-0">Message your care team</h1>
   </div>
-  <span class="pill"><i class="fa-solid fa-lock me-1"></i>Private</span>
+  <span class="pill good"><i class="fa-solid fa-lock me-1"></i>Private &amp; secure</span>
 </div>
 
-<div class="hwf-card">
-  <div class="d-flex align-items-center gap-2 pb-3 mb-3 border-bottom">
-    <div class="service-icon-lg" style="background: var(--brand-green); width:44px; height:44px; font-size:1.1rem;"><i class="fa-solid fa-user-nurse"></i></div>
-    <div>
-      <div class="fw-bold">Holistic Wellness Fitness</div>
-      <div class="small text-muted">Your coach &amp; care team</div>
+<div class="row g-3">
+  <!-- Who you're messaging -->
+  <div class="col-lg-4">
+    <div class="hwf-card mb-3">
+      <div class="card-title-sm mb-2">You're messaging</div>
+      <div class="fw-bold mb-1"><i class="fa-solid fa-leaf text-brand me-1"></i> Holistic Wellness Fitness</div>
+      <p class="small text-muted">Your message goes to the care team below. Only you and the team can see this conversation.</p>
+      <hr class="my-2">
+      <% if @care_team.any? %>
+        <% @care_team.each do |person| %>
+          <div class="d-flex align-items-center gap-2 py-2">
+            <%= initials_badge(person) %>
+            <div>
+              <div class="fw-semibold small"><%= person.full_name %>
+                <% if person.owner? %><span class="pill gold ms-1" style="font-size:.6rem;">Owner</span><% end %>
+              </div>
+              <div class="small text-muted"><%= person.title.presence || "Care team" %></div>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <p class="small text-muted mb-0">Your coach will be assigned shortly.</p>
+      <% end %>
+      <div class="p-2 mt-2 rounded small text-muted" style="background: var(--brand-green-soft);">
+        <i class="fa-regular fa-clock me-1"></i>Typical reply within 1 business day. For emergencies, call 911.
+      </div>
     </div>
   </div>
 
-  <div class="chat-window mb-3">
-    <% if @messages.any? %>
-      <% @messages.each do |m| %>
-        <div class="msg <%= m.from_member? ? 'out' : 'in' %>">
-          <div><%= simple_format m.body, {}, sanitize: true %></div>
-          <div class="meta"><%= m.from_member? ? "You" : m.sender.first_name %> · <%= m.created_at.strftime("%b %-d, %-l:%M %p") %></div>
+  <!-- Conversation -->
+  <div class="col-lg-8">
+    <div class="hwf-card">
+      <div class="chat-window mb-3">
+        <% if @messages.any? %>
+          <% @messages.each do |m| %>
+            <div class="msg <%= m.from_member? ? 'out' : 'in' %>">
+              <% if m.topic.present? %>
+                <div class="mb-1"><span class="pill <%= m.from_member? ? 'solid' : '' %>" style="font-size:.62rem;"><%= m.topic %></span></div>
+              <% end %>
+              <div><%= simple_format m.body, {}, sanitize: true %></div>
+              <div class="meta">
+                <%= m.from_member? ? "You" : "#{m.sender.first_name} · care team" %>
+                · <%= m.created_at.strftime("%b %-d, %-l:%M %p") %>
+                <% if m.from_member? %>
+                  · <%= m.read? ? "Seen" : "Sent" %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="chat-empty">
+            <i class="fa-solid fa-comments d-block mb-2" style="font-size: 1.8rem; color: var(--brand-sage);"></i>
+            No messages yet. Choose a topic and say hello — your care team is here to help.
+          </div>
+        <% end %>
+      </div>
+
+      <%= form_with url: messages_path, method: :post, local: true do %>
+        <div class="row g-2 align-items-end">
+          <div class="col-sm-5">
+            <label class="form-label small mb-1">What's this about?</label>
+            <%= select_tag "message[topic]", options_for_select(@topics, @topics.first), class: "form-select" %>
+          </div>
+          <div class="col-sm-7">
+            <label class="form-label small mb-1">Message</label>
+            <div class="input-group">
+              <%= text_field_tag "message[body]", nil, class: "form-control", placeholder: "Write a message…", autocomplete: "off", required: true %>
+              <%= submit_tag "Send", class: "btn btn-brand" %>
+            </div>
+          </div>
         </div>
       <% end %>
-    <% else %>
-      <div class="chat-empty">
-        <i class="fa-solid fa-comments d-block mb-2" style="font-size: 1.8rem; color: var(--brand-sage);"></i>
-        Start the conversation — ask a question about your plan, nutrition or an appointment.
-      </div>
-    <% end %>
-  </div>
-
-  <%= form_with url: messages_path, method: :post, local: true do %>
-    <div class="input-group">
-      <%= text_field_tag "message[body]", nil, class: "form-control", placeholder: "Write a message…", autocomplete: "off", required: true %>
-      <%= submit_tag "Send", class: "btn btn-brand" %>
     </div>
-  <% end %>
+  </div>
 </div>

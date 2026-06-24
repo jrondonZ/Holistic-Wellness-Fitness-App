@@ -28,7 +28,7 @@
                 <div class="small text-muted"><%= current_user.member_id %></div>
               </li>
               <li><hr class="dropdown-divider"></li>
-              <% if current_user.admin? %>
+              <% if current_user.staff? %>
                 <li><%= link_to '<i class="fa-solid fa-user-shield me-2"></i>Admin portal'.html_safe, admin_root_path, class: "dropdown-item fw-semibold text-brand" %></li>
               <% end %>
               <li><%= link_to '<i class="fa-solid fa-id-card me-2"></i>My details'.html_safe, health_profile_path, class: "dropdown-item" %></li>

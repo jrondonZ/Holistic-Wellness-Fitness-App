@@ -6,6 +6,8 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#2d4a30">
   <meta name="description" content="A holistic health chart by Holistic Wellness Fitness LLC — track wellness, nutrition, fitness and learn, all in one place.">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <% if Rails.env.production? %><meta name="app-guard" content="on"><% end %>
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
 
@@ -30,9 +32,4 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js" defer></script>
-  <script>
-    document.addEventListener("turbo:load", function () {
-      if (window.AOS) { window.AOS.init({ duration: 700, once: true, offset: 40 }); }
-    });
-  </script>
 </head>

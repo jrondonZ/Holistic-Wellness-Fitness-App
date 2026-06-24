@@ -7,31 +7,9 @@
 <div class="section-head"><div><span class="eyebrow">Service</span><h1 class="h3 mb-0">Edit <%= @service.name %></h1></div></div>
 
 <div class="hwf-card" style="max-width: 760px;">
-  <%= form_with model: [ :admin, @service ], local: true do |f| %>
-    <% if @service.errors.any? %>
-      <div class="alert alert-danger"><ul class="mb-0"><% @service.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul></div>
-    <% end %>
-    <div class="row g-3">
-      <div class="col-md-8"><%= f.label :name, class: "form-label" %><%= f.text_field :name, class: "form-control" %></div>
-      <div class="col-md-4"><%= f.label :category, class: "form-label" %><%= f.select :category, Service::CATEGORIES, {}, class: "form-select" %></div>
-      <div class="col-12"><%= f.label :tagline, class: "form-label" %><%= f.text_field :tagline, class: "form-control" %></div>
-      <div class="col-12"><%= f.label :description, class: "form-label" %><%= f.text_area :description, rows: 4, class: "form-control" %></div>
-      <div class="col-md-4"><%= f.label :duration_min, "Duration (min)", class: "form-label" %><%= f.number_field :duration_min, class: "form-control", min: 0 %></div>
-      <div class="col-md-4"><%= f.label :price_cents, "Price (cents)", class: "form-label" %><%= f.number_field :price_cents, class: "form-control", min: 0 %></div>
-      <div class="col-md-4"><%= f.label :provider_name, "Provider", class: "form-label" %><%= f.text_field :provider_name, class: "form-control" %></div>
-      <div class="col-md-4"><%= f.label :icon, "Font Awesome icon", class: "form-label" %><%= f.text_field :icon, class: "form-control", placeholder: "fa-dumbbell" %></div>
-      <div class="col-md-4"><%= f.label :color, "Accent color", class: "form-label" %><%= f.text_field :color, class: "form-control", placeholder: "#4a7c59" %></div>
-      <div class="col-md-4"><%= f.label :position, "Sort order", class: "form-label" %><%= f.number_field :position, class: "form-control" %></div>
-      <div class="col-12">
-        <div class="form-check form-switch">
-          <%= f.check_box :active, class: "form-check-input" %>
-          <%= f.label :active, "Visible to members (bookable)", class: "form-check-label" %>
-        </div>
-      </div>
-    </div>
-    <div class="d-flex gap-2 mt-4">
-      <%= f.submit "Save service", class: "btn btn-brand" %>
-      <%= link_to "Cancel", admin_services_path, class: "btn btn-outline-brand" %>
-    </div>
-  <% end %>
+  <%= render "form", service: @service, submit_label: "Save service" %>
+  <hr class="my-4">
+  <%= button_to "Delete service", admin_service_path(@service), method: :delete,
+        class: "btn btn-link text-danger p-0",
+        form: { data: { turbo_confirm: "Delete #{@service.name}? (If it has bookings it will be hidden instead.)" } } %>
 </div>

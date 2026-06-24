@@ -1,11 +1,29 @@
 <% content_for :title, "Admin · Overview" %>
 
-<div class="section-head">
-  <div>
-    <span class="eyebrow">Admin portal</span>
-    <h1 class="h3 mb-0">Practice overview</h1>
+<!-- Greeting banner -->
+<div class="patient-banner mb-4">
+  <div class="row align-items-center g-3">
+    <div class="col-lg-8">
+      <div class="d-flex align-items-center gap-3">
+        <%= initials_badge(current_user, extra_class: "lg") %>
+        <div>
+          <h1><%= admin_greeting %>, <%= current_user.first_name %></h1>
+          <div class="patient-meta mt-1">
+            <span><i class="fa-solid fa-user-shield me-1 opacity-75"></i><%= current_user.role_label %><%= " · #{current_user.title}" if current_user.title.present? %></span>
+            <span class="sep">·</span><span><%= Date.current.strftime("%A, %B %-d") %></span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="d-flex gap-2 justify-content-lg-end flex-wrap">
+        <%= link_to admin_analytics_path, class: "btn btn-sm", style: "background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:30px;" do %><i class="fa-solid fa-chart-line me-1"></i> Analytics<% end %>
+        <% if current_user.owner? %>
+          <%= link_to admin_team_path, class: "btn btn-sm", style: "background:#fff;color:var(--brand-green-dark);font-weight:600;border-radius:30px;" do %><i class="fa-solid fa-users-gear me-1"></i> Team<% end %>
+        <% end %>
+      </div>
+    </div>
   </div>
-  <%= link_to admin_analytics_path, class: "btn btn-soft" do %><i class="fa-solid fa-chart-line me-1"></i> Full analytics<% end %>
 </div>
 
 <!-- KPIs -->

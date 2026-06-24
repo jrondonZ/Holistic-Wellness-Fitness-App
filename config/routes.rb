@@ -11,6 +11,13 @@ Rails.application.routes.draw do
   get "logout", to: "sessions#destroy"
   resources :users, only: [ :new, :create, :destroy ]
 
+  # First-run walkthrough + legal acceptance
+  resource :onboarding, only: [ :show, :update ], controller: "onboarding"
+
+  # Public legal documents
+  get "terms",   to: "pages#terms"
+  get "privacy", to: "pages#privacy"
+
   # The chart (Epic/MyChart-style member health record)
   get "dashboard", to: "dashboard#index", as: :dashboard
 
@@ -60,8 +67,14 @@ Rails.application.routes.draw do
     resources :conversations, only: [ :index, :show ] do
       member { post :reply }
     end
-    resources :services, only: [ :index, :edit, :update ]
+    resources :services, only: [ :index, :new, :create, :edit, :update, :destroy ]
     get "analytics", to: "analytics#index"
+
+    # Owner-only care-team management
+    get    "team",     to: "team#index",   as: :team
+    post   "team",     to: "team#create"
+    patch  "team/:id", to: "team#update",  as: :team_member
+    delete "team/:id", to: "team#destroy"
   end
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

@@ -1,0 +1,51 @@
+<% content_for :title, "Privacy Policy" %>
+
+<div class="container py-5" style="max-width: 860px;">
+  <div class="mb-4">
+    <span class="eyebrow">Legal</span>
+    <h1 class="section-title">Privacy Policy</h1>
+    <p class="text-muted mt-2">Version <%= Legal::PRIVACY_VERSION %> · Effective <%= Legal::EFFECTIVE_DATE %></p>
+  </div>
+
+  <div class="hwf-card p-4 p-md-5 article-body">
+    <p><%= Legal::COMPANY %> ("we," "us," or "our") respects your privacy. This Policy explains what information the Holistic Chart application (the "Service") collects, how we use and protect it, and the choices you have.</p>
+
+    <h2 class="h5 mt-4">1. Information we collect</h2>
+    <p><strong>Account information</strong> — your name, username, email, and password (stored only as a salted, hashed value; we never store it in plain text).</p>
+    <p><strong>Health &amp; wellness information</strong> — the data you choose to enter, such as check-ins (mood, energy, sleep, weight, blood pressure), nutrition logs, workouts, appointments, and messages. This may constitute Protected Health Information (PHI).</p>
+    <p><strong>Usage information</strong> — basic technical data such as your session and request logs, used to keep the Service secure and reliable. We do not run third-party advertising trackers.</p>
+
+    <h2 class="h5 mt-4">2. How we use your information</h2>
+    <p>We use your information to operate your chart, provide coaching and care, schedule and manage sessions, surface wellness insights to your care team, communicate with you, and keep the Service safe. We do <strong>not</strong> sell your personal or health information.</p>
+
+    <h2 class="h5 mt-4">3. Who can see your information</h2>
+    <p>Your chart is visible to you and to the members of our care team involved in your wellness. Secure messages stay between you and the care team. We may share information only: with your consent; with service providers who help us run the Service under confidentiality obligations; or when required by law. We follow HIPAA-aligned practices for handling PHI.</p>
+
+    <h2 class="h5 mt-4">4. How we protect your information</h2>
+    <p>We use encryption in transit (HTTPS), individual password-protected accounts with hashed credentials, a strict Content Security Policy, session protections, and role-based access so staff only reach what they need. No system is perfectly secure, but we work to protect your data and ask you to help by keeping your password private.</p>
+
+    <h2 class="h5 mt-4">5. Your rights</h2>
+    <p>You can access and update your information at any time in the Service. You may request a copy of your records, ask us to correct them, or delete your account (which removes your chart). To exercise these rights, use the in-app tools or contact us below.</p>
+
+    <h2 class="h5 mt-4">6. Data retention</h2>
+    <p>We keep your information for as long as your account is active or as needed to provide the Service and meet legal obligations. When you delete your account, we remove your associated chart data, except where retention is legally required.</p>
+
+    <h2 class="h5 mt-4">7. Cookies &amp; sessions</h2>
+    <p>We use a single, essential session cookie to keep you signed in securely. It is HttpOnly, uses SameSite protection, and is marked Secure in production. We do not use advertising or cross-site tracking cookies.</p>
+
+    <h2 class="h5 mt-4">8. Third-party content</h2>
+    <p>Workout videos are embedded from YouTube, and we load fonts and libraries from reputable content-delivery networks. When you view that content, the respective providers may receive standard request information under their own privacy policies.</p>
+
+    <h2 class="h5 mt-4">9. Children's privacy</h2>
+    <p>Accounts are for adults (18+). Where services involve minors, a parent or guardian manages the account and the minor's information on their behalf.</p>
+
+    <h2 class="h5 mt-4">10. Changes &amp; contact</h2>
+    <p>We may update this Policy; material changes will be reflected by a new version number and may require you to re-accept. Questions? Reach us at:</p>
+    <p><%= Legal::COMPANY %><br><%= Legal::ADDRESS %><br><%= mail_to Legal::CONTACT_EMAIL %></p>
+  </div>
+
+  <div class="text-center mt-4">
+    <%= link_to "← Back", :back, class: "btn btn-soft btn-sm" %>
+    <%= link_to "Terms of Use", terms_path, class: "btn btn-soft btn-sm" %>
+  </div>
+</div>

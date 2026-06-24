@@ -22,7 +22,7 @@ class MessageTest < ActiveSupport::TestCase
   test "a different member cannot post in someone else's thread" do
     msg = Message.new(member: @member, sender: @other, body: "nope")
     assert_not msg.valid?
-    assert_includes msg.errors[:sender], "must be the member or an admin"
+    assert_includes msg.errors[:sender], "must be the member or a care-team member"
   end
 
   test "body is required" do

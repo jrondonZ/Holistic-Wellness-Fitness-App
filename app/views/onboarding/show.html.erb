@@ -1,0 +1,90 @@
+<% content_for :title, "Welcome" %>
+
+<div class="hwf-card p-0 overflow-hidden" data-controller="tour">
+  <!-- progress -->
+  <div class="hwf-progress" style="border-radius:0;"><span data-tour-target="progress" style="width:20%"></span></div>
+
+  <%= form_with url: onboarding_path, method: :patch, local: true, class: "p-4 p-md-5" do %>
+    <!-- STEP 1 — welcome -->
+    <div data-tour-target="step">
+      <div class="text-center">
+        <div class="cert-badge mb-3"><i class="fa-solid fa-leaf"></i></div>
+        <h1 class="h3">Welcome, <%= current_user.first_name %> 👋</h1>
+        <p class="text-muted">Holistic Chart is your whole-self health record — wellness, nutrition, fitness, scheduling and learning, all in one calm place. Here's a 30-second tour.</p>
+      </div>
+    </div>
+
+    <!-- STEP 2 — the four pillars -->
+    <div data-tour-target="step" class="d-none">
+      <h2 class="h4 text-center mb-4">Your four pillars</h2>
+      <div class="row g-3">
+        <% [
+          { i: "fa-spa", t: "Wellness", d: "Daily check-ins for mood, sleep, weight & blood pressure." },
+          { i: "fa-bowl-food", t: "Nutrition", d: "Log meals and watch your calories & macros add up." },
+          { i: "fa-dumbbell", t: "Fitness", d: "Follow-along videos, routines and an activity log." },
+          { i: "fa-book-open", t: "Education", d: "Grounded articles on holistic health." }
+        ].each do |p| %>
+          <div class="col-6">
+            <div class="hwf-card h-100 text-center">
+              <div class="feature-icon mx-auto"><i class="fa-solid <%= p[:i] %>"></i></div>
+              <div class="fw-bold"><%= p[:t] %></div>
+              <div class="small text-muted"><%= p[:d] %></div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- STEP 3 — scheduling & training -->
+    <div data-tour-target="step" class="d-none">
+      <h2 class="h4 text-center mb-4">Book sessions &amp; stay compliant</h2>
+      <div class="d-flex gap-3 mb-3">
+        <div class="feature-icon"><i class="fa-solid fa-calendar-plus"></i></div>
+        <div><div class="fw-bold">Scheduling</div><p class="text-muted mb-0">Book personal training, nutrition, pelvic health, boxing, soccer and kids athletics — in person or virtual, with a calendar invite.</p></div>
+      </div>
+      <div class="d-flex gap-3">
+        <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div><div class="fw-bold">Training</div><p class="text-muted mb-0">Quick HIPAA privacy training so you know exactly how your information is protected.</p></div>
+      </div>
+    </div>
+
+    <!-- STEP 4 — messaging -->
+    <div data-tour-target="step" class="d-none">
+      <h2 class="h4 text-center mb-4">A private line to your care team</h2>
+      <div class="text-center">
+        <div class="feature-icon mx-auto"><i class="fa-solid fa-comments"></i></div>
+        <p class="text-muted">Message your coach and care team securely from the <strong>Messages</strong> tab. Pick a topic so the right person replies — and only you and the care team can ever see the thread.</p>
+      </div>
+    </div>
+
+    <!-- STEP 5 — legal acceptance -->
+    <div data-tour-target="step" class="d-none">
+      <div class="text-center mb-3">
+        <div class="feature-icon mx-auto"><i class="fa-solid fa-file-signature"></i></div>
+        <h2 class="h4">A couple of agreements</h2>
+        <p class="text-muted">Before you start, please review and accept the following. They're written for this app — plain and fair.</p>
+      </div>
+      <label class="quiz-option d-flex gap-2 align-items-start">
+        <%= check_box_tag :accept_terms, "1", false, required: true, class: "form-check-input mt-1" %>
+        <span>I have read and agree to the <%= link_to "Terms of Use", terms_path, target: "_blank", rel: "noopener", class: "fw-semibold" %>.</span>
+      </label>
+      <label class="quiz-option d-flex gap-2 align-items-start">
+        <%= check_box_tag :accept_privacy, "1", false, required: true, class: "form-check-input mt-1" %>
+        <span>I have read and agree to the <%= link_to "Privacy Policy", privacy_path, target: "_blank", rel: "noopener", class: "fw-semibold" %>, including how my health information is used.</span>
+      </label>
+      <p class="field-hint mt-2"><i class="fa-solid fa-lock me-1"></i>This app does not provide medical diagnosis or treatment. Always consult a qualified clinician.</p>
+    </div>
+
+    <!-- controls -->
+    <div class="d-flex align-items-center justify-content-between mt-4">
+      <button type="button" class="btn btn-outline-brand invisible" data-tour-target="back" data-action="tour#back">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back
+      </button>
+      <span class="small text-muted" data-tour-target="counter">1 / 5</span>
+      <button type="button" class="btn btn-brand" data-tour-target="next" data-action="tour#next">
+        Next <i class="fa-solid fa-arrow-right ms-1"></i>
+      </button>
+      <%= submit_tag "Accept & enter", class: "btn btn-brand d-none", data: { tour_target: "finish" } %>
+    </div>
+  <% end %>
+</div>

@@ -1,7 +1,8 @@
 class User < ApplicationRecord
   has_secure_password
 
-  enum :role, { member: "member", admin: "admin" }, default: "member"
+  # Role tiers: member < admin < owner (the single top admin).
+  enum :role, { member: "member", admin: "admin", owner: "owner" }, default: "member"
 
   has_one  :health_profile, dependent: :destroy
   has_many :checkins,     dependent: :destroy
@@ -18,6 +19,7 @@ class User < ApplicationRecord
 
   scope :members, -> { where(role: "member") }
   scope :admins,  -> { where(role: "admin") }
+  scope :staff,   -> { where(role: %w[admin owner]) }
 
   validates :first_name, presence: true
   validates :last_name,  presence: true
@@ -81,5 +83,37 @@ class User < ApplicationRecord
   def training_complete?(slug)
     training_completions.joins(:training_module)
                         .where(training_modules: { slug: slug }, acknowledged: true).exists?
+  end
+
+  # --- Roles -----------------------------------------------------------------
+
+  # Admins and the owner can both enter the staff portal.
+  def staff?
+    admin? || owner?
+  end
+
+  def role_label
+    { "owner" => "Owner", "admin" => "Admin", "member" => "Member" }[role]
+  end
+
+  # --- Onboarding & legal ----------------------------------------------------
+
+  def accepted_current_legal?
+    terms_accepted_at.present? && privacy_accepted_at.present? &&
+      accepted_terms_version == Legal::TERMS_VERSION &&
+      accepted_privacy_version == Legal::PRIVACY_VERSION
+  end
+
+  def needs_onboarding?
+    !accepted_current_legal?
+  end
+
+  def accept_legal!(at = Time.current)
+    update!(
+      terms_accepted_at: at, privacy_accepted_at: at,
+      accepted_terms_version: Legal::TERMS_VERSION,
+      accepted_privacy_version: Legal::PRIVACY_VERSION,
+      onboarded_at: onboarded_at || at
+    )
   end
 end

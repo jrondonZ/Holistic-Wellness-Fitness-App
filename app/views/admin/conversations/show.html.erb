@@ -18,8 +18,11 @@
     <% if @messages.any? %>
       <% @messages.each do |m| %>
         <div class="msg <%= m.from_admin? ? 'out' : 'in' %>">
+          <% if m.topic.present? %>
+            <div class="mb-1"><span class="pill <%= m.from_admin? ? 'solid' : '' %>" style="font-size:.62rem;"><%= m.topic %></span></div>
+          <% end %>
           <div><%= simple_format m.body, {}, sanitize: true %></div>
-          <div class="meta"><%= m.from_admin? ? m.sender.first_name : @member.first_name %> · <%= m.created_at.strftime("%b %-d, %-l:%M %p") %></div>
+          <div class="meta"><%= m.from_admin? ? "#{m.sender.first_name} (you/team)" : @member.first_name %> · <%= m.created_at.strftime("%b %-d, %-l:%M %p") %></div>
         </div>
       <% end %>
     <% else %>

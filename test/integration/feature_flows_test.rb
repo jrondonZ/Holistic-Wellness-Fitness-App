@@ -6,6 +6,8 @@ class FeatureFlowsTest < ActionDispatch::IntegrationTest
                            email: "member1@example.com", password: "password1")
     @admin = User.create!(first_name: "Ada", last_name: "Min", username: "admin1",
                           email: "admin1@example.com", password: "password1", role: "admin")
+    # Past the onboarding/legal gate for these existing flows.
+    [ @member, @admin ].each(&:accept_legal!)
     @service = Service.create!(name: "Personal Training", category: "Personal Training",
                                duration_min: 60, price_cents: 7500, icon: "fa-dumbbell")
     @training = TrainingModule.create!(slug: "hipaa-privacy", title: "HIPAA Privacy",

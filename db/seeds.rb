@@ -317,8 +317,12 @@ services = [
     duration_min: 45, price_cents: 5000, provider_name: "Youth Development Coach", position: 5,
     tagline: "Fun, age-appropriate athletic development for kids.",
     description: "Movement, speed, agility and coordination for young athletes — building confidence and fundamental skills through playful, structured sessions." },
+  { name: "Pro Soccer Training", category: "Soccer Training", icon: "fa-futbol", color: "#2d4a30",
+    duration_min: 75, price_cents: 8500, provider_name: "Pro Soccer Coach", position: 6,
+    tagline: "Elite technical & tactical soccer development.",
+    description: "Professional-level soccer training — ball mastery, finishing, first touch, speed, agility and game IQ. Built for competitive youth and adult players aiming to level up, with individualized drills and video-informed feedback." },
   { name: "Holistic Coaching Session", category: "Holistic Coaching", icon: "fa-spa", color: "#4a7c59",
-    duration_min: 60, price_cents: 12000, provider_name: "Celine Bonilla, RN", position: 6,
+    duration_min: 60, price_cents: 12000, provider_name: "Celine Bonilla, RN", position: 7,
     tagline: "Whole-self coaching: body, mind and gut.",
     description: "A deep-dive coaching session integrating nutrition, movement and mindfulness to reset balance, heal the gut and build lasting wellness habits." }
 ]
@@ -380,6 +384,24 @@ else
   admin.update!(role: "admin")
 end
 
+# ------------------------------------------------------------- Owner (top admin)
+owner = User.find_or_initialize_by(username: "josiah")
+if owner.new_record?
+  owner.assign_attributes(
+    first_name: "Josiah", last_name: "Rondon", email: "josiahrondon@gmail.com",
+    password: "owner12345", password_confirmation: "owner12345", role: "owner",
+    title: "Owner & Administrator", phone: "203-800-1118"
+  )
+  owner.save!
+  puts "  • Created OWNER (username: josiah / password: owner12345)"
+else
+  owner.update!(role: "owner")
+end
+
+# Pre-accept the current legal docs for seeded accounts so their demo logins
+# skip onboarding. (A brand-new sign-up still gets the full walkthrough.)
+[ demo, admin, owner ].each(&:accept_legal!)
+
 # -------------------------------------------- Demo bookings, messages, notes
 if demo.appointments.none?
   pt = Service.find_by(category: "Personal Training")
@@ -430,5 +452,6 @@ demo.training_completions.find_or_create_by!(training_module: hipaa) do |tc|
 end
 
 puts "✅ Done."
-puts "   Member: username demo   · password wellness"
+puts "   Owner:  username josiah · password owner12345  (top admin)"
 puts "   Admin:  username celine · password celine123"
+puts "   Member: username demo   · password wellness"

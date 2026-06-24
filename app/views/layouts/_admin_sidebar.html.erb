@@ -10,6 +10,14 @@
     <% end %>
   <% end %>
 
+  <% if current_user.owner? %>
+    <div class="chart-nav-label d-none d-lg-block mt-3">Owner</div>
+    <%= link_to admin_team_path, class: "chart-nav-link #{'active' if nav_active?(admin_team_path)}" do %>
+      <i class="fa-solid fa-users-gear"></i><span class="label">Team &amp; access</span>
+      <span class="pill gold ms-auto" style="font-size:0.6rem;">Owner</span>
+    <% end %>
+  <% end %>
+
   <div class="chart-nav-label d-none d-lg-block mt-3">Shortcuts</div>
   <%= link_to admin_appointments_path(status: "requested"), class: "chart-nav-link" do %>
     <i class="fa-solid fa-bell"></i><span class="label">Pending requests</span>

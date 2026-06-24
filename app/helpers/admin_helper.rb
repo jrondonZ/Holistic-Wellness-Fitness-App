@@ -35,6 +35,15 @@ module AdminHelper
     appointment.scheduled_at.strftime("%a, %b %-d · %-l:%M %p")
   end
 
+  def admin_greeting
+    case Time.current.hour
+    when 5..11  then "Good morning"
+    when 12..16 then "Good afternoon"
+    when 17..21 then "Good evening"
+    else "Hello"
+    end
+  end
+
   def status_pill(status)
     tone = { "requested" => "ok", "confirmed" => "good", "completed" => "muted", "cancelled" => "low" }[status] || "muted"
     tag.span(status.titleize, class: "pill #{tone}")

@@ -1,0 +1,10 @@
+<% content_for :title, "Admin · New service" %>
+
+<div class="mb-3">
+  <%= link_to admin_services_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> Services<% end %>
+</div>
+<div class="section-head"><div><span class="eyebrow">Service</span><h1 class="h3 mb-0">New service</h1></div></div>
+
+<div class="hwf-card" style="max-width: 760px;">
+  <%= render "form", service: @service, submit_label: "Create service" %>
+</div>

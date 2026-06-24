@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%= render "layouts/head" %>
+  <body class="min-vh-100 d-flex flex-column" style="background: linear-gradient(135deg, #dce5d8 0%, #eaf0e4 55%, #f3efe6 100%);">
+    <nav class="navbar app-navbar">
+      <div class="container d-flex justify-content-between">
+        <span class="navbar-brand"><span class="leaf"><i class="fa-solid fa-leaf"></i></span> Holistic Wellness Fitness</span>
+        <%= link_to "Sign out", logout_path, class: "btn btn-soft btn-sm" %>
+      </div>
+    </nav>
+    <main class="flex-fill d-flex align-items-center py-4">
+      <div class="container" style="max-width: 780px;">
+        <%= render "layouts/flash" %>
+        <%= yield %>
+      </div>
+    </main>
+  </body>
+</html>

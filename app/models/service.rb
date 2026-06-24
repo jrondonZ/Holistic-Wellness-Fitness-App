@@ -5,7 +5,7 @@ class Service < ApplicationRecord
 
   CATEGORIES = [
     "Personal Training", "Nutrition", "Pelvic Health", "Boxing",
-    "Kids Athletic Training", "Holistic Coaching"
+    "Kids Athletic Training", "Soccer Training", "Holistic Coaching"
   ].freeze
 
   validates :name, presence: true
