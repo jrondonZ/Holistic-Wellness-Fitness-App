@@ -31,9 +31,16 @@
   </div>
 
   <%= form_with url: reply_admin_conversation_path(@member), method: :post, local: true do %>
-    <div class="input-group">
-      <%= text_field_tag "message[body]", nil, class: "form-control", placeholder: "Reply to #{@member.first_name}…", autocomplete: "off", required: true %>
-      <%= submit_tag "Send", class: "btn btn-brand" %>
+    <div class="row g-2 align-items-end">
+      <div class="col-sm-4">
+        <%= select_tag "message[topic]", options_for_select(@topics), include_blank: "Topic (optional)", class: "form-select" %>
+      </div>
+      <div class="col-sm-8">
+        <div class="input-group">
+          <%= text_field_tag "message[body]", nil, class: "form-control", placeholder: "Reply to #{@member.first_name}…", autocomplete: "off", required: true %>
+          <%= submit_tag "Send", class: "btn btn-brand" %>
+        </div>
+      </div>
     </div>
   <% end %>
 </div>

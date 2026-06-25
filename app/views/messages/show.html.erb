@@ -1,0 +1,57 @@
+<% content_for :title, "Message #{@provider.first_name}" %>
+
+<div class="mb-3">
+  <%= link_to messages_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All conversations<% end %>
+</div>
+
+<div class="hwf-card">
+  <div class="d-flex align-items-center gap-2 pb-3 mb-3 border-bottom">
+    <%= initials_badge(@provider) %>
+    <div class="flex-fill">
+      <div class="fw-bold"><%= @provider.full_name %>
+        <% if @provider.owner? %><span class="pill gold ms-1" style="font-size:.6rem;">Owner</span><% end %>
+      </div>
+      <div class="small text-muted"><%= @provider.title.presence || "Care team" %></div>
+    </div>
+    <span class="pill good"><i class="fa-solid fa-lock me-1"></i>Private</span>
+  </div>
+
+  <div class="chat-window mb-3">
+    <% if @messages.any? %>
+      <% @messages.each do |m| %>
+        <div class="msg <%= m.from_member? ? 'out' : 'in' %>">
+          <% if m.topic.present? %>
+            <div class="mb-1"><span class="pill <%= m.from_member? ? 'solid' : '' %>" style="font-size:.62rem;"><%= m.topic %></span></div>
+          <% end %>
+          <div><%= simple_format m.body, {}, sanitize: true %></div>
+          <div class="meta">
+            <%= m.from_member? ? "You" : "#{m.sender.first_name} · care team" %>
+            · <%= m.created_at.strftime("%b %-d, %-l:%M %p") %>
+            <% if m.from_member? %> · <%= m.read? ? "Seen" : "Sent" %><% end %>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="chat-empty">
+        <i class="fa-solid fa-comments d-block mb-2" style="font-size: 1.8rem; color: var(--brand-sage);"></i>
+        Start your conversation with <%= @provider.first_name %>.
+      </div>
+    <% end %>
+  </div>
+
+  <%= form_with url: message_thread_path(@provider), method: :post, local: true do %>
+    <div class="row g-2 align-items-end">
+      <div class="col-sm-5">
+        <label class="form-label small mb-1">What's this about?</label>
+        <%= select_tag "message[topic]", options_for_select(@topics, @topics.first), class: "form-select" %>
+      </div>
+      <div class="col-sm-7">
+        <label class="form-label small mb-1">Message <%= @provider.first_name %></label>
+        <div class="input-group">
+          <%= text_field_tag "message[body]", nil, class: "form-control", placeholder: "Write a message…", autocomplete: "off", required: true %>
+          <%= submit_tag "Send", class: "btn btn-brand" %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

@@ -574,3 +574,51 @@ a:hover { color: var(--brand-green-dark); }
 .dist-row { display: grid; grid-template-columns: 130px 1fr 44px; gap: 0.6rem; align-items: center; margin-bottom: 0.5rem; }
 .dist-track { height: 12px; border-radius: 10px; background: var(--surface-2); overflow: hidden; }
 .dist-fill { height: 100%; background: linear-gradient(90deg, var(--brand-sage), var(--brand-green)); border-radius: 10px; }
+
+/* ===================================================== Patch 4: UX additions */
+
+/* Legal gate (blocking modal) */
+.legal-gate {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(45, 74, 48, 0.55);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; padding: 1rem;
+}
+.legal-gate-card { max-width: 620px; width: 100%; max-height: 92vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
+.legal-scroll { overflow-y: auto; max-height: 42vh; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 1rem 1.2rem; }
+
+/* Notifications bell */
+.notif-bell { position: relative; display: inline-flex; }
+.notif-count {
+  position: absolute; top: -6px; right: -8px; min-width: 18px; height: 18px; padding: 0 5px;
+  background: var(--tone-low); color: #fff; font-size: 0.66rem; font-weight: 700;
+  border-radius: 20px; display: grid; place-items: center; line-height: 1;
+}
+.notif-menu { width: 360px; max-width: 92vw; padding: 0; }
+.notif-item { display: flex; gap: 0.7rem; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--line); text-decoration: none; color: var(--text-dark); }
+.notif-item:hover { background: var(--surface-2); }
+.notif-item.unread { background: var(--brand-green-soft); }
+.notif-item .ic { width: 34px; height: 34px; flex: 0 0 auto; border-radius: 10px; display: grid; place-items: center; background: #fff; color: var(--brand-green); border: 1px solid var(--line); }
+.notif-empty { padding: 2rem 1rem; text-align: center; color: var(--text-muted); }
+
+/* Interactive tutorial (spotlight tour) */
+.tour-backdrop { position: fixed; inset: 0; z-index: 1900; background: rgba(20, 33, 22, 0.6); }
+.tour-highlight {
+  position: relative; z-index: 1950 !important;
+  outline: 3px solid var(--brand-gold); outline-offset: 3px;
+  border-radius: 12px; transition: outline 0.15s;
+}
+.tour-pop {
+  position: fixed; z-index: 1960; width: min(360px, 92vw);
+  background: #fff; border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 1.1rem 1.2rem;
+}
+.tour-pop h4 { margin: 0 0 0.3rem; font-size: 1.05rem; }
+.tour-pop .tour-meta { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.tour-dots { display: inline-flex; gap: 5px; }
+.tour-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); display: inline-block; }
+.tour-dots i.on { background: var(--brand-green); }
+
+@media (max-width: 991.98px) {
+  .tour-highlight { box-shadow: 0 0 0 4px var(--brand-gold); }
+  .tour-backdrop { display: none; }
+}

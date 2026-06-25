@@ -55,16 +55,19 @@ class FeatureFlowsTest < ActionDispatch::IntegrationTest
     assert @member.training_complete?("hipaa-privacy")
   end
 
-  test "member can message the care team" do
+  test "member can message a provider" do
     login(@member)
     get messages_path
     assert_response :success
 
     assert_difference "Message.count", 1 do
-      post messages_path, params: { message: { body: "Hi team" } }
+      post message_thread_path(@admin), params: { message: { body: "Hi team", topic: "Nutrition" } }
     end
-    assert_equal @member, Message.last.member
-    assert_equal @member, Message.last.sender
+    msg = Message.last
+    assert_equal @member, msg.member
+    assert_equal @member, msg.sender
+    assert_equal @admin, msg.provider
+    assert_equal "Nutrition", msg.topic
   end
 
   test "appointments and BMI/dashboard render" do

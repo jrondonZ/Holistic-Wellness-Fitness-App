@@ -13,6 +13,7 @@
     <div class="collapse navbar-collapse" id="adminTopNav">
       <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
         <li class="nav-item"><%= link_to "Member view", dashboard_path, class: "nav-link text-white-50" %></li>
+        <%= render "shared/notifications_bell", dark: true %>
         <li class="nav-item dropdown ms-lg-2">
           <a class="nav-link d-flex align-items-center gap-2 text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <%= initials_badge(current_user) %>
@@ -26,6 +27,7 @@
             </li>
             <li><hr class="dropdown-divider"></li>
             <li><%= link_to '<i class="fa-solid fa-heart-pulse me-2"></i>My chart'.html_safe, dashboard_path, class: "dropdown-item" %></li>
+            <li><%= link_to '<i class="fa-solid fa-gear me-2"></i>Settings'.html_safe, settings_path, class: "dropdown-item" %></li>
             <li><%= link_to '<i class="fa-solid fa-right-from-bracket me-2"></i>Sign out'.html_safe, logout_path, class: "dropdown-item" %></li>
           </ul>
         </li>

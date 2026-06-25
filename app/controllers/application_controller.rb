@@ -22,16 +22,25 @@ class ApplicationController < ActionController::Base
 
   # Where to send a user right after authentication.
   def after_auth_path(user)
-    return onboarding_path if user.needs_onboarding?
-
     user.staff? ? admin_root_path : dashboard_path
   end
 
-  # Gate the app until the user has accepted the current legal documents.
-  def require_legal_acceptance
-    return if current_user&.accepted_current_legal?
+  # Gate the app behind accepting the current legal documents. Instead of a
+  # redirect we flag a blocking modal (rendered by the layout) so the user can
+  # read and accept in place. The owner is exempt. Mutations are blocked until
+  # acceptance; GET requests still render so the modal can appear.
+  def enforce_legal_gate
+    return unless current_user&.needs_legal?
 
-    redirect_to onboarding_path
+    @legal_gate = true
+    return if request.get? || request.head?
+
+    redirect_to dashboard_path, alert: "Please accept the Terms of Use & Privacy Policy to continue."
+  end
+  helper_method :legal_gate?
+
+  def legal_gate?
+    @legal_gate.present?
   end
 
   def require_staff

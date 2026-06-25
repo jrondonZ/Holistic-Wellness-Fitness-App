@@ -10,12 +10,27 @@ class User < ApplicationRecord
   has_many :workout_logs, dependent: :destroy
   has_many :appointments, dependent: :destroy
   has_many :training_completions, dependent: :destroy
+  has_many :notifications, dependent: :destroy
 
   # Messaging: a "thread" is owned by a member; messages may be authored by
-  # the member or by an admin (sender).
+  # the member or by a staff member (sender), and are with a provider.
   has_many :messages, foreign_key: :member_id, dependent: :destroy, inverse_of: :member
   has_many :sent_messages, class_name: "Message", foreign_key: :sender_id, dependent: :destroy, inverse_of: :sender
   has_many :assessments, foreign_key: :member_id, dependent: :destroy, inverse_of: :member
+
+  # Care assignments: which providers (staff) look after this member, and which
+  # members a provider looks after.
+  has_many :care_assignments_as_member, class_name: "CareAssignment", foreign_key: :member_id,
+                                        dependent: :destroy, inverse_of: :member
+  has_many :providers, through: :care_assignments_as_member, source: :provider
+  has_many :care_assignments_as_provider, class_name: "CareAssignment", foreign_key: :provider_id,
+                                          dependent: :destroy, inverse_of: :provider
+  has_many :assigned_members, through: :care_assignments_as_provider, source: :member
+
+  # Token used for password-reset links (invalidated when the password changes).
+  generates_token_for :password_reset, expires_in: 30.minutes do
+    password_digest&.last(10)
+  end
 
   scope :members, -> { where(role: "member") }
   scope :admins,  -> { where(role: "admin") }
@@ -104,8 +119,13 @@ class User < ApplicationRecord
       accepted_privacy_version == Legal::PRIVACY_VERSION
   end
 
-  def needs_onboarding?
-    !accepted_current_legal?
+  # The owner (top admin) is exempt from the legal-acceptance gate.
+  def legal_exempt?
+    owner?
+  end
+
+  def needs_legal?
+    !legal_exempt? && !accepted_current_legal?
   end
 
   def accept_legal!(at = Time.current)
@@ -115,5 +135,32 @@ class User < ApplicationRecord
       accepted_privacy_version: Legal::PRIVACY_VERSION,
       onboarded_at: onboarded_at || at
     )
+  end
+
+  # --- Tutorial --------------------------------------------------------------
+
+  def needs_tutorial?
+    member? && tutorial_completed_at.nil? && accepted_current_legal?
+  end
+
+  def complete_tutorial!
+    update_column(:tutorial_completed_at, Time.current) if tutorial_completed_at.nil?
+  end
+
+  def restart_tutorial!
+    update_column(:tutorial_completed_at, nil)
+  end
+
+  # --- Notifications & care --------------------------------------------------
+
+  def unread_notifications_count
+    notifications.unread.count
+  end
+
+  # Providers a member can message: their assignments, or all staff as a fallback
+  # so a brand-new member is never stuck without a recipient.
+  def messageable_providers
+    list = providers.staff.order(:first_name).to_a
+    list.presence || User.staff.order(:role, :first_name).to_a
   end
 end

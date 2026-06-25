@@ -1,0 +1,25 @@
+<% content_for :title, "Choose a new password" %>
+
+<div class="container">
+  <div class="auth-card">
+    <div class="hwf-card p-4 p-md-5">
+      <div class="text-center mb-4">
+        <span class="leaf d-inline-grid mb-3" style="width:48px;height:48px;background:var(--brand-green);color:#fff;border-radius:14px;place-items:center;font-size:1.3rem;"><i class="fa-solid fa-lock"></i></span>
+        <h1 class="h3">Choose a new password</h1>
+        <p class="text-muted mb-0">For <%= @user.email %></p>
+      </div>
+      <%= form_with url: password_reset_path(params[:token]), method: :patch, local: true do %>
+        <div class="mb-3">
+          <%= label_tag :password, "New password", class: "form-label" %>
+          <%= password_field_tag :password, nil, class: "form-control", autocomplete: "new-password", required: true %>
+          <div class="field-hint mt-1">At least 6 characters.</div>
+        </div>
+        <div class="mb-3">
+          <%= label_tag :password_confirmation, "Confirm new password", class: "form-label" %>
+          <%= password_field_tag :password_confirmation, nil, class: "form-control", autocomplete: "new-password", required: true %>
+        </div>
+        <div class="d-grid"><%= submit_tag "Reset password", class: "btn btn-brand btn-lg" %></div>
+      <% end %>
+    </div>
+  </div>
+</div>

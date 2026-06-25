@@ -1,7 +1,7 @@
 <aside class="chart-sidebar">
   <div class="chart-nav-label d-none d-lg-block">Chart</div>
   <% chart_nav_items.each do |item| %>
-    <%= link_to item[:href], class: "chart-nav-link #{'active' if nav_active?(item[:href])}" do %>
+    <%= link_to item[:href], class: "chart-nav-link #{'active' if nav_active?(item[:href])}", data: { tour: item[:label].parameterize } do %>
       <i class="fa-solid <%= item[:icon] %>"></i>
       <span class="label"><%= item[:label] %></span>
       <% if item[:badge] == :messages && (unread = member_unread_count(current_user)) > 0 %>

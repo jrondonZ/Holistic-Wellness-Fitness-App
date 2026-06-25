@@ -11,12 +11,26 @@ Rails.application.routes.draw do
   get "logout", to: "sessions#destroy"
   resources :users, only: [ :new, :create, :destroy ]
 
-  # First-run walkthrough + legal acceptance
-  resource :onboarding, only: [ :show, :update ], controller: "onboarding"
+  # Account settings + password
+  get   "settings",          to: "settings#show", as: :settings
+  patch "settings",          to: "settings#update"
+  patch "settings/password", to: "settings#update_password", as: :settings_password
+  resources :password_resets, only: [ :new, :create, :edit, :update ], param: :token
 
-  # Public legal documents
-  get "terms",   to: "pages#terms"
-  get "privacy", to: "pages#privacy"
+  # Legal acceptance (from the blocking modal) + public legal documents
+  post "accept-legal", to: "legal_acceptances#create", as: :accept_legal
+  get  "terms",   to: "pages#terms"
+  get  "privacy", to: "pages#privacy"
+
+  # First-run interactive tutorial
+  post   "tutorial/complete", to: "tutorials#complete", as: :complete_tutorial
+  delete "tutorial",          to: "tutorials#restart",  as: :restart_tutorial
+
+  # In-app notifications
+  resources :notifications, only: [ :index ] do
+    collection { patch :read_all }
+    member { patch :read }
+  end
 
   # The chart (Epic/MyChart-style member health record)
   get "dashboard", to: "dashboard#index", as: :dashboard
@@ -54,14 +68,17 @@ Rails.application.routes.draw do
     member { post :complete }
   end
 
-  # Secure messaging with the care team (member side — their own thread)
-  resources :messages, only: [ :index, :create ]
+  # Secure messaging — one thread per assigned provider
+  get  "messages",              to: "messages#index", as: :messages
+  get  "messages/:provider_id", to: "messages#show",  as: :message_thread
+  post "messages/:provider_id", to: "messages#create"
 
   # -------------------------------------------------------------- Admin portal
   get "admin", to: "admin/dashboard#index", as: :admin_root
   namespace :admin do
-    resources :users, only: [ :index, :show ] do
+    resources :users, only: [ :index, :show, :new, :create, :edit, :update, :destroy ] do
       resources :assessments, only: [ :create, :update, :destroy ]
+      resources :care_assignments, only: [ :create, :destroy ]
     end
     resources :appointments, only: [ :index, :show, :update ]
     resources :conversations, only: [ :index, :show ] do

@@ -3,31 +3,37 @@
 <div class="section-head">
   <div>
     <span class="eyebrow">Admin portal</span>
-    <h1 class="h3 mb-0">Conversations</h1>
+    <h1 class="h3 mb-0">My conversations</h1>
   </div>
   <% if unread_thread_count.positive? %><span class="pill low"><%= unread_thread_count %> unread</span><% end %>
 </div>
 
-<div class="hwf-card">
-  <% @threads.each do |member| %>
-    <% unread = @unread[member.id].to_i %>
-    <% last = @last_bodies[member.id] %>
-    <%= link_to admin_conversation_path(member), class: "thread-row #{'unread' if unread.positive?}" do %>
-      <%= initials_badge(member) %>
-      <div class="flex-fill min-w-0">
-        <div class="d-flex justify-content-between">
-          <span class="fw-semibold text-dark"><%= member.full_name %></span>
-          <% if last %><span class="small text-muted"><%= last.created_at.strftime("%b %-d") %></span><% end %>
+<p class="text-muted">Members who have messaged you or are assigned to your care.</p>
+
+<div class="hwf-card p-0 overflow-hidden">
+  <% if @members.any? %>
+    <% @members.each do |member| %>
+      <% unread = @unread[member.id].to_i %>
+      <% last = @last[member.id] %>
+      <%= link_to admin_conversation_path(member), class: "thread-row #{'unread' if unread.positive?}" do %>
+        <%= initials_badge(member) %>
+        <div class="flex-fill min-w-0">
+          <div class="d-flex justify-content-between">
+            <span class="fw-semibold text-dark"><%= member.full_name %></span>
+            <% if last %><span class="small text-muted"><%= last.created_at.strftime("%b %-d") %></span><% end %>
+          </div>
+          <div class="small text-muted text-truncate">
+            <% if last %>
+              <%= last.from_admin? ? "You: " : "" %><%= truncate(last.body, length: 72) %>
+            <% else %>
+              <span class="fst-italic">Assigned — no messages yet</span>
+            <% end %>
+          </div>
         </div>
-        <div class="small text-muted text-truncate">
-          <% if last %>
-            <%= last.from_admin? ? "You: " : "" %><%= truncate(last.body, length: 70) %>
-          <% else %>
-            <span class="fst-italic">No messages yet — start the conversation</span>
-          <% end %>
-        </div>
-      </div>
-      <% if unread.positive? %><span class="nav-badge" style="margin-left:0;"><%= unread %></span><% end %>
+        <% if unread.positive? %><span class="nav-badge" style="margin-left:0;"><%= unread %></span><% end %>
+      <% end %>
     <% end %>
+  <% else %>
+    <div class="empty-state"><div class="icon"><i class="fa-solid fa-comments"></i></div><p class="mb-0">No conversations yet. Members you're assigned to will appear here.</p></div>
   <% end %>
 </div>

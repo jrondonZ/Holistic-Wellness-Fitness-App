@@ -4,7 +4,7 @@ module Admin
   class BaseController < ApplicationController
     layout "admin"
     before_action :require_staff
-    before_action :require_legal_acceptance
+    before_action :enforce_legal_gate
 
     private
 

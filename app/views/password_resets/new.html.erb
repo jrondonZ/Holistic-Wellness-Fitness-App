@@ -1,0 +1,21 @@
+<% content_for :title, "Reset password" %>
+
+<div class="container">
+  <div class="auth-card">
+    <div class="hwf-card p-4 p-md-5">
+      <div class="text-center mb-4">
+        <span class="leaf d-inline-grid mb-3" style="width:48px;height:48px;background:var(--brand-green);color:#fff;border-radius:14px;place-items:center;font-size:1.3rem;"><i class="fa-solid fa-key"></i></span>
+        <h1 class="h3">Reset your password</h1>
+        <p class="text-muted mb-0">Enter your email and we'll send a reset link.</p>
+      </div>
+      <%= form_with url: password_resets_path, method: :post, local: true do %>
+        <div class="mb-3">
+          <%= label_tag :email, "Email address", class: "form-label" %>
+          <%= email_field_tag :email, params[:email], class: "form-control", autofocus: true, required: true, placeholder: "you@example.com" %>
+        </div>
+        <div class="d-grid"><%= submit_tag "Send reset link", class: "btn btn-brand btn-lg" %></div>
+      <% end %>
+      <p class="text-center text-muted mt-4 mb-0"><%= link_to "Back to log in", login_path %></p>
+    </div>
+  </div>
+</div>

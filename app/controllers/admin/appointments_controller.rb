@@ -19,7 +19,9 @@ module Admin
     end
 
     def update
+      previous_status = @appointment.status
       if @appointment.update(appointment_params.merge(status_timestamps))
+        notify_member(previous_status)
         redirect_to admin_appointment_path(@appointment), success: "Appointment updated."
       else
         flash.now[:danger] = @appointment.errors.full_messages.to_sentence
@@ -28,6 +30,23 @@ module Admin
     end
 
     private
+
+    def notify_member(previous_status)
+      return if @appointment.status == previous_status
+
+      titles = {
+        "confirmed" => "Appointment confirmed",
+        "cancelled" => "Appointment cancelled",
+        "completed" => "Session marked complete"
+      }
+      title = titles[@appointment.status]
+      return unless title
+
+      Notification.notify(@appointment.user, kind: "appointment", icon: "fa-calendar-check",
+                          title: title,
+                          body: "#{@appointment.service.name} · #{@appointment.scheduled_at.strftime('%b %-d, %-l:%M %p')}",
+                          url: appointment_path(@appointment))
+    end
 
     def set_appointment
       @appointment = Appointment.find(params[:id])

@@ -1,0 +1,47 @@
+<div class="legal-gate">
+  <div class="legal-gate-card hwf-card p-4 p-md-5">
+    <div class="text-center mb-3">
+      <div class="cert-badge mb-2"><i class="fa-solid fa-file-shield"></i></div>
+      <h2 class="h4 mb-1">One quick step before you continue</h2>
+      <p class="text-muted mb-0">Please review and accept our agreements. You can read the full documents any time from the links below.</p>
+    </div>
+
+    <div class="legal-scroll mb-3">
+      <h3 class="h6 text-brand"><i class="fa-solid fa-file-contract me-1"></i> Terms of Use — the essentials</h3>
+      <ul class="small">
+        <li>Holistic Chart is a wellness &amp; fitness tool — <strong>not medical advice</strong>, diagnosis, or treatment. Always consult a clinician; call 911 in an emergency.</li>
+        <li>You must be 18+. Sessions for minors are arranged by a parent/guardian.</li>
+        <li>Keep your password private; you're responsible for activity on your account.</li>
+        <li>Bookings are requests until confirmed; please give 24 hours' notice to cancel.</li>
+        <li>Use the app lawfully — no probing security, scraping, or accessing others' data. You participate in physical activity at your own risk.</li>
+      </ul>
+      <h3 class="h6 text-brand mt-3"><i class="fa-solid fa-user-shield me-1"></i> Privacy Policy — the essentials</h3>
+      <ul class="small mb-0">
+        <li>We collect your account details and the health information you enter (check-ins, nutrition, workouts, messages).</li>
+        <li>Your chart is visible to you and the care team assigned to you. We follow HIPAA-aligned practices and <strong>never sell your data</strong>.</li>
+        <li>We protect data with encryption in transit, hashed passwords, a strict content-security policy, and role-based access.</li>
+        <li>You can access, correct, or delete your information at any time.</li>
+      </ul>
+      <p class="small mt-3 mb-0">
+        Read the full <%= link_to "Terms of Use", terms_path, target: "_blank", rel: "noopener", class: "fw-semibold" %>
+        and <%= link_to "Privacy Policy", privacy_path, target: "_blank", rel: "noopener", class: "fw-semibold" %>
+        (version <%= Legal::TERMS_VERSION %>).
+      </p>
+    </div>
+
+    <%= form_with url: accept_legal_path, method: :post, local: true do %>
+      <label class="quiz-option d-flex gap-2 align-items-start">
+        <%= check_box_tag :accept_terms, "1", false, required: true, class: "form-check-input mt-1" %>
+        <span class="small">I have read and agree to the <strong>Terms of Use</strong>.</span>
+      </label>
+      <label class="quiz-option d-flex gap-2 align-items-start">
+        <%= check_box_tag :accept_privacy, "1", false, required: true, class: "form-check-input mt-1" %>
+        <span class="small">I have read and agree to the <strong>Privacy Policy</strong>, including how my health information is used.</span>
+      </label>
+      <div class="d-flex gap-2 mt-3">
+        <%= submit_tag "Accept & continue", class: "btn btn-brand flex-fill" %>
+        <%= link_to "Sign out", logout_path, class: "btn btn-outline-brand" %>
+      </div>
+    <% end %>
+  </div>
+</div>

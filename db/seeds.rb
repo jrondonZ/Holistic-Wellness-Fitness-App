@@ -398,9 +398,29 @@ else
   owner.update!(role: "owner")
 end
 
+# A second admin/provider so members have a choice of who to message.
+marcus = User.find_or_initialize_by(username: "marcus")
+if marcus.new_record?
+  marcus.assign_attributes(
+    first_name: "Marcus", last_name: "Lee", email: "marcus@holisticwellnessandfitness.com",
+    password: "coach12345", password_confirmation: "coach12345", role: "admin",
+    title: "Personal Trainer & Boxing Coach", phone: "203-800-1120"
+  )
+  marcus.save!
+  puts "  • Created admin/provider (username: marcus / password: coach12345)"
+else
+  marcus.update!(role: "admin")
+end
+
 # Pre-accept the current legal docs for seeded accounts so their demo logins
-# skip onboarding. (A brand-new sign-up still gets the full walkthrough.)
-[ demo, admin, owner ].each(&:accept_legal!)
+# skip the acceptance modal. (The owner is exempt; a new sign-up still sees it.)
+[ demo, admin, marcus ].each(&:accept_legal!)
+demo.complete_tutorial!
+
+# Assign providers to the demo member so they can choose who to message.
+[ [ admin, "Holistic Nutrition · RN" ], [ marcus, "Personal Trainer" ] ].each do |provider, specialty|
+  CareAssignment.find_or_create_by!(member: demo, provider: provider) { |a| a.specialty = specialty }
+end
 
 # -------------------------------------------- Demo bookings, messages, notes
 if demo.appointments.none?
@@ -428,10 +448,18 @@ if demo.messages.none?
     [ admin, "Let's build a wind-down routine — I'll add a note to your chart with a few ideas.", 1.day.ago ]
   ]
   convo.each do |sender, body, at|
-    m = demo.messages.create!(sender: sender, body: body)
+    m = demo.messages.create!(sender: sender, provider: admin, body: body, topic: "General question")
     m.update_columns(created_at: at, updated_at: at, read_at: (sender == demo ? at : nil))
   end
   puts "  • Seeded a demo conversation"
+end
+
+if demo.notifications.none?
+  Notification.notify(demo, kind: "appointment", icon: "fa-calendar-check",
+                      title: "Appointment confirmed", body: "Personal Training · virtual", url: "/appointments")
+  Notification.notify(demo, kind: "care", icon: "fa-user-doctor",
+                      title: "Marcus Lee joined your care team", url: "/messages/#{marcus.id}")
+  puts "  • Seeded demo notifications"
 end
 
 if demo.assessments.none?
@@ -452,6 +480,7 @@ demo.training_completions.find_or_create_by!(training_module: hipaa) do |tc|
 end
 
 puts "✅ Done."
-puts "   Owner:  username josiah · password owner12345  (top admin)"
-puts "   Admin:  username celine · password celine123"
-puts "   Member: username demo   · password wellness"
+puts "   Owner:    username josiah · password owner12345  (top admin)"
+puts "   Provider: username celine · password celine123"
+puts "   Provider: username marcus · password coach12345"
+puts "   Member:   username demo   · password wellness"

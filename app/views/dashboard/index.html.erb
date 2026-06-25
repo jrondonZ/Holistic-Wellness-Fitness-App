@@ -1,6 +1,22 @@
 <% content_for :title, "Chart Summary" %>
 <% weight = current_user.current_weight %>
 
+<% if current_user.needs_tutorial? %>
+  <% tour_steps = [
+    { title: "Welcome to your chart", body: "This 60-second tour shows you around. You can skip anytime and replay it later from Settings." },
+    { title: "Your chart header", body: "Your member ID, goals, BMI, blood pressure and streak — a snapshot of how you're doing.", target: ".patient-banner" },
+    { title: "Quick actions", body: "Log a check-in, meal or workout in seconds right from here.", target: "[data-tour='quick-actions']" },
+    { title: "Navigate your chart", body: "Jump between Wellness, Nutrition, Fitness, Scheduling, Messages, Training and more.", target: ".chart-sidebar" },
+    { title: "Message your provider", body: "Securely message the provider assigned to your care — private to just the two of you.", target: "[data-tour='messages']" },
+    { title: "Book a session", body: "Book personal training, nutrition, pelvic health, boxing, soccer and kids athletics.", target: "[data-tour='scheduling']" },
+    { title: "Stay in the loop", body: "Confirmations, replies and care updates show up here in your notifications.", target: ".notif-bell" },
+    { title: "You're all set!", body: "That's the tour. Explore your chart — and replay this anytime from Settings." }
+  ] %>
+  <div data-controller="tour" data-tour-autostart-value="true"
+       data-tour-complete-url-value="<%= complete_tutorial_path %>"
+       data-tour-steps-value="<%= tour_steps.to_json %>"></div>
+<% end %>
+
 <!-- PATIENT BANNER -->
 <div class="patient-banner mb-4">
   <div class="row align-items-center g-3">
@@ -46,7 +62,7 @@
 </div>
 
 <!-- QUICK ACTIONS -->
-<div class="d-flex flex-wrap gap-2 mb-4">
+<div class="d-flex flex-wrap gap-2 mb-4" data-tour="quick-actions">
   <%= link_to new_checkin_path, class: "btn btn-brand btn-sm" do %><i class="fa-solid fa-spa me-1"></i> Log check-in<% end %>
   <%= link_to new_meal_entry_path, class: "btn btn-soft btn-sm" do %><i class="fa-solid fa-bowl-food me-1"></i> Log meal<% end %>
   <%= link_to new_workout_log_path, class: "btn btn-soft btn-sm" do %><i class="fa-solid fa-dumbbell me-1"></i> Log workout<% end %>

@@ -108,7 +108,42 @@
   </div>
 
   <!-- RIGHT: diagnose -->
-  <div class="col-lg-5" id="diagnose">
+  <div class="col-lg-5" id="care">
+    <div class="hwf-card mb-3">
+      <div class="card-title-sm mb-2"><i class="fa-solid fa-user-doctor me-1"></i> Care team (providers)</div>
+      <% if @assignments.any? %>
+        <% @assignments.each do |a| %>
+          <div class="d-flex align-items-center gap-2 py-2 border-bottom">
+            <%= initials_badge(a.provider) %>
+            <div class="flex-fill">
+              <div class="fw-semibold small"><%= a.provider.full_name %>
+                <% if a.provider.owner? %><span class="pill gold ms-1" style="font-size:.55rem;">Owner</span><% end %>
+              </div>
+              <div class="small text-muted"><%= a.provider.title.presence || "Care team" %></div>
+            </div>
+            <% if current_user.owner? %>
+              <%= button_to '<i class="fa-solid fa-xmark"></i>'.html_safe, admin_user_care_assignment_path(@member, a),
+                    method: :delete, class: "btn btn-link text-danger p-0", title: "Unassign",
+                    form: { data: { turbo_confirm: "Unassign #{a.provider.first_name} from #{@member.first_name}?" } } %>
+            <% end %>
+          </div>
+        <% end %>
+      <% else %>
+        <p class="text-muted small mb-2">No providers assigned yet.</p>
+      <% end %>
+
+      <% if current_user.owner? %>
+        <% if @available_providers.any? %>
+          <%= form_with url: admin_user_care_assignments_path(@member), method: :post, local: true, class: "d-flex gap-2 mt-2" do %>
+            <%= select_tag :provider_id, options_from_collection_for_select(@available_providers, :id, :full_name), class: "form-select form-select-sm" %>
+            <%= submit_tag "Assign", class: "btn btn-brand btn-sm" %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <p class="field-hint mb-0">Only the owner can assign providers.</p>
+      <% end %>
+    </div>
+
     <div class="hwf-card mb-3">
       <div class="card-title-sm mb-2"><i class="fa-solid fa-wand-magic-sparkles me-1"></i> Diagnostic flags</div>
       <p class="field-hint mb-3">Auto-generated from chart data — for clinical review, not a diagnosis.</p>

@@ -6,6 +6,9 @@ module Admin
     def create
       @assessment = @member.assessments.new(assessment_params.merge(author: current_user))
       if @assessment.save
+        Notification.notify(@member, kind: "assessment", icon: "fa-notes-medical",
+                            title: "New note from your care team",
+                            body: @assessment.title, url: dashboard_path)
         redirect_to admin_user_path(@member, anchor: "diagnose"), success: "Assessment added to the chart."
       else
         redirect_to admin_user_path(@member, anchor: "diagnose"), danger: @assessment.errors.full_messages.to_sentence

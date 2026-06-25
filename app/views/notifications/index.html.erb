@@ -1,0 +1,31 @@
+<% content_for :title, "Notifications" %>
+
+<div class="container py-4" style="max-width: 760px;">
+  <div class="section-head">
+    <div>
+      <span class="eyebrow">Updates</span>
+      <h1 class="h3 mb-0">Notifications</h1>
+    </div>
+    <% if current_user.unread_notifications_count.positive? %>
+      <%= button_to "Mark all read", read_all_notifications_path, method: :patch, class: "btn btn-soft btn-sm" %>
+    <% end %>
+  </div>
+
+  <div class="hwf-card p-0 overflow-hidden">
+    <% if @notifications.any? %>
+      <% @notifications.each do |n| %>
+        <%= button_to read_notification_path(n), method: :patch, class: "notif-item w-100 border-0 bg-transparent text-start #{'unread' unless n.read?}" do %>
+          <span class="ic"><i class="fa-solid <%= n.icon_name %>"></i></span>
+          <span class="flex-fill">
+            <span class="d-block fw-semibold"><%= n.title %></span>
+            <% if n.body.present? %><span class="d-block small text-muted"><%= n.body %></span><% end %>
+            <span class="d-block small text-muted"><%= n.created_at.strftime("%b %-d, %Y · %-l:%M %p") %></span>
+          </span>
+          <% unless n.read? %><span class="pill low align-self-center">New</span><% end %>
+        <% end %>
+      <% end %>
+    <% else %>
+      <div class="empty-state"><div class="icon"><i class="fa-solid fa-bell"></i></div><p class="mb-0">No notifications yet — we'll let you know when something happens.</p></div>
+    <% end %>
+  </div>
+</div>

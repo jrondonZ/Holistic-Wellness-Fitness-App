@@ -1,0 +1,48 @@
+<% content_for :title, "Settings" %>
+
+<div class="container py-4" style="max-width: 720px;">
+  <div class="section-head">
+    <div><span class="eyebrow">Account</span><h1 class="h3 mb-0">Settings</h1></div>
+    <%= link_to "Back", current_user.staff? ? admin_root_path : dashboard_path, class: "btn btn-soft btn-sm" %>
+  </div>
+
+  <!-- Profile -->
+  <div class="hwf-card mb-3">
+    <div class="card-title-sm mb-3"><i class="fa-solid fa-id-card me-1"></i> Profile</div>
+    <%= form_with model: @user, url: settings_path, method: :patch, local: true do |f| %>
+      <% if @user.errors.any? %>
+        <div class="alert alert-danger"><ul class="mb-0"><% @user.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul></div>
+      <% end %>
+      <div class="row g-3">
+        <div class="col-md-6"><%= f.label :first_name, class: "form-label" %><%= f.text_field :first_name, class: "form-control" %></div>
+        <div class="col-md-6"><%= f.label :last_name, class: "form-label" %><%= f.text_field :last_name, class: "form-control" %></div>
+        <div class="col-md-6"><%= f.label :username, class: "form-label" %><%= f.text_field :username, class: "form-control" %></div>
+        <div class="col-md-6"><%= f.label :email, class: "form-label" %><%= f.email_field :email, class: "form-control" %></div>
+        <div class="col-md-6"><%= f.label :phone, class: "form-label" %><%= f.telephone_field :phone, class: "form-control" %></div>
+      </div>
+      <div class="mt-3"><%= f.submit "Save profile", class: "btn btn-brand" %></div>
+    <% end %>
+  </div>
+
+  <!-- Password -->
+  <div class="hwf-card mb-3">
+    <div class="card-title-sm mb-3"><i class="fa-solid fa-key me-1"></i> Change password</div>
+    <%= form_with url: settings_password_path, method: :patch, local: true do %>
+      <div class="row g-3">
+        <div class="col-12"><%= label_tag :current_password, "Current password", class: "form-label" %><%= password_field_tag :current_password, nil, class: "form-control", autocomplete: "current-password", required: true %></div>
+        <div class="col-md-6"><%= label_tag :password, "New password", class: "form-label" %><%= password_field_tag :password, nil, class: "form-control", autocomplete: "new-password", required: true %></div>
+        <div class="col-md-6"><%= label_tag :password_confirmation, "Confirm new password", class: "form-label" %><%= password_field_tag :password_confirmation, nil, class: "form-control", autocomplete: "new-password", required: true %></div>
+      </div>
+      <div class="field-hint mt-1">At least 6 characters.</div>
+      <div class="mt-3"><%= submit_tag "Change password", class: "btn btn-brand" %></div>
+    <% end %>
+  </div>
+
+  <% if current_user.member? %>
+    <div class="hwf-card">
+      <div class="card-title-sm mb-2"><i class="fa-solid fa-graduation-cap me-1"></i> Tutorial</div>
+      <p class="small text-muted mb-2">Replay the guided walkthrough of the app from your dashboard.</p>
+      <%= button_to "Restart tutorial", restart_tutorial_path, method: :delete, class: "btn btn-soft btn-sm" %>
+    </div>
+  <% end %>
+</div>

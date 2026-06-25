@@ -1,0 +1,10 @@
+<% content_for :title, "Admin · New user" %>
+
+<div class="mb-3">
+  <%= link_to admin_users_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All users<% end %>
+</div>
+<div class="section-head"><div><span class="eyebrow">Owner portal</span><h1 class="h3 mb-0">Create a user</h1></div></div>
+
+<div class="hwf-card" style="max-width: 760px;">
+  <%= render "form", user: @user, submit_label: "Create user" %>
+</div>

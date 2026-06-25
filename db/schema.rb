@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_17_000008) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_18_000002) do
   create_table "appointments", force: :cascade do |t|
     t.text "admin_notes"
     t.datetime "cancelled_at"
@@ -125,6 +125,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_000008) do
     t.integer "member_id", null: false
     t.datetime "read_at"
     t.integer "sender_id", null: false
+    t.string "topic"
     t.datetime "updated_at", null: false
     t.index ["member_id", "created_at"], name: "index_messages_on_member_id_and_created_at"
     t.index ["member_id"], name: "index_messages_on_member_id"
@@ -205,14 +206,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_17_000008) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.string "accepted_privacy_version"
+    t.string "accepted_terms_version"
     t.text "bio"
     t.datetime "created_at", null: false
     t.string "email"
     t.string "first_name"
     t.string "last_name"
+    t.datetime "onboarded_at"
     t.string "password_digest"
     t.string "phone"
+    t.datetime "privacy_accepted_at"
     t.string "role", default: "member", null: false
+    t.datetime "terms_accepted_at"
     t.string "title"
     t.datetime "updated_at", null: false
     t.string "username"

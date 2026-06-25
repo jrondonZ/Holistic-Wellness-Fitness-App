@@ -1,47 +1,55 @@
-<% content_for :title, "Admin · Members" %>
+<% content_for :title, "Admin · Users" %>
 
 <div class="section-head">
   <div>
     <span class="eyebrow">Admin portal</span>
-    <h1 class="h3 mb-0">Members <span class="text-muted fs-6">(<%= @members.size %>)</span></h1>
+    <h1 class="h3 mb-0"><%= current_user.owner? ? "All users" : "Members" %> <span class="text-muted fs-6">(<%= @users.size %>)</span></h1>
   </div>
-  <%= form_with url: admin_users_path, method: :get, local: true, class: "d-flex gap-2" do %>
-    <%= text_field_tag :q, @q, class: "form-control form-control-sm", placeholder: "Search name or email…" %>
-    <%= submit_tag "Search", class: "btn btn-soft btn-sm" %>
-  <% end %>
+  <div class="d-flex gap-2">
+    <%= form_with url: admin_users_path, method: :get, local: true, class: "d-flex gap-2" do %>
+      <%= text_field_tag :q, @q, class: "form-control form-control-sm", placeholder: "Search…" %>
+      <%= submit_tag "Search", class: "btn btn-soft btn-sm" %>
+    <% end %>
+    <% if current_user.owner? %>
+      <%= link_to new_admin_user_path, class: "btn btn-brand btn-sm" do %><i class="fa-solid fa-user-plus me-1"></i> New<% end %>
+    <% end %>
+  </div>
 </div>
 
 <div class="hwf-card">
-  <% if @members.any? %>
+  <% if @users.any? %>
     <div class="table-scroll">
       <table class="flowsheet">
         <thead>
-          <tr><th>Member</th><th>ID</th><th>Goal</th><th>Check-ins</th><th>Last check-in</th><th>Joined</th><th></th></tr>
+          <tr><th>User</th><th>Role</th><th>ID</th><th>Check-ins</th><th>Last seen</th><th>Joined</th><th></th></tr>
         </thead>
         <tbody>
-          <% @members.each do |m| %>
+          <% @users.each do |u| %>
             <tr>
               <td>
-                <%= link_to admin_user_path(m), class: "d-flex align-items-center gap-2 text-decoration-none" do %>
-                  <%= initials_badge(m) %>
+                <div class="d-flex align-items-center gap-2">
+                  <%= initials_badge(u) %>
                   <div>
-                    <div class="fw-semibold text-dark"><%= m.full_name %></div>
-                    <div class="small text-muted"><%= m.email %></div>
+                    <div class="fw-semibold text-dark"><%= u.full_name %></div>
+                    <div class="small text-muted"><%= u.email %></div>
                   </div>
-                <% end %>
+                </div>
               </td>
-              <td class="small text-muted"><%= m.member_id %></td>
-              <td><%= m.health_profile&.primary_goal.presence || "—" %></td>
-              <td><%= @checkin_counts[m.id].to_i %></td>
-              <td><%= @last_checkin[m.id]&.strftime("%b %-d") || "—" %></td>
-              <td class="small text-muted"><%= m.created_at.strftime("%b %-d, %Y") %></td>
-              <td class="text-end"><%= link_to "Open chart", admin_user_path(m), class: "btn btn-soft btn-sm" %></td>
+              <td><span class="pill <%= u.owner? ? 'gold' : (u.staff? ? 'good' : 'muted') %>"><%= u.role_label %></span></td>
+              <td class="small text-muted"><%= u.member? ? u.member_id : "—" %></td>
+              <td><%= u.member? ? @checkin_counts[u.id].to_i : "—" %></td>
+              <td class="small text-muted"><%= @last_checkin[u.id]&.strftime("%b %-d") || "—" %></td>
+              <td class="small text-muted"><%= u.created_at.strftime("%b %-d, %Y") %></td>
+              <td class="text-end">
+                <% if u.member? %><%= link_to "Chart", admin_user_path(u), class: "btn btn-soft btn-sm" %><% end %>
+                <% if current_user.owner? %><%= link_to "Edit", edit_admin_user_path(u), class: "btn btn-soft btn-sm" %><% end %>
+              </td>
             </tr>
           <% end %>
         </tbody>
       </table>
     </div>
   <% else %>
-    <div class="empty-state"><div class="icon"><i class="fa-solid fa-users"></i></div><p class="mb-0">No members found.</p></div>
+    <div class="empty-state"><div class="icon"><i class="fa-solid fa-users"></i></div><p class="mb-0">No users found.</p></div>
   <% end %>
 </div>

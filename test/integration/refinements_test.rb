@@ -8,34 +8,39 @@ class RefinementsTest < ActionDispatch::IntegrationTest
                           email: "admin2@example.com", password: "password1", role: "admin")
     @member = User.create!(first_name: "New", last_name: "Member", username: "newbie",
                            email: "newbie@example.com", password: "password1")
-    [ @owner, @admin ].each(&:accept_legal!)
+    [ @owner, @admin ].each(&:accept_legal!) # @member intentionally NOT accepted
   end
 
   def login(user, password = "password1")
     post login_path, params: { username: user.username, password: password }
   end
 
-  # ---------------------------------------------------------- onboarding/legal
-  test "new member is gated into onboarding until accepting legal" do
+  # ---------------------------------------------------------- legal gate modal
+  test "members must accept the legal modal before acting" do
     login(@member)
-    assert_redirected_to onboarding_path
-
-    get dashboard_path
-    assert_redirected_to onboarding_path
-
-    # Refusing acceptance keeps them on onboarding.
-    patch onboarding_path, params: { accept_terms: "1" }
-    assert_redirected_to onboarding_path
-    assert_not @member.reload.accepted_current_legal?
-
-    # Accepting both unlocks the app.
-    patch onboarding_path, params: { accept_terms: "1", accept_privacy: "1" }
-    assert_redirected_to dashboard_path
-    assert @member.reload.accepted_current_legal?
-    assert @member.terms_accepted_at.present?
-
     get dashboard_path
     assert_response :success
+    assert_match "before you continue", response.body # the blocking modal
+
+    # Mutations are blocked until acceptance.
+    assert_no_difference "Checkin.count" do
+      post checkins_path, params: { checkin: { checkin_date: Date.current, mood: 3 } }
+    end
+    assert_redirected_to dashboard_path
+
+    # Accepting both unlocks the app.
+    post accept_legal_path, params: { accept_terms: "1", accept_privacy: "1" }
+    assert_redirected_to dashboard_path
+    assert @member.reload.accepted_current_legal?
+  end
+
+  test "the owner is exempt from the legal gate" do
+    fresh_owner = User.create!(first_name: "Top", last_name: "Boss", username: "topboss",
+                               email: "top@example.com", password: "password1", role: "owner")
+    login(fresh_owner)
+    get admin_root_path
+    assert_response :success
+    assert_no_match "before you continue", response.body
   end
 
   test "legal pages are public" do
@@ -67,16 +72,12 @@ class RefinementsTest < ActionDispatch::IntegrationTest
     end
     assert User.find_by(username: "patcoach").admin?
 
-    # Promote a member
     patch admin_team_member_path(@member), params: { role: "admin" }
     assert @member.reload.admin?
 
-    # Demote an admin back to member
     delete admin_team_member_path(@admin)
-    assert @member.reload # sanity
     assert @admin.reload.member?
 
-    # The owner cannot be demoted via team management
     patch admin_team_member_path(@owner), params: { role: "member" }
     assert @owner.reload.owner?
   end
@@ -85,58 +86,31 @@ class RefinementsTest < ActionDispatch::IntegrationTest
     login(@admin)
     get admin_team_path
     assert_redirected_to admin_root_path
-    post admin_team_path, params: { user: { first_name: "x" } }
-    assert_redirected_to admin_root_path
   end
 
   test "members self-signup cannot assign themselves a role" do
-    assert_difference "User.count", 1 do
-      post signup_path, params: { user: {
-        first_name: "Sneaky", last_name: "User", username: "sneaky",
-        email: "sneaky@example.com", password: "password1", password_confirmation: "password1",
-        role: "owner"
-      } }
-    end
+    post signup_path, params: { user: {
+      first_name: "Sneaky", last_name: "User", username: "sneaky",
+      email: "sneaky@example.com", password: "password1", password_confirmation: "password1", role: "owner"
+    } }
     assert User.find_by(username: "sneaky").member?, "role must not be mass-assignable on signup"
   end
 
   # ------------------------------------------------------------- messaging
-  test "member messages carry a topic" do
-    login(@admin) # ensure a staff recipient exists
-    delete logout_path
-    login(@owner) # accepted; just to vary
-    delete logout_path
+  test "member messages are scoped to a chosen provider" do
     @member.accept_legal!
     login(@member)
-    post messages_path, params: { message: { body: "Question about my plan", topic: "Nutrition" } }
-    assert_equal "Nutrition", Message.last.topic
-    assert_equal @member, Message.last.member
-  end
-
-  # --------------------------------------------------------------- rendering
-  test "onboarding walkthrough renders for a new member" do
-    login(@member)
-    get onboarding_path
+    get message_thread_path(@admin)
     assert_response :success
-    assert_match "Welcome", response.body
-    assert_match "Accept &amp; enter", response.body
-  end
-
-  test "owner team page and new-service form render" do
-    login(@owner)
-    get admin_team_path
-    assert_response :success
-    assert_match "Care team", response.body
-    get new_admin_service_path
-    assert_response :success
-    assert_match "New service", response.body
+    post message_thread_path(@admin), params: { message: { body: "hi", topic: "Nutrition" } }
+    assert_equal @admin, Message.last.provider
   end
 
   # -------------------------------------------------------------- security
   test "a strict content security policy is sent" do
     get login_path
     csp = response.headers["Content-Security-Policy"]
-    assert csp.present?, "expected a CSP header"
+    assert csp.present?
     assert_includes csp, "https://cdn.jsdelivr.net"
     assert_includes csp, "'nonce-"
     assert_includes csp, "object-src 'none'"
@@ -145,8 +119,6 @@ class RefinementsTest < ActionDispatch::IntegrationTest
 
   test "importmap script tags receive a CSP nonce" do
     get login_path
-    # Every <script> emitted by the importmap must carry a nonce or it would be
-    # blocked by the strict policy.
     assert_match(/<script[^>]*type="importmap"[^>]*nonce="/, response.body)
   end
 

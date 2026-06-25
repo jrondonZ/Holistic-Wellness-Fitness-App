@@ -1,0 +1,21 @@
+<% content_for :title, "Admin · Edit #{@user.full_name}" %>
+
+<div class="mb-3">
+  <%= link_to admin_users_path, class: "text-muted text-decoration-none small" do %><i class="fa-solid fa-chevron-left me-1"></i> All users<% end %>
+</div>
+<div class="section-head">
+  <div><span class="eyebrow">Owner portal</span><h1 class="h3 mb-0">Edit <%= @user.full_name %></h1></div>
+  <span class="pill <%= @user.owner? ? 'gold' : (@user.staff? ? 'good' : 'muted') %>"><%= @user.role_label %></span>
+</div>
+
+<div class="hwf-card" style="max-width: 760px;">
+  <%= render "form", user: @user, submit_label: "Save changes" %>
+  <% unless @user == current_user || @user.owner? %>
+    <hr class="my-4">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="small text-muted">Deleting removes this account and all of its data.</div>
+      <%= button_to "Delete user", admin_user_path(@user), method: :delete, class: "btn btn-link text-danger p-0",
+            form: { data: { turbo_confirm: "Permanently delete #{@user.full_name}? This cannot be undone." } } %>
+    </div>
+  <% end %>
+</div>

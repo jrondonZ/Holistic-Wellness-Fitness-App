@@ -16,6 +16,7 @@
           <li class="nav-item"><%= link_to "Open Chart", dashboard_path, class: "nav-link" %></li>
           <li class="nav-item"><%= link_to "Library", workouts_path, class: "nav-link" %></li>
           <li class="nav-item"><%= link_to "Learn", articles_path, class: "nav-link" %></li>
+          <%= render "shared/notifications_bell" %>
           <li class="nav-item dropdown ms-lg-2">
             <a class="nav-link d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               <%= initials_badge(current_user) %>
@@ -32,6 +33,8 @@
                 <li><%= link_to '<i class="fa-solid fa-user-shield me-2"></i>Admin portal'.html_safe, admin_root_path, class: "dropdown-item fw-semibold text-brand" %></li>
               <% end %>
               <li><%= link_to '<i class="fa-solid fa-id-card me-2"></i>My details'.html_safe, health_profile_path, class: "dropdown-item" %></li>
+              <li><%= link_to '<i class="fa-solid fa-bell me-2"></i>Notifications'.html_safe, notifications_path, class: "dropdown-item" %></li>
+              <li><%= link_to '<i class="fa-solid fa-gear me-2"></i>Settings'.html_safe, settings_path, class: "dropdown-item" %></li>
               <li><%= link_to '<i class="fa-solid fa-right-from-bracket me-2"></i>Sign out'.html_safe, logout_path, class: "dropdown-item" %></li>
               <li><hr class="dropdown-divider"></li>
               <li>

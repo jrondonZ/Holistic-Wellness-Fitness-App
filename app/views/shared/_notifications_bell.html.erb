@@ -1,0 +1,31 @@
+<% recent = current_user.notifications.recent.limit(8).to_a %>
+<% unread = current_user.unread_notifications_count %>
+<li class="nav-item dropdown">
+  <a class="nav-link notif-bell <%= local_assigns[:dark] ? 'text-white' : '' %>" href="#" role="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" aria-label="Notifications">
+    <i class="fa-solid fa-bell"></i>
+    <% if unread.positive? %><span class="notif-count"><%= unread > 9 ? "9+" : unread %></span><% end %>
+  </a>
+  <div class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 notif-menu">
+    <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+      <span class="fw-bold">Notifications</span>
+      <% if unread.positive? %>
+        <%= button_to "Mark all read", read_all_notifications_path, method: :patch, class: "btn btn-link btn-sm p-0 text-decoration-none" %>
+      <% end %>
+    </div>
+    <% if recent.any? %>
+      <% recent.each do |n| %>
+        <%= button_to read_notification_path(n), method: :patch, class: "notif-item w-100 border-0 bg-transparent text-start #{'unread' unless n.read?}" do %>
+          <span class="ic"><i class="fa-solid <%= n.icon_name %>"></i></span>
+          <span class="flex-fill">
+            <span class="d-block fw-semibold small"><%= n.title %></span>
+            <% if n.body.present? %><span class="d-block small text-muted"><%= truncate(n.body, length: 64) %></span><% end %>
+            <span class="d-block small text-muted"><%= time_ago_in_words(n.created_at) %> ago</span>
+          </span>
+        <% end %>
+      <% end %>
+      <%= link_to "See all notifications", notifications_path, class: "d-block text-center small py-2 text-decoration-none" %>
+    <% else %>
+      <div class="notif-empty"><i class="fa-regular fa-bell-slash d-block mb-2" style="font-size:1.4rem;"></i>No notifications yet.</div>
+    <% end %>
+  </div>
+</li>

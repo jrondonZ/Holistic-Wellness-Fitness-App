@@ -2,5 +2,5 @@
 # Renders inside the chart layout (top bar + left chart navigation rail).
 class ChartController < ApplicationController
   layout "chart"
-  before_action :require_legal_acceptance
+  before_action :enforce_legal_gate
 end
