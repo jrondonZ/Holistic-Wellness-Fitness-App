@@ -327,7 +327,11 @@ services = [
     description: "A deep-dive coaching session integrating nutrition, movement and mindfulness to reset balance, heal the gut and build lasting wellness habits." }
 ]
 services.each do |attrs|
-  Service.find_or_initialize_by(name: attrs[:name]).update!(attrs)
+  # Upsert by the unique slug (derived from the name) so re-seeding is idempotent
+  # even if a service's name drifted from a previous seed version.
+  service = Service.find_or_initialize_by(slug: attrs[:name].parameterize)
+  service.assign_attributes(attrs)
+  service.save!
 end
 puts "  • #{Service.count} bookable services"
 

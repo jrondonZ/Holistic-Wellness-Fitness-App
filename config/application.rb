@@ -18,5 +18,10 @@ module HolisticChart
 
     # Holistic Wellness Fitness LLC is based in Meriden, CT.
     config.time_zone = "Eastern Time (US & Canada)"
+
+    # The app ships static brand images via Propshaft and does not use Active
+    # Storage variants, so disable variant processing (the image_processing /
+    # libvips gem isn't bundled). This silences the precompile/boot warning.
+    config.active_storage.variant_processor = :disabled
   end
 end
