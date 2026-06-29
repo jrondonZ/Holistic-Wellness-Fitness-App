@@ -2,7 +2,7 @@ require "test_helper"
 
 class AppointmentTest < ActiveSupport::TestCase
   setup do
-    @user = User.create!(first_name: "A", last_name: "B", username: "appt", email: "appt@e.com", password: "password1")
+    @user = User.create!(first_name: "A", last_name: "B", username: "appt", email: "appt@e.com", password: "wellpass2026")
     @service = Service.create!(name: "Boxing & Conditioning", category: "Boxing", duration_min: 45)
   end
 

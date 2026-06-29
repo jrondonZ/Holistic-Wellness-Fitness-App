@@ -22,8 +22,8 @@ class PasswordResetsController < ApplicationController
   end
 
   def update
-    if params[:password].to_s.length < 6
-      flash.now[:danger] = "Your password must be at least 6 characters."
+    if params[:password].to_s.length < User::MIN_PASSWORD_LENGTH
+      flash.now[:danger] = "Your password must be at least #{User::MIN_PASSWORD_LENGTH} characters."
       render :edit, status: :unprocessable_entity
     elsif @user.update(password: params[:password], password_confirmation: params[:password_confirmation])
       redirect_to login_path, success: "Your password was reset. You can now sign in."

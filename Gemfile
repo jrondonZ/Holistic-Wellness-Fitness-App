@@ -17,6 +17,16 @@ gem "stimulus-rails"
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
 
+# Rate limiting, brute-force throttling, and abuse blocking [https://github.com/rack/rack-attack]
+gem "rack-attack"
+
+# Optional on-device transformer models for the Sage assistant (sentence
+# embeddings + zero-shot intents) via ONNX Runtime — no Python, no API keys, so
+# member text never leaves the server. Sage degrades gracefully to a
+# dependency-free hashing retriever + rule-based intents when this is absent;
+# see app/services/sage/README.md.
+gem "informers", "~> 1.3"
+
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 

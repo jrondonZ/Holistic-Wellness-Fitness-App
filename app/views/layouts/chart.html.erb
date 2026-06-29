@@ -10,6 +10,7 @@
         <%= yield %>
       </main>
     </div>
+    <%= render "layouts/sage_widget" if logged_in? && !legal_gate? %>
     <%= render "shared/legal_gate" if legal_gate? %>
   </body>
 </html>

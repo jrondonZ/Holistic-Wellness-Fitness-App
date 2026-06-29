@@ -2,9 +2,9 @@ require "test_helper"
 
 class MessageTest < ActiveSupport::TestCase
   setup do
-    @member = User.create!(first_name: "M", last_name: "B", username: "msgmem", email: "m@e.com", password: "password1")
-    @admin  = User.create!(first_name: "Ad", last_name: "Min", username: "msgadm", email: "a@e.com", password: "password1", role: "admin")
-    @other  = User.create!(first_name: "O", last_name: "T", username: "msgoth", email: "o@e.com", password: "password1")
+    @member = User.create!(first_name: "M", last_name: "B", username: "msgmem", email: "m@e.com", password: "wellpass2026")
+    @admin  = User.create!(first_name: "Ad", last_name: "Min", username: "msgadm", email: "a@e.com", password: "wellpass2026", role: "admin")
+    @other  = User.create!(first_name: "O", last_name: "T", username: "msgoth", email: "o@e.com", password: "wellpass2026")
   end
 
   test "member may post in their own thread with a provider" do

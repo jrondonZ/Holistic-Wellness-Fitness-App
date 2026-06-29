@@ -3,15 +3,15 @@ require "test_helper"
 class RefinementsTest < ActionDispatch::IntegrationTest
   setup do
     @owner = User.create!(first_name: "Jo", last_name: "Owner", username: "owner1",
-                          email: "owner1@example.com", password: "password1", role: "owner")
+                          email: "owner1@example.com", password: "wellpass2026", role: "owner")
     @admin = User.create!(first_name: "Ada", last_name: "Min", username: "admin2",
-                          email: "admin2@example.com", password: "password1", role: "admin")
+                          email: "admin2@example.com", password: "wellpass2026", role: "admin")
     @member = User.create!(first_name: "New", last_name: "Member", username: "newbie",
-                           email: "newbie@example.com", password: "password1")
+                           email: "newbie@example.com", password: "wellpass2026")
     [ @owner, @admin ].each(&:accept_legal!) # @member intentionally NOT accepted
   end
 
-  def login(user, password = "password1")
+  def login(user, password = "wellpass2026")
     post login_path, params: { username: user.username, password: password }
   end
 
@@ -36,7 +36,7 @@ class RefinementsTest < ActionDispatch::IntegrationTest
 
   test "the owner is exempt from the legal gate" do
     fresh_owner = User.create!(first_name: "Top", last_name: "Boss", username: "topboss",
-                               email: "top@example.com", password: "password1", role: "owner")
+                               email: "top@example.com", password: "wellpass2026", role: "owner")
     login(fresh_owner)
     get admin_root_path
     assert_response :success
@@ -67,7 +67,7 @@ class RefinementsTest < ActionDispatch::IntegrationTest
     assert_difference -> { User.staff.count }, 1 do
       post admin_team_path, params: { user: {
         first_name: "Pat", last_name: "Coach", username: "patcoach",
-        email: "pat@example.com", password: "password1", password_confirmation: "password1"
+        email: "pat@example.com", password: "wellpass2026", password_confirmation: "wellpass2026"
       } }
     end
     assert User.find_by(username: "patcoach").admin?
@@ -91,7 +91,7 @@ class RefinementsTest < ActionDispatch::IntegrationTest
   test "members self-signup cannot assign themselves a role" do
     post signup_path, params: { user: {
       first_name: "Sneaky", last_name: "User", username: "sneaky",
-      email: "sneaky@example.com", password: "password1", password_confirmation: "password1", role: "owner"
+      email: "sneaky@example.com", password: "wellpass2026", password_confirmation: "wellpass2026", role: "owner"
     } }
     assert User.find_by(username: "sneaky").member?, "role must not be mass-assignable on signup"
   end

@@ -3,9 +3,9 @@ require "test_helper"
 class FeatureFlowsTest < ActionDispatch::IntegrationTest
   setup do
     @member = User.create!(first_name: "Mem", last_name: "Ber", username: "member1",
-                           email: "member1@example.com", password: "password1")
+                           email: "member1@example.com", password: "wellpass2026")
     @admin = User.create!(first_name: "Ada", last_name: "Min", username: "admin1",
-                          email: "admin1@example.com", password: "password1", role: "admin")
+                          email: "admin1@example.com", password: "wellpass2026", role: "admin")
     # Past the onboarding/legal gate for these existing flows.
     [ @member, @admin ].each(&:accept_legal!)
     @service = Service.create!(name: "Personal Training", category: "Personal Training",
@@ -15,7 +15,7 @@ class FeatureFlowsTest < ActionDispatch::IntegrationTest
                                        quiz: [ { "q" => "PHI?", "options" => %w[No Yes], "answer" => 1 } ])
   end
 
-  def login(user, password = "password1")
+  def login(user, password = "wellpass2026")
     post login_path, params: { username: user.username, password: password }
   end
 

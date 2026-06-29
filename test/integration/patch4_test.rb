@@ -4,17 +4,17 @@ class Patch4Test < ActionDispatch::IntegrationTest
   setup do
     ActionMailer::Base.deliveries.clear
     @owner = User.create!(first_name: "Own", last_name: "Er", username: "own4",
-                          email: "own4@example.com", password: "password1", role: "owner")
+                          email: "own4@example.com", password: "wellpass2026", role: "owner")
     @prov1 = User.create!(first_name: "Cee", last_name: "Coach", username: "prov1",
-                          email: "prov1@example.com", password: "password1", role: "admin", title: "Nutrition")
+                          email: "prov1@example.com", password: "wellpass2026", role: "admin", title: "Nutrition")
     @prov2 = User.create!(first_name: "Em", last_name: "Trainer", username: "prov2",
-                          email: "prov2@example.com", password: "password1", role: "admin", title: "Trainer")
+                          email: "prov2@example.com", password: "wellpass2026", role: "admin", title: "Trainer")
     @member = User.create!(first_name: "Mem", last_name: "Ber", username: "mem4",
-                           email: "mem4@example.com", password: "password1")
+                           email: "mem4@example.com", password: "wellpass2026")
     [ @prov1, @prov2, @member ].each(&:accept_legal!)
   end
 
-  def login(user, password = "password1")
+  def login(user, password = "wellpass2026")
     post login_path, params: { username: user.username, password: password }
   end
 
@@ -52,7 +52,7 @@ class Patch4Test < ActionDispatch::IntegrationTest
     assert_difference "User.count", 1 do
       post admin_users_path, params: { user: {
         first_name: "Brand", last_name: "New", username: "brandnew", email: "bn@example.com",
-        role: "admin", password: "password1", password_confirmation: "password1"
+        role: "admin", password: "wellpass2026", password_confirmation: "wellpass2026"
       } }
     end
     created = User.find_by(username: "brandnew")
@@ -80,7 +80,7 @@ class Patch4Test < ActionDispatch::IntegrationTest
     get new_admin_user_path
     assert_redirected_to admin_root_path
     assert_no_difference "User.count" do
-      post admin_users_path, params: { user: { first_name: "x", username: "x", email: "x@e.com", password: "password1", password_confirmation: "password1" } }
+      post admin_users_path, params: { user: { first_name: "x", username: "x", email: "x@e.com", password: "wellpass2026", password_confirmation: "wellpass2026" } }
     end
   end
 
@@ -88,18 +88,18 @@ class Patch4Test < ActionDispatch::IntegrationTest
   test "member can change their password with the current one" do
     login(@member)
     patch settings_password_path, params: {
-      current_password: "password1", password: "newsecret", password_confirmation: "newsecret"
+      current_password: "wellpass2026", password: "newsecret2026", password_confirmation: "newsecret2026"
     }
     assert_redirected_to settings_path
-    assert @member.reload.authenticate("newsecret")
+    assert @member.reload.authenticate("newsecret2026")
   end
 
   test "wrong current password is rejected" do
     login(@member)
     patch settings_password_path, params: {
-      current_password: "wrong", password: "newsecret", password_confirmation: "newsecret"
+      current_password: "wrong", password: "newsecret2026", password_confirmation: "newsecret2026"
     }
-    assert_not @member.reload.authenticate("newsecret")
+    assert_not @member.reload.authenticate("newsecret2026")
   end
 
   test "profile update does not allow role escalation" do
@@ -117,9 +117,9 @@ class Patch4Test < ActionDispatch::IntegrationTest
     assert_redirected_to login_path
 
     token = @member.generate_token_for(:password_reset)
-    patch password_reset_path(token), params: { password: "freshpass", password_confirmation: "freshpass" }
+    patch password_reset_path(token), params: { password: "freshpass2026", password_confirmation: "freshpass2026" }
     assert_redirected_to login_path
-    assert @member.reload.authenticate("freshpass")
+    assert @member.reload.authenticate("freshpass2026")
   end
 
   test "forgot-password does not reveal whether an email exists" do

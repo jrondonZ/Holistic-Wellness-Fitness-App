@@ -1,0 +1,42 @@
+# See https://help.github.com/articles/ignoring-files for more about ignoring files.
+
+# Ignore bundler config.
+/.bundle
+
+# Ignore all environment files.
+/.env*
+!/.env.example
+
+# Ignore all logfiles and tempfiles.
+/log/*
+/tmp/*
+!/log/.keep
+!/tmp/.keep
+
+# Ignore pidfiles, but keep the directory.
+/tmp/pids/*
+!/tmp/pids/
+!/tmp/pids/.keep
+
+# Ignore storage (uploaded files in development and any SQLite databases).
+/storage/*
+!/storage/.keep
+/tmp/storage/*
+!/tmp/storage/
+!/tmp/storage/.keep
+
+# Local SQLite databases.
+/db/*.sqlite3
+/db/*.sqlite3-*
+
+# Ignore master key for decrypting credentials and more.
+/config/master.key
+
+# Ignore node modules and assets build artifacts.
+/node_modules
+/app/assets/builds/*
+!/app/assets/builds/.keep
+/public/assets
+
+# On-device model cache for the Sage assistant (informers / ONNX weights).
+/.informers_cache

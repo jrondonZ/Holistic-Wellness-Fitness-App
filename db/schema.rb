@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_18_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_29_000001) do
   create_table "appointments", force: :cascade do |t|
     t.text "admin_notes"
     t.datetime "cancelled_at"
@@ -62,6 +62,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_18_000002) do
     t.index ["author_id"], name: "index_assessments_on_author_id"
     t.index ["member_id", "created_at"], name: "index_assessments_on_member_id_and_created_at"
     t.index ["member_id"], name: "index_assessments_on_member_id"
+  end
+
+  create_table "audit_logs", force: :cascade do |t|
+    t.string "action", null: false
+    t.integer "actor_id"
+    t.datetime "created_at", null: false
+    t.string "ip_address"
+    t.json "metadata"
+    t.integer "resource_id"
+    t.string "resource_type"
+    t.integer "subject_id"
+    t.string "user_agent"
+    t.index ["action", "created_at"], name: "index_audit_logs_on_action_and_created_at"
+    t.index ["actor_id", "created_at"], name: "index_audit_logs_on_actor_id_and_created_at"
+    t.index ["actor_id"], name: "index_audit_logs_on_actor_id"
+    t.index ["subject_id", "created_at"], name: "index_audit_logs_on_subject_id_and_created_at"
+    t.index ["subject_id"], name: "index_audit_logs_on_subject_id"
+  end
+
+  create_table "care_assignments", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "member_id", null: false
+    t.boolean "primary", default: false, null: false
+    t.integer "provider_id", null: false
+    t.string "specialty"
+    t.datetime "updated_at", null: false
+    t.index ["member_id", "provider_id"], name: "index_care_assignments_on_member_id_and_provider_id", unique: true
+    t.index ["member_id"], name: "index_care_assignments_on_member_id"
+    t.index ["provider_id"], name: "index_care_assignments_on_provider_id"
   end
 
   create_table "checkins", force: :cascade do |t|
@@ -123,13 +152,31 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_18_000002) do
     t.text "body", null: false
     t.datetime "created_at", null: false
     t.integer "member_id", null: false
+    t.integer "provider_id"
     t.datetime "read_at"
     t.integer "sender_id", null: false
     t.string "topic"
     t.datetime "updated_at", null: false
     t.index ["member_id", "created_at"], name: "index_messages_on_member_id_and_created_at"
+    t.index ["member_id", "provider_id", "created_at"], name: "index_messages_on_member_provider_created"
     t.index ["member_id"], name: "index_messages_on_member_id"
+    t.index ["provider_id"], name: "index_messages_on_provider_id"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.text "body"
+    t.datetime "created_at", null: false
+    t.string "icon"
+    t.string "kind", null: false
+    t.datetime "read_at"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.integer "user_id", null: false
+    t.index ["user_id", "created_at"], name: "index_notifications_on_user_id_and_created_at"
+    t.index ["user_id", "read_at"], name: "index_notifications_on_user_id_and_read_at"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
   create_table "routine_items", force: :cascade do |t|
@@ -220,6 +267,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_18_000002) do
     t.string "role", default: "member", null: false
     t.datetime "terms_accepted_at"
     t.string "title"
+    t.datetime "tutorial_completed_at"
     t.datetime "updated_at", null: false
     t.string "username"
     t.index ["email"], name: "index_users_on_email", unique: true
@@ -264,11 +312,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_18_000002) do
   add_foreign_key "appointments", "users"
   add_foreign_key "assessments", "users", column: "author_id"
   add_foreign_key "assessments", "users", column: "member_id"
+  add_foreign_key "audit_logs", "users", column: "actor_id"
+  add_foreign_key "audit_logs", "users", column: "subject_id"
+  add_foreign_key "care_assignments", "users", column: "member_id"
+  add_foreign_key "care_assignments", "users", column: "provider_id"
   add_foreign_key "checkins", "users"
   add_foreign_key "health_profiles", "users"
   add_foreign_key "meal_entries", "users"
   add_foreign_key "messages", "users", column: "member_id"
+  add_foreign_key "messages", "users", column: "provider_id"
   add_foreign_key "messages", "users", column: "sender_id"
+  add_foreign_key "notifications", "users"
   add_foreign_key "routine_items", "routines"
   add_foreign_key "routine_items", "workouts"
   add_foreign_key "training_completions", "training_modules"

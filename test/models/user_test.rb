@@ -3,17 +3,23 @@ require "test_helper"
 class UserTest < ActiveSupport::TestCase
   def valid_attrs(overrides = {})
     { first_name: "Ada", last_name: "Lovelace", username: "ada",
-      email: "ada@example.com", password: "secret9" }.merge(overrides)
+      email: "ada@example.com", password: "secret9pass" }.merge(overrides)
   end
 
   test "is valid with required attributes" do
     assert User.new(valid_attrs).valid?
   end
 
-  test "requires a 6+ character password" do
-    user = User.new(valid_attrs(password: "abc"))
+  test "requires a 10+ character password" do
+    user = User.new(valid_attrs(password: "abc123"))
     assert_not user.valid?
-    assert_includes user.errors[:password], "is too short (minimum is 6 characters)"
+    assert_includes user.errors[:password], "must be at least 10 characters"
+  end
+
+  test "rejects common passwords even when long enough" do
+    user = User.new(valid_attrs(password: "password123"))
+    assert_not user.valid?
+    assert_includes user.errors[:password], "is too common — please choose something harder to guess"
   end
 
   test "enforces unique username and email case-insensitively" do

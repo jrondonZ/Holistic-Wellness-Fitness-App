@@ -94,6 +94,11 @@ Rails.application.routes.draw do
     delete "team/:id", to: "team#destroy"
   end
 
+  # Sage — the holistic wellness AI assistant (member-facing chat endpoint)
+  namespace :api do
+    post "ai/chat", to: "ai#chat"
+  end
+
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
   get "up" => "rails/health#show", as: :rails_health_check
 end

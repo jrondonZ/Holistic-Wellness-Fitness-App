@@ -34,6 +34,9 @@ class DashboardController < ChartController
     @wellness_series = series(trend_checkins) { |c| c.wellness_score }
     @bmi_series      = bmi_series
     @nutrition_week  = nutrition_week_series
+
+    # PHI access trail: the member opened their own chart summary.
+    audit!(:view, resource: @profile, metadata: { area: "chart_summary" })
   end
 
   private

@@ -18,6 +18,9 @@ class MessagesController < ChartController
     @messages = thread.chronological.includes(:sender)
     thread.unread.where.not(sender_id: current_user.id).update_all(read_at: Time.current)
     @topics = Message::TOPICS
+
+    # PHI access trail: the member opened a secure message thread with a provider.
+    audit!(:view, resource: @provider, metadata: { area: "messages", provider_id: @provider.id })
   end
 
   def create

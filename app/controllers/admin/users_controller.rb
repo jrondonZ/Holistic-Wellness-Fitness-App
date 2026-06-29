@@ -34,6 +34,9 @@ module Admin
       @week_minutes    = @member.workout_logs.where(performed_on: Date.current.beginning_of_week..).sum(:duration_min)
       @assignments     = @member.care_assignments_as_member.includes(:provider).primary_first
       @available_providers = User.staff.where.not(id: @member.providers.select(:id)).order(:first_name)
+
+      # PHI access trail: a staff member opened a member's health record.
+      audit!(:view, subject: @member, resource: @member.health_profile, metadata: { area: "admin_member_chart" })
     end
 
     def new

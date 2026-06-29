@@ -3,7 +3,7 @@ require "test_helper"
 class HealthProfileTest < ActiveSupport::TestCase
   setup do
     @user = User.create!(first_name: "Sam", last_name: "Lee", username: "sam",
-                         email: "sam@example.com", password: "secret9")
+                         email: "sam@example.com", password: "secret9pass")
     @profile = @user.health_profile
   end
 

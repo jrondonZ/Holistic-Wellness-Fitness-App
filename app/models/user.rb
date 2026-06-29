@@ -1,6 +1,16 @@
 class User < ApplicationRecord
   has_secure_password
 
+  # Password policy. Following NIST 800-63B, we favor length and screening
+  # against known-bad passwords over arbitrary composition rules: a long,
+  # uncommon passphrase is both stronger and easier to remember.
+  MIN_PASSWORD_LENGTH = 10
+  WEAK_PASSWORDS = %w[
+    password password1 password12 password123 passw0rd1 1234567890 12345678
+    123456789 qwertyuiop qwerty123 iloveyou1 letmein123 welcome123 admin12345
+    changeme123 trustno1234 wellness12 holistic12
+  ].freeze
+
   # Role tiers: member < admin < owner (the single top admin).
   enum :role, { member: "member", admin: "admin", owner: "owner" }, default: "member"
 
@@ -41,7 +51,7 @@ class User < ApplicationRecord
   validates :username,   presence: true, uniqueness: { case_sensitive: false }
   validates :email,      presence: true, uniqueness: { case_sensitive: false },
                          format: { with: URI::MailTo::EMAIL_REGEXP }
-  validates :password,   length: { minimum: 6 }, if: -> { new_record? || !password.nil? }
+  validate :password_strength, if: -> { password.present? }
 
   before_save { self.email = email.to_s.downcase.strip }
   before_save { self.username = username.to_s.strip }
@@ -49,6 +59,15 @@ class User < ApplicationRecord
 
   def full_name
     "#{first_name} #{last_name}".strip
+  end
+
+  # Length-first password screening (see MIN_PASSWORD_LENGTH / WEAK_PASSWORDS).
+  def password_strength
+    if password.to_s.length < MIN_PASSWORD_LENGTH
+      errors.add(:password, "must be at least #{MIN_PASSWORD_LENGTH} characters")
+    elsif WEAK_PASSWORDS.include?(password.to_s.downcase)
+      errors.add(:password, "is too common — please choose something harder to guess")
+    end
   end
 
   def initials

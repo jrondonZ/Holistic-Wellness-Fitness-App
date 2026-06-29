@@ -43,7 +43,7 @@ The seeds create a fully-populated member so the chart is alive on first run:
 
 ```
 username: demo
-password: wellness
+password: wellness2026
 ```
 
 …with ~30 days of check-ins, two weeks of meals and a month of workouts, so every chart and flowsheet has real data.

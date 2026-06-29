@@ -217,10 +217,10 @@ demo = User.find_or_initialize_by(username: "demo")
 if demo.new_record?
   demo.assign_attributes(
     first_name: "Jordan", last_name: "Rivera", email: "demo@holisticchart.com",
-    password: "wellness", password_confirmation: "wellness"
+    password: "wellness2026", password_confirmation: "wellness2026"
   )
   demo.save!
-  puts "  • Created demo member (username: demo / password: wellness)"
+  puts "  • Created demo member (username: demo / password: wellness2026)"
 end
 
 demo.ensure_health_profile
@@ -378,12 +378,12 @@ admin = User.find_or_initialize_by(username: "celine")
 if admin.new_record?
   admin.assign_attributes(
     first_name: "Celine", last_name: "Bonilla", email: "celine@holisticwellnessandfitness.com",
-    password: "celine123", password_confirmation: "celine123", role: "admin",
+    password: "celine12345", password_confirmation: "celine12345", role: "admin",
     title: "Founder & Holistic Wellness Coach · RN",
     phone: "203-800-1118"
   )
   admin.save!
-  puts "  • Created admin (username: celine / password: celine123)"
+  puts "  • Created admin (username: celine / password: celine12345)"
 else
   admin.update!(role: "admin")
 end
@@ -485,6 +485,6 @@ end
 
 puts "✅ Done."
 puts "   Owner:    username josiah · password owner12345  (top admin)"
-puts "   Provider: username celine · password celine123"
+puts "   Provider: username celine · password celine12345"
 puts "   Provider: username marcus · password coach12345"
-puts "   Member:   username demo   · password wellness"
+puts "   Member:   username demo   · password wellness2026"

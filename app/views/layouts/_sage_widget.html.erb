@@ -1,0 +1,142 @@
+<%# Sage — floating holistic-wellness assistant. Rendered for signed-in members
+    on every in-chart page. Talks to POST /api/ai/chat. The inline script carries
+    the per-request CSP nonce so it runs under the app's strict script policy. %>
+<div id="sage-widget" data-bot-av="/sage-mark.svg">
+  <button class="sage-fab" id="sage-fab" title="Ask Sage" aria-label="Ask Sage, your wellness assistant">
+    <%= image_tag "/sage-mark.svg", alt: "", class: "sage-fab-mark", aria: { hidden: true } %>
+  </button>
+
+  <div class="sage-panel" id="sage-panel" style="display:none;">
+    <div class="sage-panel-header">
+      <div class="sage-panel-ident">
+        <div class="sage-panel-icon"><%= image_tag "/sage-mark.svg", alt: "", class: "sage-panel-mark", aria: { hidden: true } %></div>
+        <div class="sage-panel-meta">
+          <span class="sage-panel-name">Sage</span>
+          <span class="sage-panel-tag">Wellness companion</span>
+        </div>
+      </div>
+      <button type="button" class="btn-close btn-close-white btn-sm" id="sage-close" aria-label="Close Sage"></button>
+    </div>
+
+    <div class="sage-messages" id="sage-messages">
+      <div class="sage-msg sage-msg--bot">
+        <span class="sage-msg-av" aria-hidden="true"><%= image_tag "/sage-mark.svg", alt: "", aria: { hidden: true } %></span>
+        <div>
+          <div class="sage-msg-bubble">
+            Hi<%= current_user&.first_name.present? ? " #{current_user.first_name}" : "" %>! I&rsquo;m <strong>Sage</strong>, your holistic wellness companion. Ask me about nutrition, gut health, movement, sleep, stress&mdash;or how your chart is trending.
+          </div>
+          <div class="sage-suggestions">
+            <button type="button" class="sage-chip" data-suggestion="What should I eat after a workout?">Post-workout meal</button>
+            <button type="button" class="sage-chip" data-suggestion="How can I improve my sleep?">Better sleep</button>
+            <button type="button" class="sage-chip" data-suggestion="How am I doing on my chart?">My progress</button>
+          </div>
+          <p class="sage-disclaimer">Sage offers general wellness education, not medical advice.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sage-input-row">
+      <input type="text" class="form-control" id="sage-input"
+             placeholder="Ask Sage about your wellness&hellip;" maxlength="500" autocomplete="off">
+      <button class="sage-send-btn" id="sage-send" aria-label="Send message">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<%= javascript_tag nonce: true do %>
+(function () {
+  var csrf   = document.querySelector('meta[name="csrf-token"]');
+  csrf = csrf ? csrf.content : "";
+  var widget = document.getElementById("sage-widget");
+  var fab    = document.getElementById("sage-fab");
+  var panel  = document.getElementById("sage-panel");
+  var closeB = document.getElementById("sage-close");
+  var msgs   = document.getElementById("sage-messages");
+  var input  = document.getElementById("sage-input");
+  var send   = document.getElementById("sage-send");
+  if (!fab || !panel) return;
+  // Guard against double-binding (Turbo can re-run inline scripts).
+  if (widget && widget.dataset.sageBound) return;
+  if (widget) widget.dataset.sageBound = "1";
+  var avSrc = (widget && widget.dataset.botAv) || "";
+  var open = false, loading = false;
+
+  var esc = function (s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  };
+  var md = function (t) {
+    return esc(t)
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/_(.+?)_/g, "<em>$1</em>")
+      .replace(/^[-•]\s+(.+)$/gm, "<li>$1</li>")
+      .replace(/^\d+\.\s+(.+)$/gm, "<li>$1</li>")
+      .replace(/(<li>[\s\S]*?<\/li>\n?)+/g, function (m) {
+        return '<ul class="sage-list">' + m + "</ul>";
+      })
+      .replace(/\n/g, "<br>");
+  };
+  var BOT_AV = '<span class="sage-msg-av" aria-hidden="true"><img src="' + avSrc + '" alt=""></span>';
+  var append = function (text, role) {
+    var d = document.createElement("div");
+    d.className = "sage-msg sage-msg--" + role;
+    if (role === "bot") {
+      d.innerHTML = BOT_AV + '<div><div class="sage-msg-bubble">' + md(text) + "</div></div>";
+    } else {
+      d.innerHTML = '<div class="sage-msg-bubble">' + esc(text).replace(/\n/g, "<br>") + "</div>";
+    }
+    msgs.appendChild(d);
+    setTimeout(function () { msgs.scrollTop = msgs.scrollHeight; }, 30);
+  };
+  var toggle = function () {
+    open = !open;
+    fab.classList.toggle("is-open", open);
+    if (open) {
+      panel.style.display = "flex";
+      setTimeout(function () { input.focus(); }, 80);
+    } else {
+      panel.style.display = "none";
+    }
+  };
+  var submit = async function () {
+    var m = input.value.trim();
+    if (!m || loading) return;
+    append(m, "user"); input.value = ""; loading = true; send.disabled = true;
+    var tid = "t" + Date.now();
+    var t = document.createElement("div");
+    t.className = "sage-msg sage-msg--bot"; t.id = tid;
+    t.innerHTML = BOT_AV + '<div><div class="sage-msg-bubble"><span class="sage-typing"><span></span><span></span><span></span></span></div></div>';
+    msgs.appendChild(t);
+    setTimeout(function () { msgs.scrollTop = msgs.scrollHeight; }, 30);
+    try {
+      var r = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf },
+        body: JSON.stringify({ message: m })
+      });
+      var d = await r.json();
+      var el = document.getElementById(tid); if (el) el.remove();
+      append(r.ok ? (d.reply || "") : (d.error || "Something went wrong."), "bot");
+    } catch (e) {
+      var el2 = document.getElementById(tid); if (el2) el2.remove();
+      append("Connection trouble — please check your network and try again.", "bot");
+    } finally { loading = false; send.disabled = false; }
+  };
+
+  fab.addEventListener("click", toggle);
+  closeB.addEventListener("click", toggle);
+  send.addEventListener("click", submit);
+  input.addEventListener("keypress", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); submit(); }
+  });
+  msgs.querySelectorAll(".sage-chip").forEach(function (c) {
+    c.addEventListener("click", function () {
+      var s = c.dataset.suggestion;
+      var wrap = c.closest(".sage-suggestions"); if (wrap) wrap.remove();
+      input.value = s; submit();
+    });
+  });
+})();
+<% end %>

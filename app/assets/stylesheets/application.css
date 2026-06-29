@@ -622,3 +622,116 @@ a:hover { color: var(--brand-green-dark); }
   .tour-highlight { box-shadow: 0 0 0 4px var(--brand-gold); }
   .tour-backdrop { display: none; }
 }
+
+/* ============================================================ Sage assistant */
+/* Floating holistic-wellness chat companion (see app/views/layouts/_sage_widget) */
+#sage-widget {
+  position: fixed; bottom: 22px; right: 22px; z-index: 1080;
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+.sage-fab {
+  width: 58px; height: 58px; border-radius: 50%; border: none; cursor: pointer;
+  background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-dark) 100%);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 10px 26px rgba(45, 74, 48, 0.34);
+  transition: transform .25s ease, box-shadow .3s ease;
+}
+.sage-fab:hover { transform: scale(1.08); box-shadow: 0 14px 34px rgba(45, 74, 48, 0.42); }
+.sage-fab.is-open { background: linear-gradient(135deg, #5b6b58, #2d4a30); }
+.sage-fab-mark { width: 30px; height: 30px; }
+
+.sage-panel {
+  position: absolute; bottom: 72px; right: 0; width: 372px; max-width: calc(100vw - 32px);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+  overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: var(--shadow-lg);
+  transform-origin: bottom right; animation: sage-in .26s ease both;
+}
+@keyframes sage-in {
+  from { opacity: 0; transform: scale(.92) translateY(12px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.sage-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .85rem 1rem;
+  background: linear-gradient(135deg, var(--brand-green) 0%, var(--brand-green-dark) 100%);
+  color: #fff;
+}
+.sage-panel-ident { display: flex; align-items: center; gap: .6rem; }
+.sage-panel-icon {
+  width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+  background: rgba(255, 255, 255, .16); display: flex; align-items: center; justify-content: center;
+}
+.sage-panel-mark { width: 22px; height: 22px; }
+.sage-panel-meta { display: flex; flex-direction: column; line-height: 1.15; }
+.sage-panel-name { font-weight: 700; font-size: .98rem; }
+.sage-panel-tag { font-size: .68rem; opacity: .85; letter-spacing: .03em; }
+
+.sage-messages {
+  overflow-y: auto; padding: .9rem; display: flex; flex-direction: column; gap: .65rem;
+  max-height: 360px; min-height: 150px; background: var(--surface-2);
+}
+.sage-msg { display: flex; gap: .45rem; }
+.sage-msg--bot { align-items: flex-start; }
+.sage-msg--user { align-items: flex-end; flex-direction: row-reverse; }
+.sage-msg-av {
+  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0; margin-top: 2px; color: #fff;
+  background: linear-gradient(135deg, var(--brand-green), var(--brand-green-dark));
+  display: flex; align-items: center; justify-content: center;
+}
+.sage-msg-av img { width: 16px; height: 16px; }
+.sage-msg-bubble {
+  max-width: 84%; padding: .6rem .85rem; border-radius: 14px;
+  font-size: .86rem; line-height: 1.55;
+}
+.sage-msg--bot .sage-msg-bubble {
+  background: var(--surface); border: 1px solid var(--line); color: var(--text-dark);
+  border-top-left-radius: 4px;
+}
+.sage-msg--user .sage-msg-bubble {
+  background: var(--brand-green); color: #fff; border-top-right-radius: 4px;
+}
+.sage-msg-bubble .sage-list { margin: .35rem 0; padding-left: 1.15rem; }
+.sage-suggestions { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .5rem; }
+.sage-chip {
+  font-size: .74rem; padding: .26rem .7rem; border-radius: 9999px; cursor: pointer;
+  border: 1px solid var(--brand-green-soft); background: var(--brand-green-soft);
+  color: var(--brand-green-dark); transition: all .15s ease; white-space: nowrap;
+}
+.sage-chip:hover { background: #dce5d8; transform: translateY(-1px); }
+.sage-disclaimer { font-size: .68rem; color: var(--text-muted); margin: .5rem 0 0; }
+
+.sage-input-row {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .65rem .8rem; border-top: 1px solid var(--line); background: var(--surface);
+}
+.sage-input-row .form-control {
+  border-radius: 30px; font-size: .86rem; border: 1px solid var(--line);
+}
+.sage-input-row .form-control:focus {
+  border-color: var(--brand-green); box-shadow: 0 0 0 3px rgba(74, 124, 89, .12);
+}
+.sage-send-btn {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; border: none; cursor: pointer;
+  background: linear-gradient(135deg, var(--brand-green), var(--brand-green-dark)); color: #fff;
+  display: flex; align-items: center; justify-content: center; transition: transform .15s ease, opacity .15s;
+}
+.sage-send-btn:hover:not(:disabled) { transform: scale(1.08); }
+.sage-send-btn:disabled { opacity: .4; cursor: default; }
+
+.sage-typing { display: inline-flex; align-items: center; gap: 4px; }
+.sage-typing span {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--brand-sage);
+  animation: sage-dot .8s ease-in-out infinite;
+}
+.sage-typing span:nth-child(2) { animation-delay: .15s; }
+.sage-typing span:nth-child(3) { animation-delay: .3s; }
+@keyframes sage-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: .4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+@media (max-width: 575.98px) {
+  #sage-widget { bottom: 16px; right: 16px; }
+  .sage-panel { width: calc(100vw - 32px); }
+}

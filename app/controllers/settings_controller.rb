@@ -18,8 +18,8 @@ class SettingsController < ApplicationController
     @user = current_user
     if !current_user.authenticate(params[:current_password].to_s)
       redirect_to settings_path, danger: "Your current password is incorrect."
-    elsif params[:password].to_s.length < 6
-      redirect_to settings_path, danger: "Your new password must be at least 6 characters."
+    elsif params[:password].to_s.length < User::MIN_PASSWORD_LENGTH
+      redirect_to settings_path, danger: "Your new password must be at least #{User::MIN_PASSWORD_LENGTH} characters."
     elsif params[:password] != params[:password_confirmation]
       redirect_to settings_path, danger: "New password and confirmation don't match."
     elsif current_user.update(password: params[:password], password_confirmation: params[:password_confirmation])

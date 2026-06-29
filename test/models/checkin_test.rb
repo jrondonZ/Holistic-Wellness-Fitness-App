@@ -3,7 +3,7 @@ require "test_helper"
 class CheckinTest < ActiveSupport::TestCase
   setup do
     @user = User.create!(first_name: "Pat", last_name: "Kim", username: "pat",
-                         email: "pat@example.com", password: "secret9")
+                         email: "pat@example.com", password: "secret9pass")
   end
 
   test "one check-in per day per user" do
