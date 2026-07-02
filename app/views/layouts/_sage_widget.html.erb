@@ -1,4 +1,5 @@
 <%# Sage — floating holistic-wellness assistant. Rendered for signed-in members
+<<<<<<< ours
     on every in-chart page. Talks to POST /api/ai/chat. The inline script carries
     the per-request CSP nonce so it runs under the app's strict script policy. %>
 <div id="sage-widget" data-bot-av="/sage-mark.svg">
@@ -7,6 +8,23 @@
   </button>
 
   <div class="sage-panel" id="sage-panel" style="display:none;">
+=======
+    on every in-chart page. Behaviour lives in the `sage` Stimulus controller
+    (app/javascript/controllers/sage_controller.js) — served from our own origin,
+    so it needs no inline script and complies with the app's strict CSP while
+    surviving Turbo navigations. Talks to POST /api/ai/chat. %>
+<div id="sage-widget"
+     data-controller="sage"
+     data-sage-avatar-value="/sage-mark.svg"
+     data-sage-url-value="<%= api_ai_chat_path %>">
+  <button class="sage-fab" type="button"
+          data-sage-target="fab" data-action="sage#toggle"
+          title="Ask Sage" aria-label="Ask Sage, your wellness assistant">
+    <%= image_tag "/sage-mark.svg", alt: "", class: "sage-fab-mark", aria: { hidden: true } %>
+  </button>
+
+  <div class="sage-panel" data-sage-target="panel" style="display:none;">
+>>>>>>> theirs
     <div class="sage-panel-header">
       <div class="sage-panel-ident">
         <div class="sage-panel-icon"><%= image_tag "/sage-mark.svg", alt: "", class: "sage-panel-mark", aria: { hidden: true } %></div>
@@ -15,10 +33,18 @@
           <span class="sage-panel-tag">Wellness companion</span>
         </div>
       </div>
+<<<<<<< ours
       <button type="button" class="btn-close btn-close-white btn-sm" id="sage-close" aria-label="Close Sage"></button>
     </div>
 
     <div class="sage-messages" id="sage-messages">
+=======
+      <button type="button" class="btn-close btn-close-white btn-sm"
+              data-action="sage#toggle" aria-label="Close Sage"></button>
+    </div>
+
+    <div class="sage-messages" data-sage-target="messages">
+>>>>>>> theirs
       <div class="sage-msg sage-msg--bot">
         <span class="sage-msg-av" aria-hidden="true"><%= image_tag "/sage-mark.svg", alt: "", aria: { hidden: true } %></span>
         <div>
@@ -26,9 +52,15 @@
             Hi<%= current_user&.first_name.present? ? " #{current_user.first_name}" : "" %>! I&rsquo;m <strong>Sage</strong>, your holistic wellness companion. Ask me about nutrition, gut health, movement, sleep, stress&mdash;or how your chart is trending.
           </div>
           <div class="sage-suggestions">
+<<<<<<< ours
             <button type="button" class="sage-chip" data-suggestion="What should I eat after a workout?">Post-workout meal</button>
             <button type="button" class="sage-chip" data-suggestion="How can I improve my sleep?">Better sleep</button>
             <button type="button" class="sage-chip" data-suggestion="How am I doing on my chart?">My progress</button>
+=======
+            <button type="button" class="sage-chip" data-action="sage#suggest" data-suggestion="What should I eat after a workout?">Post-workout meal</button>
+            <button type="button" class="sage-chip" data-action="sage#suggest" data-suggestion="How can I improve my sleep?">Better sleep</button>
+            <button type="button" class="sage-chip" data-action="sage#suggest" data-suggestion="How am I doing on my chart?">My progress</button>
+>>>>>>> theirs
           </div>
           <p class="sage-disclaimer">Sage offers general wellness education, not medical advice.</p>
         </div>
@@ -36,14 +68,23 @@
     </div>
 
     <div class="sage-input-row">
+<<<<<<< ours
       <input type="text" class="form-control" id="sage-input"
              placeholder="Ask Sage about your wellness&hellip;" maxlength="500" autocomplete="off">
       <button class="sage-send-btn" id="sage-send" aria-label="Send message">
+=======
+      <input type="text" class="form-control"
+             data-sage-target="input" data-action="keydown->sage#keydown"
+             placeholder="Ask Sage about your wellness&hellip;" maxlength="500" autocomplete="off">
+      <button class="sage-send-btn" type="button"
+              data-sage-target="send" data-action="sage#send" aria-label="Send message">
+>>>>>>> theirs
         <i class="fas fa-paper-plane"></i>
       </button>
     </div>
   </div>
 </div>
+<<<<<<< ours
 
 <%= javascript_tag nonce: true do %>
 (function () {
@@ -140,3 +181,5 @@
   });
 })();
 <% end %>
+=======
+>>>>>>> theirs
